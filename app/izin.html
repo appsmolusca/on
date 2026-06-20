@@ -8,108 +8,143 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <style> body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } </style>
+    <style> 
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } 
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+    </style>
 </head>
-<body class="bg-[#FBFBFE] pb-24 text-slate-800" onload="initApp()">
+<body class="bg-[#FBFBFE] pb-24 text-slate-800" onload="initApp()" oncontextmenu="return false;">
 
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex justify-between items-center shadow-sm">
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex flex-wrap gap-4 justify-between items-center shadow-sm">
         <div class="flex items-center gap-2">
             <i class="ph-fill ph-first-aid text-2xl text-red-500"></i>
-            <h1 class="text-lg font-extrabold tracking-tight text-slate-900">Leave<span class="text-red-500">Tracker.</span></h1>
+            <h1 class="text-sm font-extrabold tracking-widest text-slate-900 uppercase">MOLUSCA <span class="text-slate-300 mx-1">|</span> <span id="headerName" class="text-red-500">USER</span></h1>
         </div>
-        <button onclick="goBack()" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl flex items-center gap-1 transition shadow-sm">
-            <i class="ph-fill ph-arrow-left text-lg"></i> Kembali
-        </button>
+        <div class="flex items-center gap-2 flex-wrap" id="navMenu">
+            <a href="izin.html" class="text-[10px] font-black bg-red-100 text-red-700 px-4 py-2.5 rounded-xl flex items-center gap-1.5 uppercase tracking-widest cursor-default"><i class="ph-fill ph-first-aid"></i> Izin</a>
+            <a href="piket.html" id="navPiket" class="text-[10px] font-black bg-orange-50 hover:bg-orange-100 text-orange-500 px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition uppercase tracking-widest"><i class="ph-fill ph-broom"></i> Piket</a>
+            <a href="asset.html" id="navAsset" class="text-[10px] font-black bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition uppercase tracking-widest"><i class="ph-fill ph-package"></i> Inventaris</a>
+            <a href="konten.html" id="navKonten" class="text-[10px] font-black bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2.5 rounded-xl flex items-center gap-1.5 uppercase tracking-widest transition"><i class="ph-fill ph-video-camera"></i> Konten</a>
+            <button onclick="goBack()" class="text-[10px] font-black bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition uppercase tracking-widest"><i class="ph-bold ph-kanban"></i> Dashboard</button>
+        </div>
     </header>
 
-    <main class="p-4 md:p-8 max-w-4xl mx-auto space-y-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <section class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm h-fit">
-                <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="ph-fill ph-hand-waving text-red-500 text-lg"></i> Form Pengajuan
+    <main class="p-4 md:p-8 max-w-5xl mx-auto space-y-8 mt-2">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <section class="bg-white p-6 md:p-8 rounded-[32px] border border-slate-100 shadow-sm h-fit">
+                <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <i class="ph-fill ph-hand-waving text-red-500 text-xl"></i> Form Pengajuan
                 </h2>
                 <form id="leaveForm" onsubmit="submitLeave(event)" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="relative">
-                            <i class="ph ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <select id="employeeName" required class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-red-500/20"></select>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Pilih Karyawan</label>
+                            <div class="relative">
+                                <i class="ph-fill ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <select id="employeeName" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-red-500/20 cursor-pointer"></select>
+                                <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            </div>
                         </div>
-                        <div class="relative">
-                            <i class="ph ph-tag absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <select id="leaveType" required class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-red-500/20">
-                                <option value="Sakit">Sakit</option>
-                                <option value="Izin">Izin Keperluan</option>
-                                <option value="Cuti">Cuti</option>
-                            </select>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Kategori</label>
+                            <div class="relative">
+                                <i class="ph-fill ph-tag absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <select id="leaveType" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-red-500/20 cursor-pointer">
+                                    <option value="Sakit">Sakit</option>
+                                    <option value="Izin">Izin Keperluan</option>
+                                    <option value="Cuti">Cuti</option>
+                                </select>
+                                <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            </div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+
+                    <div class="grid grid-cols-2 gap-4">
                         <div class="relative">
-                            <label class="absolute -top-2 left-4 bg-white px-1 text-[9px] font-black text-slate-400 uppercase tracking-widest rounded">Mulai</label>
-                            <input type="date" id="startDate" required class="w-full bg-slate-50 border-none rounded-2xl py-4 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-red-500/20 outline-none">
+                            <label class="absolute -top-2.5 left-4 bg-white px-2 text-[9px] font-black text-slate-400 uppercase tracking-widest rounded">Mulai</label>
+                            <input type="date" id="startDate" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-red-500/20 outline-none">
                         </div>
                         <div class="relative">
-                            <label class="absolute -top-2 left-4 bg-white px-1 text-[9px] font-black text-slate-400 uppercase tracking-widest rounded">Sampai</label>
-                            <input type="date" id="endDate" required class="w-full bg-slate-50 border-none rounded-2xl py-4 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-red-500/20 outline-none">
+                            <label class="absolute -top-2.5 left-4 bg-white px-2 text-[9px] font-black text-slate-400 uppercase tracking-widest rounded">Sampai</label>
+                            <input type="date" id="endDate" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-red-500/20 outline-none">
                         </div>
                     </div>
-                    <div class="relative">
-                        <i class="ph ph-text-align-left absolute left-4 top-4 text-slate-400"></i>
-                        <textarea id="leaveReason" required placeholder="Alasan lengkap..." rows="2" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-red-500/20 outline-none resize-none"></textarea>
+
+                    <div class="relative pt-2">
+                        <i class="ph-fill ph-text-align-left absolute left-4 top-6 text-slate-400"></i>
+                        <textarea id="leaveReason" required placeholder="Alasan lengkap..." rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-red-500/20 outline-none resize-none"></textarea>
                     </div>
+
                     <div class="relative">
                         <input type="file" id="proofImage" accept="image/*" class="hidden" onchange="previewFile()">
-                        <label for="proofImage" class="flex flex-col items-center justify-center w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl py-6 cursor-pointer hover:bg-slate-100 transition-all">
-                            <i id="uploadIcon" class="ph ph-image text-3xl text-slate-400 mb-2"></i>
-                            <span id="uploadText" class="text-xs font-bold text-slate-500">Upload Bukti Foto</span>
+                        <label for="proofImage" class="flex flex-col items-center justify-center w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl py-8 cursor-pointer hover:bg-slate-100 hover:border-blue-400 transition-all">
+                            <i id="uploadIcon" class="ph-fill ph-image text-4xl text-slate-300 mb-2"></i>
+                            <span id="uploadText" class="text-xs font-bold text-slate-500">Upload Bukti Foto / Surat Dokter</span>
                             <span class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest">(Opsional / Wajib jika sakit)</span>
                         </label>
                     </div>
-                    <button type="submit" id="submitBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-2xl shadow-lg transition flex justify-center items-center gap-2 mt-2">
-                        <i class="ph-fill ph-paper-plane-right"></i> KIRIM PENGAJUAN
+
+                    <button type="submit" id="submitBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-black uppercase tracking-widest text-[11px] py-4 rounded-2xl shadow-lg shadow-red-200 transition flex justify-center items-center gap-2 mt-4">
+                        <i class="ph-fill ph-paper-plane-right text-base"></i> KIRIM PENGAJUAN
                     </button>
                 </form>
             </section>
 
-            <section class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                        <i class="ph-fill ph-chart-bar text-blue-500 text-lg"></i> Statistik Bulan Ini
-                    </h2>
-                    <select id="chartMonth" onchange="renderChart()" class="bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 text-[10px] font-bold outline-none cursor-pointer"></select>
+            <div class="space-y-8">
+                <section class="bg-white p-6 md:p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                            <i class="ph-fill ph-chart-bar text-blue-500 text-xl"></i> Statistik Bulan Ini
+                        </h2>
+                        <select id="chartMonth" onchange="renderChart()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[10px] font-bold outline-none cursor-pointer"></select>
+                    </div>
+                    <div class="flex-1 w-full relative min-h-[250px]"><canvas id="statsChart"></canvas></div>
+                </section>
+                
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-[32px] text-white flex justify-between items-center shadow-lg">
+                    <div>
+                        <h3 class="font-black text-sm mb-1 uppercase tracking-widest text-slate-200">Rekap Data Karyawan</h3>
+                        <p class="text-[10px] text-slate-400">Unduh data pengajuan ke format Excel.</p>
+                    </div>
+                    <button id="btnExport" onclick="downloadExcel()" class="bg-green-500 hover:bg-green-400 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase flex items-center gap-2 shadow-md transition">
+                        <i class="ph-fill ph-microsoft-excel-logo text-base"></i> Download
+                    </button>
                 </div>
-                <div class="flex-1 w-full relative min-h-[200px]"><canvas id="statsChart"></canvas></div>
-            </section>
+            </div>
         </div>
 
-        <section>
-            <div class="flex justify-between items-center mb-4 ml-2">
-                <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2"><i class="ph-fill ph-clock-counter-clockwise text-lg"></i> Riwayat Pengajuan</h2>
-                <button id="btnExport" onclick="downloadExcel()" class="text-[10px] font-bold bg-green-50 text-green-600 hover:bg-green-500 hover:text-white px-4 py-2 rounded-xl flex items-center gap-1 transition uppercase tracking-widest border border-green-200 shadow-sm">
-                    <i class="ph-bold ph-microsoft-excel-logo text-sm"></i> Export Excel
-                </button>
-            </div>
-            <div id="board-history" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        <section class="pt-6">
+            <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2 ml-2">
+                <i class="ph-fill ph-clock-counter-clockwise text-lg"></i> Riwayat Pengajuan Seluruh Tim
+            </h2>
+            <div id="board-history" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
     </main>
 
     <div id="imageModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex justify-center items-center p-4" onclick="closeModal()">
         <img id="modalImg" src="" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain">
-        <button class="absolute top-6 right-6 text-white bg-white/20 p-2 rounded-full hover:bg-white/40"><i class="ph ph-x text-xl"></i></button>
+        <button class="absolute top-6 right-6 text-white bg-white/20 p-2 rounded-full hover:bg-white/40 transition"><i class="ph ph-x text-xl"></i></button>
     </div>
 
     <script>
-        // CORE: GOOGLE SHEETS API UTILS
+        // === KONFIGURASI GOOGLE SHEETS & CLOUDINARY ===
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
-        
-        async function dbCall(payload) {
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            return await res.json();
-        }
-
         let CLOUD_NAME = localStorage.getItem('molusca_cloud_name') || "";
         const CLOUDINARY_UPLOAD_PRESET = "molusca_izin";
+
+        async function dbCall(payload) {
+            try {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+                return await res.json();
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                return { status: 'error', data: [] };
+            }
+        }
 
         let globalRequestsData = [];
         let globalEmployees = [];
@@ -120,16 +155,26 @@
 
         function goBack() {
             if(userRole === 'admin') window.location.href = 'dashboard.html';
+            else if (userRole === 'konten') window.location.href = 'konten.html';
             else window.location.href = 'desainer.html';
         }
 
         async function initApp() {
             if(!userName) window.location.href = 'index.html';
+            
+            // Set Header Name
+            document.getElementById('headerName').textContent = userName;
+
+            // Set link navigasi dinamis (jika konten, piketnya mengarah ke piket konten, dsb)
+            if(userRole === 'admin') {
+                document.getElementById('navPiket').href = 'dashboard-piket.html';
+            }
 
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('startDate').value = today;
             document.getElementById('endDate').value = today;
             
+            // Setup Bulan Filter
             const monthSelect = document.getElementById('chartMonth');
             const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             months.forEach((m, i) => {
@@ -141,15 +186,16 @@
             await loadData();
         }
 
+        // BACA NAMA DARI TABEL USERS GOOGLE SHEETS
         async function loadEmployees() {
-            const response = await dbCall({ action: 'read', sheetName: 'users' });
+            const res = await dbCall({ action: 'read', sheetName: 'users' });
             const select = document.getElementById('employeeName');
             select.innerHTML = '';
             globalEmployees = [];
             
-            if(response.status === 'success'){
-                response.data.forEach(u => {
-                    if(u.role !== 'admin') {
+            if(res.status === 'success'){
+                res.data.forEach(u => {
+                    if(u.role && u.role.toLowerCase() !== 'admin') {
                         globalEmployees.push(u.name);
                         let selected = (u.name === userName) ? 'selected' : '';
                         select.innerHTML += `<option value="${u.name}" ${selected}>${u.name}</option>`;
@@ -157,6 +203,7 @@
                 });
             }
             
+            // Proteksi: Anggota tim hanya bisa izin untuk dirinya sendiri
             if(userRole !== 'admin') {
                 select.value = userName;
                 select.disabled = true;
@@ -170,10 +217,11 @@
             if (file) {
                 document.getElementById('uploadText').innerText = file.name;
                 document.getElementById('uploadText').className = "text-xs font-bold text-blue-600";
-                document.getElementById('uploadIcon').className = "ph-fill ph-check-circle text-3xl text-blue-500 mb-2";
+                document.getElementById('uploadIcon').className = "ph-fill ph-check-circle text-4xl text-blue-500 mb-2";
             }
         }
 
+        // FUNGSI SUBMIT KE CLOUDINARY & GOOGLE SHEETS
         async function submitLeave(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -199,31 +247,37 @@
             btn.disabled = true;
 
             try {
-                // 1. Upload foto ke Cloudinary (Jika ada)
+                // 1. Upload Cloudinary
                 if (file) {
                     btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> UPLOAD FOTO...`;
                     const formData = new FormData();
                     formData.append("file", file);
                     formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-                    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
-                    const cloudData = await res.json();
-                    if(!res.ok) throw new Error("Gagal Cloudinary");
+                    const resCloud = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
+                    const cloudData = await resCloud.json();
+                    if(!resCloud.ok) throw new Error("Gagal upload Cloudinary. Cek Cloud Name.");
                     reqData.proofUrl = cloudData.secure_url;
                 }
 
-                // 2. Simpan teks dan URL foto ke Google Sheets
+                // 2. Simpan ke Sheets
                 btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> MENYIMPAN...`;
                 await dbCall({ action: 'insert', sheetName: 'izin', data: reqData });
 
                 document.getElementById('leaveForm').reset();
                 if(userRole !== 'admin') document.getElementById('employeeName').value = userName;
-                alert("Pengajuan berhasil disimpan ke Google Sheets!");
-                loadData(); // Refresh Data
+                
+                // Kembalikan UI Upload
+                document.getElementById('uploadText').innerText = "Upload Bukti Foto / Surat Dokter";
+                document.getElementById('uploadText').className = "text-xs font-bold text-slate-500";
+                document.getElementById('uploadIcon').className = "ph-fill ph-image text-4xl text-slate-300 mb-2";
+
+                alert("Pengajuan berhasil disimpan!");
+                loadData(); 
             } catch (error) {
                 alert("Gagal: " + error.message);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<i class="ph-fill ph-paper-plane-right"></i> KIRIM PENGAJUAN`;
+                btn.innerHTML = `<i class="ph-fill ph-paper-plane-right text-base"></i> KIRIM PENGAJUAN`;
             }
         }
 
@@ -237,15 +291,16 @@
         }
 
         async function deleteIzin(id) {
-            if(confirm('Yakin ingin hapus izin ini?')) {
+            if(confirm('Yakin ingin hapus riwayat izin ini permanen?')) {
                 await dbCall({ action: 'delete', sheetName: 'izin', idValue: id });
-                loadData(); // Refresh Data
+                loadData(); 
             }
         }
 
         function renderChart() {
             const ctx = document.getElementById('statsChart').getContext('2d');
             const selectedMonth = parseInt(document.getElementById('chartMonth').value);
+            
             let stats = {};
             globalEmployees.forEach(emp => stats[emp] = { Sakit: 0, Izin: 0, Cuti: 0 });
 
@@ -268,343 +323,46 @@
                         { label: 'Cuti', data: labels.map(n => stats[n].Cuti), backgroundColor: '#a855f7', borderRadius: 4 }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
             });
         }
 
         function renderBoard(requests) {
             const board = document.getElementById('board-history');
             board.innerHTML = '';
+            
+            if(requests.length === 0) {
+                board.innerHTML = `<div class="col-span-full text-center text-xs text-slate-400 py-10 border-2 border-dashed border-slate-200 rounded-[32px]">Belum ada data pengajuan.</div>`;
+                return;
+            }
+
             requests.sort((a, b) => b.id - a.id).forEach(req => {
                 let badgeColor = req.type === 'Sakit' ? 'bg-red-50 text-red-500' : req.type === 'Cuti' ? 'bg-purple-50 text-purple-500' : 'bg-yellow-50 text-yellow-600';
-                let delBtn = userRole === 'admin' ? `<button onclick="deleteIzin('${req.id}')" class="text-slate-300 hover:text-red-500"><i class="ph-fill ph-trash text-lg"></i></button>` : '';
+                let delBtn = userRole === 'admin' ? `<button onclick="deleteIzin('${req.id}')" class="text-slate-300 hover:text-red-500 transition"><i class="ph-fill ph-trash text-lg"></i></button>` : '';
+
+                let proofBtn = req.proofUrl ? 
+                    `<button onclick="openModal('${req.proofUrl}')" class="mt-4 w-full bg-slate-50 hover:bg-slate-100 text-blue-600 text-[10px] font-extrabold p-3 rounded-xl uppercase tracking-widest flex justify-center items-center gap-2 transition-colors border border-slate-200"><i class="ph-bold ph-image text-lg"></i> Lihat Bukti Foto</button>` : '';
 
                 board.innerHTML += `
-                    <div class="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm relative">
+                    <div class="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm relative hover:shadow-md transition">
                         <div class="flex justify-between items-start mb-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xs uppercase">${req.name.charAt(0)}</div>
-                                <div><h3 class="font-extrabold text-slate-900 text-sm leading-none">${req.name}</h3></div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm uppercase shadow-inner">${req.name.charAt(0)}</div>
+                                <div>
+                                    <h3 class="font-extrabold text-slate-900 text-sm leading-none">${req.name}</h3>
+                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">${new Date(parseInt(req.id)).toLocaleDateString('id-ID', {day:'numeric', month:'short'})}</span>
+                                </div>
                             </div>
                             ${delBtn}
                         </div>
-                        <div class="mb-3 flex items-center gap-2">
-                            <span class="text-[10px] font-black uppercase px-2.5 py-1 rounded-lg border ${badgeColor}">${req.type}</span>
-                            <span class="text-[10px] font-bold text-slate-500">${new Date(req.startDate).toLocaleDateString('id-ID')}</span>
+                        <div class="mb-4 flex items-center gap-2">
+                            <span class="text-[10px] font-black uppercase px-3 py-1.5 rounded-lg border ${badgeColor}">${req.type}</span>
+                            <span class="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-1.5 rounded-lg border border-slate-100">
+                                <i class="ph-fill ph-calendar-blank"></i> ${new Date(req.startDate).toLocaleDateString('id-ID', {day:'numeric', month:'short'})}
+                            </span>
                         </div>
-                        <p class="text-xs font-medium text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">${req.reason}</p>
-                        ${req.proofUrl ? `<button onclick="openModal('${req.proofUrl}')" class="mt-4 w-full bg-slate-50 text-blue-600 text-[10px] font-extrabold p-3 rounded-xl uppercase border"><i class="ph-bold ph-image"></i> Lihat Foto</button>` : ''}
-                    </div>
-                `;
-            });
-        }
-
-        function openModal(url) { document.getElementById('modalImg').src = url; document.getElementById('imageModal').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('imageModal').classList.add('hidden'); }
-
-        function downloadExcel() {
-            if(globalRequestsData.length === 0) return alert("Belum ada data.");
-            const workbook = XLSX.utils.book_new();
-            const detailData = globalRequestsData.sort((a, b) => b.id - a.id).map((req, i) => ({
-                "No": i + 1, "Nama Tim": req.name, "Tipe Izin": req.type,
-                "Tanggal": new Date(req.startDate).toLocaleDateString('id-ID'), "Alasan": req.reason, "Link Bukti": req.proofUrl || "-"
-            }));
-            XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(detailData), "Data Detail");
-            XLSX.writeFile(workbook, `Rekap_Izin_Molusca.xlsx`);
-        }
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Izin & Sakit - Molusca</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <style> body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } </style>
-</head>
-<body class="bg-[#FBFBFE] pb-24 text-slate-800" onload="initApp()">
-
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-2">
-            <i class="ph-fill ph-first-aid text-2xl text-red-500"></i>
-            <h1 class="text-lg font-extrabold tracking-tight text-slate-900">Leave<span class="text-red-500">Tracker.</span></h1>
-        </div>
-        <button onclick="goBack()" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl flex items-center gap-1 transition shadow-sm">
-            <i class="ph-fill ph-arrow-left text-lg"></i> Kembali
-        </button>
-    </header>
-
-    <main class="p-4 md:p-8 max-w-4xl mx-auto space-y-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <section class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm h-fit">
-                <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="ph-fill ph-hand-waving text-red-500 text-lg"></i> Form Pengajuan
-                </h2>
-                <form id="leaveForm" onsubmit="submitLeave(event)" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="relative">
-                            <i class="ph ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <select id="employeeName" required class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-red-500/20"></select>
-                        </div>
-                        <div class="relative">
-                            <i class="ph ph-tag absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <select id="leaveType" required class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-red-500/20">
-                                <option value="Sakit">Sakit</option>
-                                <option value="Izin">Izin Keperluan</option>
-                                <option value="Cuti">Cuti</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="relative">
-                            <label class="absolute -top-2 left-4 bg-white px-1 text-[9px] font-black text-slate-400 uppercase tracking-widest rounded">Mulai</label>
-                            <input type="date" id="startDate" required class="w-full bg-slate-50 border-none rounded-2xl py-4 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-red-500/20 outline-none">
-                        </div>
-                        <div class="relative">
-                            <label class="absolute -top-2 left-4 bg-white px-1 text-[9px] font-black text-slate-400 uppercase tracking-widest rounded">Sampai</label>
-                            <input type="date" id="endDate" required class="w-full bg-slate-50 border-none rounded-2xl py-4 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-red-500/20 outline-none">
-                        </div>
-                    </div>
-                    <div class="relative">
-                        <i class="ph ph-text-align-left absolute left-4 top-4 text-slate-400"></i>
-                        <textarea id="leaveReason" required placeholder="Alasan lengkap..." rows="2" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-red-500/20 outline-none resize-none"></textarea>
-                    </div>
-                    <div class="relative">
-                        <input type="file" id="proofImage" accept="image/*" class="hidden" onchange="previewFile()">
-                        <label for="proofImage" class="flex flex-col items-center justify-center w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl py-6 cursor-pointer hover:bg-slate-100 transition-all">
-                            <i id="uploadIcon" class="ph ph-image text-3xl text-slate-400 mb-2"></i>
-                            <span id="uploadText" class="text-xs font-bold text-slate-500">Upload Bukti Foto</span>
-                            <span class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest">(Opsional / Wajib jika sakit)</span>
-                        </label>
-                    </div>
-                    <button type="submit" id="submitBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-2xl shadow-lg transition flex justify-center items-center gap-2 mt-2">
-                        <i class="ph-fill ph-paper-plane-right"></i> KIRIM PENGAJUAN
-                    </button>
-                </form>
-            </section>
-
-            <section class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                        <i class="ph-fill ph-chart-bar text-blue-500 text-lg"></i> Statistik Bulan Ini
-                    </h2>
-                    <select id="chartMonth" onchange="renderChart()" class="bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 text-[10px] font-bold outline-none cursor-pointer"></select>
-                </div>
-                <div class="flex-1 w-full relative min-h-[200px]"><canvas id="statsChart"></canvas></div>
-            </section>
-        </div>
-
-        <section>
-            <div class="flex justify-between items-center mb-4 ml-2">
-                <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2"><i class="ph-fill ph-clock-counter-clockwise text-lg"></i> Riwayat Pengajuan</h2>
-                <button id="btnExport" onclick="downloadExcel()" class="text-[10px] font-bold bg-green-50 text-green-600 hover:bg-green-500 hover:text-white px-4 py-2 rounded-xl flex items-center gap-1 transition uppercase tracking-widest border border-green-200 shadow-sm">
-                    <i class="ph-bold ph-microsoft-excel-logo text-sm"></i> Export Excel
-                </button>
-            </div>
-            <div id="board-history" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-        </section>
-    </main>
-
-    <div id="imageModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex justify-center items-center p-4" onclick="closeModal()">
-        <img id="modalImg" src="" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain">
-        <button class="absolute top-6 right-6 text-white bg-white/20 p-2 rounded-full hover:bg-white/40"><i class="ph ph-x text-xl"></i></button>
-    </div>
-
-    <script>
-        let CLOUD_NAME = localStorage.getItem('molusca_cloud_name') || "";
-        const CLOUDINARY_UPLOAD_PRESET = "molusca_izin";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDoX3MZ0hxtL2j3ol3N_1w8ohYCdXPsUtI",
-            databaseURL: "https://appmoluscadesign-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "appmoluscadesign"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        let globalRequestsData = [];
-        let globalEmployees = [];
-        let myChart = null; 
-
-        const userRole = localStorage.getItem('moluscaRole');
-        const userName = localStorage.getItem('moluscaUser');
-
-        function goBack() {
-            if(userRole === 'admin') window.location.href = 'dashboard.html';
-            else window.location.href = 'desainer.html';
-        }
-
-        function initApp() {
-            if(!userName) window.location.href = 'index.html';
-
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('startDate').value = today;
-            document.getElementById('endDate').value = today;
-            
-            const monthSelect = document.getElementById('chartMonth');
-            const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-            months.forEach((m, i) => {
-                let isSelected = i === new Date().getMonth() ? 'selected' : '';
-                monthSelect.innerHTML += `<option value="${i}" ${isSelected}>${m}</option>`;
-            });
-
-            loadEmployees();
-            loadData();
-        }
-
-        function loadEmployees() {
-            db.ref('users').on('value', snapshot => {
-                const select = document.getElementById('employeeName');
-                select.innerHTML = '';
-                globalEmployees = [];
-                
-                if(snapshot.exists()){
-                    Object.values(snapshot.val()).forEach(u => {
-                        if(u.role !== 'admin') {
-                            globalEmployees.push(u.name);
-                            let selected = (u.name === userName) ? 'selected' : '';
-                            select.innerHTML += `<option value="${u.name}" ${selected}>${u.name}</option>`;
-                        }
-                    });
-                }
-                
-                // Kunci form untuk Desainer (Hanya bisa nama sendiri)
-                if(userRole !== 'admin') {
-                    select.value = userName;
-                    select.disabled = true;
-                    select.classList.add('opacity-50', 'cursor-not-allowed');
-                    document.getElementById('btnExport').style.display = 'none'; // Sembunyikan Export Excel
-                }
-                renderChart();
-            });
-        }
-
-        function previewFile() {
-            const file = document.getElementById('proofImage').files[0];
-            if (file) {
-                document.getElementById('uploadText').innerText = file.name;
-                document.getElementById('uploadText').className = "text-xs font-bold text-blue-600";
-                document.getElementById('uploadIcon').className = "ph-fill ph-check-circle text-3xl text-blue-500 mb-2";
-            }
-        }
-
-        async function submitLeave(e) {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const file = document.getElementById('proofImage').files[0];
-            
-            if (file && !CLOUD_NAME) {
-                CLOUD_NAME = prompt("⚠️ MASUKKAN CLOUD NAME akun Cloudinary Anda:");
-                if (!CLOUD_NAME) return alert("Batal. Sistem butuh Cloud Name untuk menyimpan foto.");
-                localStorage.setItem('molusca_cloud_name', CLOUD_NAME.trim());
-            }
-
-            const reqData = {
-                id: Date.now().toString(),
-                name: document.getElementById('employeeName').value, // Ambil value asli
-                type: document.getElementById('leaveType').value,
-                startDate: document.getElementById('startDate').value,
-                endDate: document.getElementById('endDate').value,
-                reason: document.getElementById('leaveReason').value,
-                timestamp: new Date().toISOString(),
-                proofUrl: ""
-            };
-
-            btn.disabled = true;
-
-            try {
-                if (file) {
-                    btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> UPLOAD FOTO...`;
-                    const formData = new FormData();
-                    formData.append("file", file);
-                    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-                    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
-                    const cloudData = await res.json();
-                    if(!res.ok) throw new Error("Gagal Cloudinary");
-                    reqData.proofUrl = cloudData.secure_url;
-                }
-
-                btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> MENYIMPAN...`;
-                await db.ref(`leave_requests/${reqData.id}`).set(reqData);
-
-                document.getElementById('leaveForm').reset();
-                if(userRole !== 'admin') document.getElementById('employeeName').value = userName; // Kembalikan value setelah reset
-                alert("Pengajuan berhasil!");
-            } catch (error) {
-                alert("Gagal: " + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i class="ph-fill ph-paper-plane-right"></i> KIRIM PENGAJUAN`;
-            }
-        }
-
-        function loadData() {
-            db.ref('leave_requests').on('value', (snapshot) => {
-                globalRequestsData = snapshot.val() ? Object.values(snapshot.val()) : [];
-                renderBoard(globalRequestsData);
-                renderChart(); 
-            });
-        }
-
-        function renderChart() {
-            const ctx = document.getElementById('statsChart').getContext('2d');
-            const selectedMonth = parseInt(document.getElementById('chartMonth').value);
-            let stats = {};
-            globalEmployees.forEach(emp => stats[emp] = { Sakit: 0, Izin: 0, Cuti: 0 });
-
-            globalRequestsData.forEach(req => {
-                if(new Date(req.startDate).getMonth() === selectedMonth) {
-                    if (!stats[req.name]) stats[req.name] = { Sakit: 0, Izin: 0, Cuti: 0 };
-                    stats[req.name][req.type] += 1; 
-                }
-            });
-
-            const labels = Object.keys(stats);
-            if (myChart) myChart.destroy();
-            myChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Sakit', data: labels.map(n => stats[n].Sakit), backgroundColor: '#ef4444', borderRadius: 4 },
-                        { label: 'Izin', data: labels.map(n => stats[n].Izin), backgroundColor: '#eab308', borderRadius: 4 },
-                        { label: 'Cuti', data: labels.map(n => stats[n].Cuti), backgroundColor: '#a855f7', borderRadius: 4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-            });
-        }
-
-        function renderBoard(requests) {
-            const board = document.getElementById('board-history');
-            board.innerHTML = '';
-            requests.sort((a, b) => b.id - a.id).forEach(req => {
-                let badgeColor = req.type === 'Sakit' ? 'bg-red-50 text-red-500' : req.type === 'Cuti' ? 'bg-purple-50 text-purple-500' : 'bg-yellow-50 text-yellow-600';
-                let delBtn = userRole === 'admin' ? `<button onclick="db.ref('leave_requests/${req.id}').remove()" class="text-slate-300 hover:text-red-500"><i class="ph-fill ph-trash text-lg"></i></button>` : '';
-
-                board.innerHTML += `
-                    <div class="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm relative">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xs uppercase">${req.name.charAt(0)}</div>
-                                <div><h3 class="font-extrabold text-slate-900 text-sm leading-none">${req.name}</h3></div>
-                            </div>
-                            ${delBtn}
-                        </div>
-                        <div class="mb-3 flex items-center gap-2">
-                            <span class="text-[10px] font-black uppercase px-2.5 py-1 rounded-lg border ${badgeColor}">${req.type}</span>
-                            <span class="text-[10px] font-bold text-slate-500">${new Date(req.startDate).toLocaleDateString('id-ID')}</span>
-                        </div>
-                        <p class="text-xs font-medium text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">${req.reason}</p>
-                        ${req.proofUrl ? `<button onclick="openModal('${req.proofUrl}')" class="mt-4 w-full bg-slate-50 text-blue-600 text-[10px] font-extrabold p-3 rounded-xl uppercase border"><i class="ph-bold ph-image"></i> Lihat Foto</button>` : ''}
+                        <p class="text-xs font-medium text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100 leading-relaxed min-h-[60px]">${req.reason}</p>
+                        ${proofBtn}
                     </div>
                 `;
             });
@@ -618,11 +376,15 @@
             const workbook = XLSX.utils.book_new();
             
             const detailData = globalRequestsData.sort((a, b) => b.id - a.id).map((req, i) => ({
-                "No": i + 1, "Nama Tim": req.name, "Tipe Izin": req.type,
-                "Tanggal": new Date(req.startDate).toLocaleDateString('id-ID'), "Alasan": req.reason, "Link Bukti": req.proofUrl || "-"
+                "No": i + 1, "Nama Karyawan": req.name, "Tipe Izin": req.type,
+                "Dari Tanggal": new Date(req.startDate).toLocaleDateString('id-ID'), "Sampai Tanggal": new Date(req.endDate).toLocaleDateString('id-ID'),
+                "Alasan Lengkap": req.reason, "Link Bukti Foto": req.proofUrl || "Tidak Ada"
             }));
-            XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(detailData), "Data Detail");
+            const wsDetail = XLSX.utils.json_to_sheet(detailData);
+            wsDetail['!cols'] = [ {wch: 5}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 40}, {wch: 50} ];
+            XLSX.utils.book_append_sheet(workbook, wsDetail, "Data Detail");
 
+            // Sheet 2: Rekap
             let rekapStats = {};
             globalEmployees.forEach(emp => rekapStats[emp] = { Sakit: 0, Izin: 0, Cuti: 0, Total: 0 });
             globalRequestsData.forEach(req => {
@@ -630,9 +392,11 @@
                 rekapStats[req.name][req.type] += 1; rekapStats[req.name].Total += 1;
             });
 
-            const rekap = [["Nama", "Sakit", "Izin", "Cuti", "Total"]];
+            const rekap = [["Nama Pegawai", "Total Sakit", "Total Izin", "Total Cuti", "TOTAL SEMUA"]];
             for (const [name, d] of Object.entries(rekapStats)) rekap.push([name, d.Sakit, d.Izin, d.Cuti, d.Total]);
-            XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(rekap), "Rekap");
+            const wsRekap = XLSX.utils.aoa_to_sheet(rekap);
+            wsRekap['!cols'] = [ {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15} ];
+            XLSX.utils.book_append_sheet(workbook, wsRekap, "Rekapitulasi");
 
             XLSX.writeFile(workbook, `Rekap_Izin_Molusca.xlsx`);
         }
