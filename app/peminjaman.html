@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Aset - Molusca</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style> body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } </style>
+</head>
+<body class="bg-[#FBFBFE] pb-24 text-slate-800" onload="initApp()" oncontextmenu="return false;">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-2">
+            <i class="ph-fill ph-package text-2xl text-indigo-600"></i>
+            <h1 class="text-lg font-extrabold tracking-tight text-slate-900">Inventory<span class="text-indigo-600">.</span></h1>
+        </div>
+        <button onclick="goBack()" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl flex items-center gap-1 transition shadow-sm">
+            <i class="ph-fill ph-arrow-left text-lg"></i> Kembali
+        </button>
+    </header>
+
+    <main class="p-4 md:p-8 max-w-5xl mx-auto space-y-8 mt-2">
+        
+        <section class="bg-gradient-to-br from-indigo-600 to-blue-800 p-6 md:p-8 rounded-[32px] shadow-lg text-white relative overflow-hidden">
+            <i class="ph-fill ph-boxes absolute -right-6 -bottom-6 text-9xl opacity-20 pointer-events-none"></i>
+            <div class="relative z-10 flex justify-between items-end">
+                <div>
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-200 mb-1">Status Keamanan Aset Studio</h3>
+                    <div class="text-4xl md:text-5xl font-black tracking-tighter flex items-end gap-2 mt-2">
+                        <span id="countAktif">0</span>
+                        <span class="text-sm md:text-base text-indigo-200 mb-1.5 font-bold tracking-normal">Barang Belum Kembali</span>
+                    </div>
+                </div>
+                <div id="realtimeClock" class="text-[10px] font-bold text-indigo-200 text-right bg-black/20 px-3 py-1.5 rounded-lg hidden md:block border border-white/10">Memuat waktu...</div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <section class="lg:col-span-5 bg-white p-6 md:p-8 rounded-[32px] border border-slate-100 shadow-sm h-fit sticky top-24">
+                <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <i class="ph-fill ph-plus-circle text-indigo-600 text-lg"></i> Catat Peminjaman
+                </h2>
+
+                <datalist id="userList"></datalist>
+
+                <form id="formPeminjaman" onsubmit="pinjamBarang(event)" class="space-y-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Nama Barang</label>
+                        <div class="relative">
+                            <i class="ph-fill ph-camera absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="inputBarang" required placeholder="Cth: Sony A7III + Lensa 50mm" autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-slate-700">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Siapa yg Pakai?</label>
+                            <div class="relative">
+                                <i class="ph-fill ph-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="inputPeminjam" list="userList" required placeholder="Pilih / Ketik..." autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-9 pr-3 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500/30 text-slate-700">
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Atas Nama (PJ)</label>
+                            <div class="relative">
+                                <i class="ph-fill ph-shield-check absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="inputPenanggungJawab" list="userList" required placeholder="Pilih / Ketik..." autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-9 pr-3 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500/30 text-slate-700">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Diserahkan Oleh</label>
+                        <div class="relative">
+                            <i class="ph-fill ph-handshake absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="inputPemberi" list="userList" required placeholder="Pilih / Ketik..." autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-9 pr-3 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500/30 text-slate-700">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest mt-2 shadow-lg shadow-indigo-200 transition flex justify-center items-center gap-2">
+                        <i class="ph-fill ph-paper-plane-right text-base"></i> SIMPAN DATA LOG
+                    </button>
+                </form>
+            </section>
+
+            <div class="lg:col-span-7 space-y-8">
+                
+                <section>
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ml-2">
+                        <i class="ph-fill ph-warning-circle text-orange-500 text-lg"></i> Sedang Dipinjam
+                    </h2>
+                    <div id="listAktif" class="space-y-4"></div>
+                </section>
+
+                <section class="pt-4 border-t border-slate-200">
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ml-2">
+                        <i class="ph-fill ph-check-square-offset text-green-500 text-lg"></i> Riwayat Pengembalian Terakhir
+                    </h2>
+                    <div id="listRiwayat" class="grid grid-cols-1 gap-3"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Mencegah Inspect & Copas
+        document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoX3MZ0hxtL2j3ol3N_1w8ohYCdXPsUtI",
+            databaseURL: "https://appmoluscadesign-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "appmoluscadesign"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Manajemen Sesi User
+        const userRole = localStorage.getItem('moluscaRole');
+        const userName = localStorage.getItem('moluscaUser');
+
+        function goBack() {
+            if(userRole === 'admin') window.location.href = 'dashboard.html';
+            else window.location.href = 'desainer.html'; 
+        }
+
+        function initApp() {
+            if(!userName) window.location.href = 'index.html'; // Proteksi halaman
+
+            // Jam realtime
+            setInterval(() => {
+                document.getElementById('realtimeClock').innerText = new Date().toLocaleString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' }) + ' WIB';
+            }, 1000);
+
+            loadUsers();
+            loadData();
+        }
+
+        // Ambil Data Tim untuk Autocomplete (Datalist)
+        function loadUsers() {
+            db.ref('users').on('value', snapshot => {
+                const datalist = document.getElementById('userList');
+                datalist.innerHTML = '';
+                
+                if(snapshot.exists()) {
+                    Object.values(snapshot.val()).forEach(u => {
+                        if(u.role !== 'admin') {
+                            datalist.innerHTML += `<option value="${u.name}">`;
+                        }
+                    });
+                }
+                
+                // Isi otomatis nama penyerah dengan orang yang sedang login
+                document.getElementById('inputPemberi').value = userName;
+            });
+        }
+
+        // Format Waktu
+        function getWaktuSekarang() {
+            return new Date().toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' }) + ' WIB';
+        }
+
+        // Submit Form Peminjaman
+        function pinjamBarang(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true; btn.innerHTML = 'MENYIMPAN...';
+
+            const dataPeminjaman = {
+                peminjam: document.getElementById('inputPeminjam').value,
+                barang: document.getElementById('inputBarang').value,
+                pemberi: document.getElementById('inputPemberi').value,
+                penanggungJawab: document.getElementById('inputPenanggungJawab').value,
+                waktuPinjam: getWaktuSekarang(),
+                waktuKembali: "",
+                status: "dipinjam",
+                timestamp: Date.now()
+            };
+
+            db.ref('log_barang').push(dataPeminjaman).then(() => {
+                document.getElementById('formPeminjaman').reset();
+                document.getElementById('inputPemberi').value = userName; // Kembalikan default pemberi
+                alert("Berhasil! Barang tercatat sedang dipinjam.");
+            }).catch(err => alert("Gagal: " + err.message)).finally(() => {
+                btn.disabled = false; btn.innerHTML = `<i class="ph-fill ph-paper-plane-right text-base"></i> SIMPAN DATA LOG`;
+            });
+        }
+
+        function kembalikanBarang(id, namaBarang) {
+            if(confirm(`Konfirmasi: "${namaBarang}" sudah kembali dengan aman?`)) {
+                db.ref(`log_barang/${id}`).update({ status: 'dikembalikan', waktuKembali: getWaktuSekarang() });
+            }
+        }
+
+        function hapusRiwayat(id) {
+            if(confirm("Hapus data riwayat ini permanen?")) db.ref(`log_barang/${id}`).remove();
+        }
+
+        // Render Data ke Layar
+        function loadData() {
+            db.ref('log_barang').orderByChild('timestamp').on('value', snap => {
+                const data = snap.val();
+                let aktifHTML = ''; let riwayatHTML = ''; let jumlahAktif = 0;
+
+                if (data) {
+                    const arrayData = Object.keys(data).map(key => ({ id: key, ...data[key] })).reverse();
+
+                    arrayData.forEach(item => {
+                        // Tombol Hapus hanya muncul untuk ADMIN
+                        let delBtn = userRole === 'admin' ? `<button onclick="hapusRiwayat('${item.id}')" class="text-[10px] text-red-500 bg-red-50 hover:bg-red-500 hover:text-white px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition shadow-sm border border-red-100" title="Hapus Permanen"><i class="ph-fill ph-trash text-sm"></i></button>` : '';
+
+                        if (item.status === 'dipinjam') {
+                            jumlahAktif++;
+                            aktifHTML += `
+                            <div class="bg-white p-5 md:p-6 rounded-[24px] border border-slate-100 shadow-sm relative overflow-hidden group transition-all">
+                                <div class="absolute top-0 right-0 bg-orange-100 text-orange-600 px-4 py-1.5 rounded-bl-[20px] text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+                                    <i class="ph-fill ph-clock-countdown"></i> Belum Kembali
+                                </div>
+                                
+                                <div class="mt-4 mb-5 flex justify-between items-start pr-28">
+                                    <div>
+                                        <h3 class="text-xl font-black text-slate-800 leading-tight">${item.barang}</h3>
+                                        <div class="text-[11px] font-bold text-slate-500 mt-2 flex items-center gap-1">
+                                            <i class="ph-fill ph-calendar-check text-indigo-500"></i> Keluar: ${item.waktuPinjam}
+                                        </div>
+                                    </div>
+                                    ${delBtn}
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3 mb-5 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs">
+                                    <div>
+                                        <span class="block text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-1">Peminjam</span>
+                                        <span class="font-black text-slate-700 flex items-center gap-1.5"><i class="ph-fill ph-user-circle text-indigo-500 text-lg"></i> ${item.peminjam}</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-1">Diserahkan Oleh</span>
+                                        <span class="font-black text-slate-700 flex items-center gap-1.5"><i class="ph-fill ph-handshake text-slate-400 text-lg"></i> ${item.pemberi}</span>
+                                    </div>
+                                    <div class="col-span-2 pt-3 border-t border-slate-200 mt-1">
+                                        <span class="block text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-1">Tanggung Jawab (PJ)</span>
+                                        <span class="font-black text-slate-700 flex items-center gap-1.5"><i class="ph-fill ph-shield-check text-green-500 text-lg"></i> ${item.penanggungJawab}</span>
+                                    </div>
+                                </div>
+
+                                <button onclick="kembalikanBarang('${item.id}', '${item.barang}')" class="w-full bg-slate-900 hover:bg-slate-800 transition text-white py-3.5 rounded-xl text-xs font-black uppercase tracking-widest flex justify-center items-center gap-2 shadow-md">
+                                    <i class="ph-bold ph-check-circle text-lg text-green-400"></i> Tandai Sudah Kembali
+                                </button>
+                            </div>
+                            `;
+                        } else {
+                            let delBtnHistory = userRole === 'admin' ? `<button onclick="hapusRiwayat('${item.id}')" class="text-slate-300 hover:text-red-500 transition-colors p-1" title="Hapus Riwayat"><i class="ph-fill ph-trash text-lg"></i></button>` : '';
+                            
+                            riwayatHTML += `
+                            <div class="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm opacity-70 hover:opacity-100 transition flex items-center justify-between gap-4">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-sm font-black text-slate-700 line-through decoration-slate-300 decoration-2 mb-2 truncate">${item.barang}</h3>
+                                    <div class="text-[10px] font-bold text-slate-400 flex flex-wrap items-center gap-2">
+                                        <span class="bg-slate-100 px-2 py-1 rounded text-slate-500"><i class="ph-fill ph-user"></i> ${item.peminjam}</span>
+                                        <span class="flex items-center gap-1"><i class="ph-fill ph-info text-green-500 text-sm"></i> Kembali: ${item.waktuKembali}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end gap-2 shrink-0">
+                                    <span class="bg-green-100 text-green-700 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1"><i class="ph-fill ph-check-circle text-sm"></i> Aman</span>
+                                    ${delBtnHistory}
+                                </div>
+                            </div>
+                            `;
+                        }
+                    });
+                }
+
+                document.getElementById('listAktif').innerHTML = aktifHTML || `<div class="text-center py-10 text-slate-400 font-bold text-xs border-2 border-dashed border-slate-200 rounded-[32px] bg-slate-50/50">Tidak ada aset yang dipinjam. Semuanya di studio!</div>`;
+                document.getElementById('listRiwayat').innerHTML = riwayatHTML || `<div class="text-center p-4 text-slate-400 font-bold text-xs">Belum ada riwayat pengembalian.</div>`;
+                document.getElementById('countAktif').innerText = jumlahAktif;
+            });
+        }
+    </script>
+</body>
+</html>
