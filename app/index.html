@@ -12,6 +12,7 @@
 <body class="bg-[#F8FAFC] flex items-center justify-center min-h-screen p-6" oncontextmenu="return false;">
 
     <div class="w-full max-w-md bg-white p-10 rounded-[32px] shadow-sm border border-slate-100 relative overflow-hidden">
+        <!-- Garis Gradasi Mewakili 3 Modul Utama -->
         <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-orange-500"></div>
         
         <div class="text-center mb-10 mt-2">
@@ -45,10 +46,16 @@
         // === API GOOGLE SHEETS ANDA ===
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec';
 
-        // Jika browser mendeteksi user sudah login sebelumnya, langsung arahkan
+        // 1. AUTO-REDIRECT JIKA SUDAH LOGIN
         if(localStorage.getItem('moluscaUser')) {
-            if(localStorage.getItem('moluscaRole') === 'admin') window.location.href = 'dashboard.html';
-            else window.location.href = 'desainer.html';
+            const currentRole = localStorage.getItem('moluscaRole');
+            if(currentRole === 'admin') {
+                window.location.href = 'dashboard.html';
+            } else if (currentRole === 'konten') {
+                window.location.href = 'konten.html'; 
+            } else {
+                window.location.href = 'desainer.html';
+            }
         }
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
@@ -74,20 +81,28 @@
                     if (foundUser) {
                         if (foundUser.password === pass) {
                             
-                            // 1. SET KUNCI UTAMA (Task, Izin, Konten, Library)
-                            localStorage.setItem('moluscaUser', foundUser.name);
-                            localStorage.setItem('moluscaRole', foundUser.role);
-                            
-                            // 2. SET KUNCI CADANGAN (Mencegah Redirect Loop)
-                            localStorage.setItem('isLoggedIn', 'true');
-                            localStorage.setItem('role', foundUser.role);
+                            const userRole = foundUser.role.toLowerCase();
 
-                            // 3. SET KUNCI PIKET & KASBON
-                            if (foundUser.role.toLowerCase() === 'admin') {
-                                localStorage.setItem('moluscaPiketUser', 'admin'); // Buka akses Bos Kas
+                            // 2. SET KUNCI UTAMA
+                            localStorage.setItem('moluscaUser', foundUser.name);
+                            localStorage.setItem('moluscaRole', userRole);
+                            
+                            // 3. SET KUNCI CADANGAN (Mencegah Redirect Loop di halaman lama)
+                            localStorage.setItem('isLoggedIn', 'true');
+                            localStorage.setItem('role', userRole);
+
+                            // 4. PEMBAGIAN JALUR (ROUTING) & AKSES PIKET
+                            if (userRole === 'admin') {
+                                localStorage.setItem('moluscaPiketUser', 'admin'); 
                                 window.location.href = 'dashboard.html';
-                            } else {
-                                localStorage.setItem('moluscaPiketUser', 'tim'); // Buka akses Kasbon Tim
+                            } 
+                            else if (userRole === 'konten') {
+                                localStorage.setItem('moluscaPiketUser', 'tim'); // Tim konten tetap bisa akses halaman piket yang sama
+                                window.location.href = 'konten.html'; // Pastikan nama file halaman CreatorSpace Anda adalah konten.html
+                            } 
+                            else {
+                                // Default untuk Desainer
+                                localStorage.setItem('moluscaPiketUser', 'tim'); 
                                 window.location.href = 'desainer.html';
                             }
 
