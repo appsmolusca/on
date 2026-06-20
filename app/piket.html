@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Piket - Molusca Project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style> body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } </style>
+</head>
+<body class="bg-[#FBFBFE] pb-24 text-slate-800" onload="initApp()" oncontextmenu="return false;">
+
+    <!-- Header Terintegrasi -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-2">
+            <i class="ph-fill ph-broom text-2xl text-amber-500"></i>
+            <h1 class="text-lg font-extrabold tracking-tight text-slate-900">Piket<span class="text-amber-500">Studio.</span></h1>
+        </div>
+        <button onclick="goBack()" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl flex items-center gap-1 transition shadow-sm">
+            <i class="ph-fill ph-arrow-left text-lg"></i> Kembali
+        </button>
+    </header>
+
+    <main class="p-4 md:p-8 max-w-6xl mx-auto space-y-8">
+
+        <!-- ADMIN CONTROLS: Hanya muncul jika Admin yang login -->
+        <section id="adminPanel" class="bg-slate-900 p-6 md:p-8 rounded-[32px] shadow-xl shadow-slate-200 hidden">
+            <h2 class="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                <i class="ph-fill ph-calendar-plus text-amber-400 text-lg"></i> Atur Jadwal Piket
+            </h2>
+            <form id="piketForm" onsubmit="addPiket(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-2 ml-1">Pilih Hari</label>
+                    <div class="relative">
+                        <i class="ph-fill ph-calendar-blank absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <select id="hariPiket" required class="w-full bg-white/10 border-none rounded-2xl py-4 pl-10 pr-4 text-white font-bold outline-none appearance-none focus:ring-2 focus:ring-amber-500">
+                            <option value="Senin" class="text-slate-900">Senin</option>
+                            <option value="Selasa" class="text-slate-900">Selasa</option>
+                            <option value="Rabu" class="text-slate-900">Rabu</option>
+                            <option value="Kamis" class="text-slate-900">Kamis</option>
+                            <option value="Jumat" class="text-slate-900">Jumat</option>
+                            <option value="Sabtu" class="text-slate-900">Sabtu</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-2 ml-1">Pilih Tim</label>
+                    <div class="relative">
+                        <i class="ph-fill ph-users absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <select id="namaPegawai" required class="w-full bg-white/10 border-none rounded-2xl py-4 pl-10 pr-4 text-white font-bold outline-none appearance-none focus:ring-2 focus:ring-amber-500">
+                            <option value="" disabled selected class="text-slate-900">Memuat data...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-black py-4 rounded-2xl transition uppercase tracking-widest text-xs flex justify-center items-center gap-2">
+                        <i class="ph-bold ph-plus"></i> Tambahkan
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- TAMPILAN JADWAL MINGGUAN (GRID) -->
+        <section>
+            <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-6 ml-2 flex items-center gap-2">
+                <i class="ph-fill ph-calendar-check text-lg"></i> Jadwal Kebersihan Studio
+            </h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="board-piket">
+                <!-- Template Kartu Hari (Di-generate lewat JS agar rapi) -->
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Mencegah Inspect & Copas
+        document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoX3MZ0hxtL2j3ol3N_1w8ohYCdXPsUtI",
+            databaseURL: "https://appmoluscadesign-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "appmoluscadesign"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const userRole = localStorage.getItem('moluscaRole');
+        const userName = localStorage.getItem('moluscaUser');
+        const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+        function goBack() {
+            if(userRole === 'admin') window.location.href = 'dashboard.html';
+            else window.location.href = 'desainer.html';
+        }
+
+        function initApp() {
+            if(!userName) window.location.href = 'index.html';
+
+            // Setup Layout Grid Mingguan
+            const board = document.getElementById('board-piket');
+            days.forEach(day => {
+                let badgeColor = day === 'Senin' ? 'bg-blue-100 text-blue-600' :
+                                 day === 'Selasa' ? 'bg-pink-100 text-pink-600' :
+                                 day === 'Rabu' ? 'bg-teal-100 text-teal-600' :
+                                 day === 'Kamis' ? 'bg-purple-100 text-purple-600' :
+                                 day === 'Jumat' ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-600';
+
+                board.innerHTML += `
+                    <div class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex flex-col min-h-[150px]">
+                        <h3 class="text-sm font-extrabold uppercase tracking-widest mb-4 flex justify-between items-center">
+                            <span class="px-3 py-1 rounded-xl ${badgeColor}">${day}</span>
+                            <i class="ph-fill ph-sparkle text-slate-300"></i>
+                        </h3>
+                        <div id="list-${day}" class="space-y-2 flex-1">
+                            <div class="text-xs text-slate-400 text-center py-4 border-2 border-dashed border-slate-100 rounded-2xl">Memuat...</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Tampilkan panel admin jika yang login adalah admin
+            if(userRole === 'admin') {
+                document.getElementById('adminPanel').classList.remove('hidden');
+                loadDropdownPegawai();
+            }
+
+            loadJadwal();
+        }
+
+        // BACA NAMA DARI TABEL USERS UTAMA (Hanya untuk Admin)
+        function loadDropdownPegawai() {
+            db.ref('users').on('value', snapshot => {
+                const select = document.getElementById('namaPegawai');
+                select.innerHTML = '<option value="" disabled selected class="text-slate-900">Pilih Anggota Tim</option>';
+                
+                if(snapshot.exists()){
+                    Object.values(snapshot.val()).forEach(u => {
+                        if(u.role !== 'admin') {
+                            select.innerHTML += `<option value="${u.name}" class="text-slate-900">${u.name} (${u.role})</option>`;
+                        }
+                    });
+                }
+            });
+        }
+
+        // SIMPAN JADWAL KE DATABASE
+        function addPiket(e) {
+            e.preventDefault();
+            const hari = document.getElementById('hariPiket').value;
+            const nama = document.getElementById('namaPegawai').value;
+            const id = Date.now().toString();
+
+            if(!nama) return alert('Silakan pilih tim terlebih dahulu!');
+
+            db.ref(`piket/${hari}/${id}`).set({ name: nama });
+            alert(`${nama} berhasil ditugaskan piket hari ${hari}`);
+        }
+
+        // HAPUS JADWAL (Hanya Admin)
+        function deletePiket(hari, id) {
+            if(confirm('Hapus orang ini dari jadwal piket hari ' + hari + '?')) {
+                db.ref(`piket/${hari}/${id}`).remove();
+            }
+        }
+
+        // BACA DAN TAMPILKAN JADWAL
+        function loadJadwal() {
+            db.ref('piket').on('value', snapshot => {
+                const data = snapshot.val();
+
+                days.forEach(day => {
+                    const container = document.getElementById(`list-${day}`);
+                    container.innerHTML = '';
+
+                    if (data && data[day]) {
+                        Object.keys(data[day]).forEach(id => {
+                            const person = data[day][id];
+                            
+                            // Tombol hapus hanya muncul jika login sebagai admin
+                            const delBtn = userRole === 'admin' ? 
+                                `<button onclick="deletePiket('${day}', '${id}')" class="text-red-400 hover:text-red-600 bg-red-50 p-1.5 rounded-lg transition"><i class="ph-fill ph-trash"></i></button>` : '';
+
+                            // Highlight jika nama di jadwal adalah nama yang sedang login (kecuali admin)
+                            let isMe = (person.name === userName && userRole !== 'admin');
+                            let boxStyle = isMe ? 'bg-amber-50 border-amber-200 shadow-sm' : 'bg-slate-50 border-slate-100';
+                            let textStyle = isMe ? 'text-amber-700' : 'text-slate-700';
+
+                            container.innerHTML += `
+                                <div class="flex justify-between items-center p-3 rounded-2xl border ${boxStyle}">
+                                    <span class="text-xs font-bold flex items-center gap-2 ${textStyle}">
+                                        <i class="ph-fill ph-user-circle text-lg ${isMe ? 'text-amber-500' : 'text-slate-400'}"></i> 
+                                        ${person.name} ${isMe ? '(Kamu)' : ''}
+                                    </span>
+                                    ${delBtn}
+                                </div>
+                            `;
+                        });
+                    } else {
+                        container.innerHTML = `<div class="text-[10px] uppercase tracking-widest font-bold text-slate-300 text-center py-4 border-2 border-dashed border-slate-100 rounded-2xl">Kosong</div>`;
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>
