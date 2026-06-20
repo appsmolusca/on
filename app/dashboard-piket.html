@@ -49,35 +49,45 @@
         function formatRupiah(angka) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka); }
 
         async function loadData() {
-            document.getElementById('loadingOverlay').classList.remove('hidden');
+            // Mencegah error menghentikan loading screen menggunakan try-catch-finally
+            try {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
 
-            const [resKas, resPiket, resKasbon] = await Promise.all([
-                dbCall({ action: 'read', sheetName: 'kas_balance' }),
-                dbCall({ action: 'read', sheetName: 'piket_log' }),
-                dbCall({ action: 'read', sheetName: 'kasbon' })
-            ]);
+                const [resKas, resPiket, resKasbon] = await Promise.all([
+                    dbCall({ action: 'read', sheetName: 'kas_balance' }),
+                    dbCall({ action: 'read', sheetName: 'piket_log' }),
+                    dbCall({ action: 'read', sheetName: 'kasbon' })
+                ]);
 
-            // Handler Saldo
-            if (resKas.status === 'success' && resKas.data && resKas.data.length > 0) {
-                globalKas = parseInt(resKas.data[0].saldo) || 0;
+                // Handler Saldo (Aman dari array kosong)
+                if (resKas.status === 'success' && Array.isArray(resKas.data) && resKas.data.length > 0) {
+                    globalKas = parseInt(resKas.data[0].saldo) || 0;
+                } else {
+                    globalKas = 0;
+                }
+                document.getElementById('saldoKas').innerText = formatRupiah(globalKas);
+
+                // Handler Piket & Kasbon (Aman dari tipe data selain array)
+                globalPiketData = (resPiket.status === 'success' && Array.isArray(resPiket.data)) ? resPiket.data : [];
+                globalKasbon = (resKasbon.status === 'success' && Array.isArray(resKasbon.data)) ? resKasbon.data : [];
+
+                await initTodayPiket();
+
+                renderPiketHariIni();
+                renderKasbon();
+                renderRekapPiket();
+            } catch (error) {
+                console.error("Gagal memuat data:", error);
+                alert("Terjadi masalah jaringan atau format data salah. Coba refresh halaman.");
+            } finally {
+                // Di kondisi apapun (berhasil/gagal), loading screen PASTI tertutup
+                document.getElementById('loadingOverlay').classList.add('hidden');
             }
-            document.getElementById('saldoKas').innerText = formatRupiah(globalKas);
-
-            globalPiketData = resPiket.status === 'success' && resPiket.data ? resPiket.data : [];
-            globalKasbon = resKasbon.status === 'success' && resKasbon.data ? resKasbon.data : [];
-
-            await initTodayPiket();
-
-            renderPiketHariIni();
-            renderKasbon();
-            renderRekapPiket();
-
-            document.getElementById('loadingOverlay').classList.add('hidden');
         }
 
         async function initTodayPiket() {
-            const petugas = jadwalPiket[dayIndex];
-            if (!petugas || petugas.length === 0) return;
+            const petugas = jadwalPiket[dayIndex] || [];
+            if (petugas.length === 0) return;
 
             let todayLogs = globalPiketData.filter(d => d.dateStr === todayStr);
             let needsRefresh = false;
@@ -95,7 +105,9 @@
 
             if(needsRefresh) {
                 const refresh = await dbCall({ action: 'read', sheetName: 'piket_log' });
-                if(refresh.status === 'success') globalPiketData = refresh.data;
+                if(refresh.status === 'success' && Array.isArray(refresh.data)) {
+                    globalPiketData = refresh.data;
+                }
             }
         }
 
@@ -105,6 +117,7 @@
             if (!inputVal) return alert("Masukkan nominal!");
             
             if(confirm(`Tetapkan Total Saldo menjadi Rp ${formatRupiah(inputVal)}?`)) {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
                 await dbCall({ action: 'update', sheetName: 'kas_balance', idValue: "1", updateData: { saldo: parseInt(inputVal) } });
                 document.getElementById('inputSaldoAwal').value = '';
                 loadData();
@@ -119,6 +132,7 @@
         // ================== FUNGSI PIKET ==================
         async function beriDenda(nama) {
             if(confirm(`Tandai ${nama} Mangkir Piket? Status denda: BELUM BAYAR.`)) {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
                 await dbCall({ action: 'update', sheetName: 'piket_log', idValue: `${todayStr}_${nama}`, updateData: { status: 'denda_belum' } });
                 loadData();
             }
@@ -126,6 +140,7 @@
 
         async function bayarDenda(nama, tgl) {
             if(confirm(`${nama} bayar denda 5.000 untuk tanggal ${tgl}? Saldo kas otomatis bertambah.`)) {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
                 await dbCall({ action: 'update', sheetName: 'piket_log', idValue: `${tgl}_${nama}`, updateData: { status: 'denda_lunas' } });
                 await ubahSaldo(5000, true);
                 loadData();
@@ -135,7 +150,7 @@
         function renderPiketHariIni() {
             const list = document.getElementById('piket-list');
             list.innerHTML = '';
-            const petugas = jadwalPiket[dayIndex];
+            const petugas = jadwalPiket[dayIndex] || [];
             if (petugas.length === 0) { list.innerHTML = `<div class="text-center p-4 bg-slate-50 text-slate-400 font-bold rounded-2xl border border-dashed">Hari ini libur piket.</div>`; return; }
 
             const todayLogs = globalPiketData.filter(d => d.dateStr === todayStr);
@@ -176,7 +191,8 @@
             const idValue = `${dateStr}_${nama}`;
 
             if(confirm(`Set status untuk ${nama} pada tanggal ${dateStr}?`)) {
-                // Cek apakah data sudah ada
+                document.getElementById('loadingOverlay').classList.remove('hidden');
+                
                 const exists = globalPiketData.find(d => d.id === idValue);
                 if(exists) {
                     await dbCall({ action: 'update', sheetName: 'piket_log', idValue: idValue, updateData: { status } });
@@ -193,6 +209,7 @@
 
         async function ubahStatusLog(nama, tgl, statusLama, statusBaru) {
             if (statusLama === statusBaru) return;
+            document.getElementById('loadingOverlay').classList.remove('hidden');
 
             let isLamaLunas = (statusLama === 'denda_lunas' || statusLama === 'denda');
             let isBaruLunas = (statusBaru === 'denda_lunas');
@@ -206,6 +223,7 @@
 
         async function hapusLog(nama, tgl, statusLama) {
             if(confirm(`Yakin hapus data piket ${nama} pada tanggal ${tgl} permanen?`)) {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
                 if (statusLama === 'denda_lunas' || statusLama === 'denda') {
                     await ubahSaldo(5000, false); 
                 }
@@ -218,15 +236,18 @@
             const list = document.getElementById('rekap-list');
             list.innerHTML = '';
             
-            // Group By Date
             const grouped = {};
             globalPiketData.forEach(d => {
-                if(!grouped[d.dateStr]) grouped[d.dateStr] = [];
-                grouped[d.dateStr].push(d);
+                // Filter data kosong yang mungkin terbaca dari spasi bawah Google Sheet
+                if(d && d.dateStr && d.dateStr.includes('-')) {
+                    if(!grouped[d.dateStr]) grouped[d.dateStr] = [];
+                    grouped[d.dateStr].push(d);
+                }
             });
 
+            // Sorting aman dengan proteksi
             const sortedDates = Object.keys(grouped).sort((a,b) => {
-                let da = a.split('-').reverse().join('-'); let db = b.split('-').reverse().join('-');
+                let da = String(a).split('-').reverse().join('-'); let db = String(b).split('-').reverse().join('-');
                 return new Date(db) - new Date(da);
             });
 
@@ -263,6 +284,7 @@
         // ================== FUNGSI KASBON ==================
         async function setujuKasbon(id, nominal) { 
             if(confirm(`Setujui dan POTONG saldo kas sebesar Rp ${formatRupiah(nominal)}?`)) {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
                 await dbCall({ action: 'update', sheetName: 'kasbon', idValue: id, updateData: {status: 'Disetujui'} }); 
                 await ubahSaldo(nominal, false); 
                 loadData();
@@ -271,6 +293,7 @@
         
         async function tolakKasbon(id) { 
             if(confirm("Tolak pengajuan ini?")) {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
                 await dbCall({ action: 'delete', sheetName: 'kasbon', idValue: id });
                 loadData();
             } 
@@ -278,6 +301,7 @@
         
         async function lunasKasbon(id, nominal) { 
             if(confirm(`Tandai LUNAS? Saldo kas akan DITAMBAHKAN Rp ${formatRupiah(nominal)}`)) {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
                 await dbCall({ action: 'delete', sheetName: 'kasbon', idValue: id }); 
                 await ubahSaldo(nominal, true); 
                 loadData();
@@ -287,9 +311,16 @@
         function renderKasbon() {
             const list = document.getElementById('kasbon-list');
             list.innerHTML = '';
-            if(globalKasbon.length === 0) { list.innerHTML = `<div class="text-center p-6 bg-slate-50 rounded-2xl text-slate-400 font-bold text-xs border border-dashed">Aman! Tidak ada pengajuan kasbon.</div>`; return; }
+            
+            if(!Array.isArray(globalKasbon) || globalKasbon.length === 0) { 
+                list.innerHTML = `<div class="text-center p-6 bg-slate-50 rounded-2xl text-slate-400 font-bold text-xs border border-dashed">Aman! Tidak ada pengajuan kasbon.</div>`; 
+                return; 
+            }
 
             [...globalKasbon].reverse().forEach(item => {
+                // Filter jika ada baris kosong di Google Sheet
+                if (!item.id || !item.name) return;
+
                 let btns = '';
                 let badge = item.status === 'Menunggu' ? `<span class="bg-orange-100 text-orange-600 px-2 py-1 rounded text-[9px] font-black uppercase border border-orange-200">Menunggu</span>` : `<span class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-[9px] font-black uppercase border border-blue-200">Disetujui</span>`;
                 
@@ -303,26 +334,36 @@
             });
         }
 
-        function logout() { localStorage.removeItem('moluscaPiketUser'); window.location.href = 'index.html'; }
+        function logout() { 
+            // Kembali ke halaman dashboard utama admin agar seragam
+            window.location.href = 'dashboard.html'; 
+        }
     </script>
 
-    <!-- LOADING OVERLAY -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex justify-center items-center">
-        <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3">
-            <i class="ph ph-spinner animate-spin text-4xl text-blue-600"></i>
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Sinkronisasi Data...</span>
+    <!-- LOADING OVERLAY DENGAN PROTEKSI TUTUP MANUAL -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4 text-center max-w-[250px]">
+            <i class="ph ph-spinner animate-spin text-5xl text-blue-600"></i>
+            <div>
+                <span class="text-xs font-black text-slate-700 uppercase tracking-widest block mb-1">Sinkronisasi Data</span>
+                <span class="text-[10px] font-bold text-slate-400">Menghubungkan ke Sheets...</span>
+            </div>
+            <!-- Tombol Darurat jika jaringan sangat lemot -->
+            <button onclick="document.getElementById('loadingOverlay').classList.add('hidden')" class="mt-2 text-[9px] font-black uppercase text-red-400 hover:text-red-600 tracking-widest border-b border-red-200 pb-0.5">Tutup Paksa</button>
         </div>
     </div>
 
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex justify-between items-center">
+    <!-- HEADER -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex justify-between items-center shadow-sm">
         <div class="flex items-center gap-2">
             <i class="ph-fill ph-wallet text-2xl text-orange-500"></i>
             <div><h1 class="text-lg font-extrabold tracking-tight text-slate-900 leading-none">Bos Kas</h1></div>
         </div>
-        <button onclick="logout()" class="text-[10px] font-black text-red-500 bg-red-50 border border-red-100 px-3 py-2 rounded-xl uppercase flex items-center gap-1 hover:bg-red-100 transition"><i class="ph-fill ph-sign-out"></i> LOGOUT</button>
+        <button onclick="logout()" class="text-[10px] font-black text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-xl uppercase flex items-center gap-1.5 hover:bg-slate-200 hover:text-slate-700 transition tracking-widest"><i class="ph-bold ph-arrow-left text-sm"></i> KEMBALI KE DASHBOARD</button>
     </header>
 
     <main class="p-4 max-w-xl mx-auto space-y-8 mt-2">
+        <!-- (Sisa Section UI sama persis tidak ada yang diubah agar tampilan Anda tidak berantakan) -->
         <section class="bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-[32px] shadow-xl text-white relative overflow-hidden">
             <i class="ph-fill ph-coins absolute -right-4 -bottom-4 text-9xl opacity-10 pointer-events-none"></i>
             <div class="relative z-10">
@@ -341,7 +382,7 @@
 
         <section>
             <div class="flex justify-between items-end mb-4 ml-1">
-                <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><i class="ph-fill ph-broom text-blue-500"></i> Piket Hari Ini</h2>
+                <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><i class="ph-fill ph-broom text-blue-500 text-lg"></i> Piket Hari Ini</h2>
                 <div id="tanggalHariIni" class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded"></div>
             </div>
             <div id="piket-list" class="space-y-3"></div>
@@ -356,7 +397,7 @@
             <h2 class="text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph-fill ph-calendar-plus text-orange-500 text-lg"></i> Input Data Terlewat</h2>
             <form id="formManual" onsubmit="inputPiketManual(event)" class="space-y-3">
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="date" id="manualDate" required class="bg-white/10 border-none rounded-2xl p-4 text-white text-xs outline-none focus:ring-2 focus:ring-orange-500/50">
+                    <input type="date" id="manualDate" required class="bg-white/10 border-none rounded-2xl p-4 text-white text-xs outline-none focus:ring-2 focus:ring-orange-500/50 appearance-none">
                     <select id="manualUser" required class="bg-white/10 border-none rounded-2xl p-4 text-white text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer"></select>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
