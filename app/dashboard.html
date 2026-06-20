@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Molusca Project</title>
+    <title>Dashboard Eksekutif - Molusca Project</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <style> body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } </style>
+    <style> 
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } 
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body class="bg-[#FBFBFE] pb-20" onload="checkLogin()" oncontextmenu="return false;">
     <script>
         document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
 
         // === GOOGLE SHEETS API ===
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
+        const SCRIPT_URL = "PASTE_URL_APPS_SCRIPT_DI_SINI"; // Ganti dengan URL Anda
         async function dbCall(payload) {
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
             return await res.json();
@@ -24,37 +28,186 @@
 
         function checkLogin() {
             if (localStorage.getItem('moluscaRole') !== 'admin') window.location.href = 'index.html';
-            loadDynamicUsers();
+            switchTab('overview'); // Default tab
+            loadAllData();
         }
 
-        async function loadDynamicUsers() {
-            const res = await dbCall({ action: 'read', sheetName: 'users' });
-            allUsers = [];
-            if(res.status === 'success'){
-                res.data.forEach(u => { if(u.role !== 'admin') allUsers.push(u.name); });
+        // ================== TAB NAVIGATION ==================
+        function switchTab(tab) {
+            const tabOverview = document.getElementById('tab-overview');
+            const tabDesain = document.getElementById('tab-desain');
+            const btnOverview = document.getElementById('btn-overview');
+            const btnDesain = document.getElementById('btn-desain');
+
+            const activeClass = "bg-blue-600 text-white shadow-md";
+            const inactiveClass = "bg-slate-100 text-slate-500 hover:bg-slate-200";
+
+            if(tab === 'overview') {
+                tabOverview.classList.remove('hidden'); tabOverview.classList.add('animate-[fadeIn_0.3s_ease-in-out]');
+                tabDesain.classList.add('hidden');
+                btnOverview.className = `flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex justify-center items-center gap-2 ${activeClass}`;
+                btnDesain.className = `flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex justify-center items-center gap-2 ${inactiveClass}`;
+            } else {
+                tabOverview.classList.add('hidden');
+                tabDesain.classList.remove('hidden'); tabDesain.classList.add('animate-[fadeIn_0.3s_ease-in-out]');
+                btnOverview.className = `flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex justify-center items-center gap-2 ${inactiveClass}`;
+                btnDesain.className = `flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex justify-center items-center gap-2 ${activeClass}`;
             }
-            renderUserBoards();
-            loadTasks();
         }
 
-        async function loadTasks() {
-            const res = await dbCall({ action: 'read', sheetName: 'tasks' });
-            renderBoard(res.status === 'success' ? res.data : []);
+        // ================== LOAD SEMUA DATA ==================
+        async function loadAllData() {
+            // Animasi Loading
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
+            try {
+                // Fetch data secara paralel agar lebih cepat
+                const [resUsers, resTasks, resIzin, resPiket, resCreator] = await Promise.all([
+                    dbCall({ action: 'read', sheetName: 'users' }),
+                    dbCall({ action: 'read', sheetName: 'tasks' }),
+                    dbCall({ action: 'read', sheetName: 'izin' }),
+                    dbCall({ action: 'read', sheetName: 'piket' }),
+                    dbCall({ action: 'read', sheetName: 'creator_tasks' })
+                ]);
+
+                allUsers = [];
+                if(resUsers.status === 'success') {
+                    allUsers = resUsers.data.filter(u => u.role !== 'admin');
+                    renderTeamList(allUsers);
+                    renderUserBoards(allUsers); // Untuk Tab Desain
+                }
+
+                if(resTasks.status === 'success') renderBoard(resTasks.data); // Untuk Tab Desain
+                
+                // Render Widget Overview
+                processWidgetData(
+                    resPiket.status === 'success' ? resPiket.data : [],
+                    resIzin.status === 'success' ? resIzin.data : []
+                );
+
+                // Render Chart Overview
+                renderCharts(
+                    resTasks.status === 'success' ? resTasks.data : [],
+                    resCreator.status === 'success' ? resCreator.data : []
+                );
+
+            } catch (error) {
+                console.error("Gagal memuat data", error);
+            } finally {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
         }
 
-        function renderUserBoards() {
+        // ================== LOGIC TAB 1: OVERVIEW ==================
+        function processWidgetData(piketData, izinData) {
+            // 1. Piket Hari Ini
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const todayName = days[new Date().getDay()];
+            const piketToday = piketData.filter(p => p.hari === todayName);
+            
+            let piketHTML = '';
+            if (piketToday.length > 0) {
+                piketHTML = piketToday.map(p => `<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-lg text-xs font-bold inline-flex items-center gap-1 border border-amber-200"><i class="ph-fill ph-user"></i> ${p.name}</span>`).join(' ');
+            } else {
+                piketHTML = `<span class="text-xs font-bold text-slate-400 border border-dashed border-slate-300 px-3 py-1 rounded-lg">Libur / Tidak ada</span>`;
+            }
+            document.getElementById('widgetPiketHari').innerText = todayName;
+            document.getElementById('widgetPiketNama').innerHTML = piketHTML;
+
+            // 2. Izin Sakit Bulan Ini
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const sakitThisMonth = izinData.filter(i => i.type === 'Sakit' && new Date(i.startDate).getMonth() === currentMonth && new Date(i.startDate).getFullYear() === currentYear);
+            document.getElementById('widgetSakit').innerText = sakitThisMonth.length + " Orang";
+        }
+
+        function renderTeamList(users) {
+            const container = document.getElementById('teamListContainer');
+            container.innerHTML = '';
+            document.getElementById('widgetTotalTim').innerText = users.length + " Orang";
+
+            users.forEach(u => {
+                let icon = u.role === 'konten kreator' ? '<i class="ph-fill ph-camera text-pink-500 text-2xl"></i>' : '<i class="ph-fill ph-pencil-simple text-blue-500 text-2xl"></i>';
+                let roleColor = u.role === 'konten kreator' ? 'bg-pink-50 text-pink-600' : 'bg-blue-50 text-blue-600';
+                
+                container.innerHTML += `
+                    <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 transition hover:shadow-sm">
+                        <div class="bg-white w-12 h-12 flex items-center justify-center rounded-xl shadow-sm">${icon}</div>
+                        <div>
+                            <h4 class="font-black text-slate-900 leading-tight">${u.name}</h4>
+                            <span class="text-[9px] ${roleColor} px-2 py-0.5 rounded uppercase tracking-widest font-bold mt-1 inline-block">${u.role}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        let chartDesainInstance = null;
+        let chartKontenInstance = null;
+
+        function renderCharts(tasks, creatorTasks) {
+            const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+            const currentYear = new Date().getFullYear();
+
+            // 1. Data Desain (Hitung task yang statusnya 'Final')
+            let dataDesain = new Array(12).fill(0);
+            tasks.forEach(t => {
+                if(t.status === 'Final') {
+                    let date = new Date(t.dateStr); // Asumsi dateStr bisa di-parse
+                    if(!isNaN(date.getTime()) && date.getFullYear() === currentYear) {
+                        dataDesain[date.getMonth()] += 1;
+                    }
+                }
+            });
+
+            // 2. Data Konten (Hitung creator_task yang isCompleted 'true')
+            let dataKonten = new Array(12).fill(0);
+            creatorTasks.forEach(t => {
+                if(t.isCompleted === true || t.isCompleted === "true") {
+                    let date = new Date(t.targetDate);
+                    if(!isNaN(date.getTime()) && date.getFullYear() === currentYear) {
+                        dataKonten[date.getMonth()] += 1;
+                    }
+                }
+            });
+
+            // Render Chart Desain
+            const ctxDesain = document.getElementById('chartDesain').getContext('2d');
+            if(chartDesainInstance) chartDesainInstance.destroy();
+            chartDesainInstance = new Chart(ctxDesain, {
+                type: 'line',
+                data: { labels: months, datasets: [{ label: 'Desain Selesai', data: dataDesain, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 3, fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            });
+
+            // Render Chart Konten
+            const ctxKonten = document.getElementById('chartKonten').getContext('2d');
+            if(chartKontenInstance) chartKontenInstance.destroy();
+            chartKontenInstance = new Chart(ctxKonten, {
+                type: 'bar',
+                data: { labels: months, datasets: [{ label: 'Konten di-Take', data: dataKonten, backgroundColor: '#ec4899', borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            });
+        }
+
+        // ================== LOGIC TAB 2: TASK DESAIN ==================
+        function renderUserBoards(usersList) {
             const select = document.getElementById('assignee');
             const boardContainer = document.getElementById('dynamic-boards');
             select.innerHTML = ''; boardContainer.innerHTML = '';
             
-            const colors = ['text-pink-500', 'text-purple-500', 'text-teal-500', 'text-blue-500', 'text-orange-500'];
-            allUsers.forEach((name, index) => {
-                select.innerHTML += `<option value="${name}">${name}</option>`;
+            const colors = ['text-blue-500', 'text-teal-500', 'text-indigo-500', 'text-purple-500'];
+            
+            // Filter hanya user yang role nya 'desainer'
+            const desainerOnly = usersList.filter(u => u.role === 'desainer');
+
+            desainerOnly.forEach((u, index) => {
+                select.innerHTML += `<option value="${u.name}">${u.name}</option>`;
                 let color = colors[index % colors.length];
                 boardContainer.innerHTML += `
                     <div class="space-y-4">
-                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] ml-2 flex items-center gap-2"><i class="ph-fill ph-user-circle ${color} text-xl"></i> ${name}</h3>
-                        <div id="board-${name}" class="space-y-4 min-h-[50px]"></div>
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] ml-2 flex items-center gap-2"><i class="ph-fill ph-user-circle ${color} text-xl"></i> ${u.name}</h3>
+                        <div id="board-${u.name}" class="space-y-4 min-h-[50px]"></div>
                     </div>
                 `;
             });
@@ -75,29 +228,31 @@
             };
             
             await dbCall({ action: 'insert', sheetName: 'tasks', data: taskData });
-            document.getElementById('taskForm').reset();
-            document.getElementById('taskJO').focus();
-            
+            document.getElementById('taskForm').reset(); document.getElementById('taskJO').focus();
             btn.innerHTML = '<i class="ph-fill ph-paper-plane-right"></i> KIRIM TUGAS'; btn.disabled = false;
-            loadTasks();
+            
+            // Reload Tasks silently
+            const resTasks = await dbCall({ action: 'read', sheetName: 'tasks' });
+            if(resTasks.status === 'success') renderBoard(resTasks.data);
         }
 
         async function approveTask(id) { 
             await dbCall({ action: 'update', sheetName: 'tasks', idValue: id, updateData: { isApproved: true } });
-            loadTasks();
+            const resTasks = await dbCall({ action: 'read', sheetName: 'tasks' });
+            if(resTasks.status === 'success') renderBoard(resTasks.data);
         }
         
         async function deleteTask(id) { 
             if(confirm("Yakin hapus tugas ini permanen?")) {
                 await dbCall({ action: 'delete', sheetName: 'tasks', idValue: id });
-                loadTasks();
+                const resTasks = await dbCall({ action: 'read', sheetName: 'tasks' });
+                if(resTasks.status === 'success') renderBoard(resTasks.data);
             }
         }
-        
-        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 
         function renderBoard(tasks) {
-            allUsers.forEach(name => { let el = document.getElementById('board-' + name); if(el) el.innerHTML = ''; });
+            // Clear existing boards
+            document.querySelectorAll('[id^="board-"]').forEach(el => { if(el.id !== 'board-final') el.innerHTML = ''; });
             document.getElementById('board-final').innerHTML = '';
 
             tasks.sort((a,b) => a.id - b.id).reverse().forEach(task => {
@@ -133,8 +288,11 @@
                 }
             });
         }
+
+        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
     </script>
 
+    <!-- HEADER NAVIGASI -->
     <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex justify-between items-center">
         <div class="flex items-center gap-2">
             <i class="ph-fill ph-hexagon text-2xl text-blue-600"></i>
@@ -150,25 +308,95 @@
         </div>
     </header>
 
-    <main class="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
-        <section class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
-            <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph-fill ph-plus-circle text-blue-600 text-lg"></i> Create New Task</h2>
-            <form id="taskForm" onsubmit="sendTask(event)" class="grid grid-cols-1 md:grid-cols-5 gap-3">
-                <div class="relative"><i class="ph ph-hash absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="taskJO" required placeholder="JO CODE" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold uppercase focus:ring-2 focus:ring-blue-500/20"></div>
-                <div class="relative md:col-span-1"><i class="ph ph-folder absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="taskTitle" required placeholder="PROJECT NAME" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20"></div>
-                <div class="relative"><i class="ph ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="taskSender" required placeholder="SENDER" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20"></div>
-                <div class="relative"><i class="ph ph-warning-circle absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><select id="taskPriority" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none"><option value="Normal">🟢 NORMAL</option><option value="Urgent">🔴 URGENT</option></select></div>
-                <div class="relative"><i class="ph ph-users absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><select id="assignee" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none"></select></div>
-                <button type="submit" class="md:col-span-5 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 transition flex justify-center items-center gap-2 mt-2"><i class="ph-fill ph-paper-plane-right"></i> KIRIM TUGAS</button>
-            </form>
-        </section>
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex justify-center items-center">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3">
+            <i class="ph ph-spinner animate-spin text-4xl text-blue-600"></i>
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Sinkronisasi Data...</span>
+        </div>
+    </div>
 
-        <div id="dynamic-boards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full"></div>
+    <!-- MAIN CONTAINER -->
+    <main class="p-4 md:p-8 max-w-7xl mx-auto">
+        
+        <!-- SWITCH TABS -->
+        <div class="flex bg-slate-100 p-1.5 rounded-2xl mb-8 max-w-md mx-auto">
+            <button onclick="switchTab('overview')" id="btn-overview" class="flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex justify-center items-center gap-2 bg-blue-600 text-white shadow-md"><i class="ph-fill ph-chart-pie-slice"></i> Overview</button>
+            <button onclick="switchTab('desain')" id="btn-desain" class="flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex justify-center items-center gap-2 bg-slate-100 text-slate-500 hover:bg-slate-200"><i class="ph-fill ph-paint-brush"></i> Task Desain</button>
+        </div>
 
-        <section class="pt-6 border-t border-slate-100">
-            <h2 class="text-xs font-black text-green-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2"><i class="ph-fill ph-archive-box text-lg"></i> Final Archive</h2>
-            <div id="board-final" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
-        </section>
+        <!-- ==================== TAB 1: OVERVIEW EKSEKUTIF ==================== -->
+        <div id="tab-overview" class="space-y-8">
+            
+            <!-- Widget Cards Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Piket Card -->
+                <div class="bg-gradient-to-br from-amber-400 to-orange-500 p-6 rounded-[32px] shadow-lg shadow-orange-500/20 text-white relative overflow-hidden">
+                    <i class="ph-fill ph-broom absolute -right-4 -bottom-4 text-8xl opacity-20"></i>
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-100 mb-2">Piket Hari Ini</h3>
+                    <div class="text-2xl font-black mb-4 tracking-tighter" id="widgetPiketHari">-</div>
+                    <div id="widgetPiketNama" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- Izin Sakit Card -->
+                <div class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
+                    <div class="bg-red-50 w-12 h-12 rounded-full flex items-center justify-center text-red-500 text-2xl absolute top-6 right-6"><i class="ph-fill ph-thermometer"></i></div>
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Tim Sakit Bulan Ini</h3>
+                    <div class="text-3xl font-black text-slate-800 tracking-tighter mt-4" id="widgetSakit">0 Orang</div>
+                </div>
+
+                <!-- Total Tim Card -->
+                <div class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
+                    <div class="bg-blue-50 w-12 h-12 rounded-full flex items-center justify-center text-blue-500 text-2xl absolute top-6 right-6"><i class="ph-fill ph-users"></i></div>
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Total Karyawan Aktif</h3>
+                    <div class="text-3xl font-black text-slate-800 tracking-tighter mt-4" id="widgetTotalTim">0 Orang</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Chart Desain -->
+                <div class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex flex-col">
+                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-trend-up text-blue-500 text-lg"></i> Kurva Desain Selesai (Tahun Ini)</h3>
+                    <div class="flex-1 w-full relative min-h-[250px]"><canvas id="chartDesain"></canvas></div>
+                </div>
+                <!-- Chart Konten -->
+                <div class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex flex-col">
+                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-video-camera text-pink-500 text-lg"></i> Kurva Konten Di-Take (Tahun Ini)</h3>
+                    <div class="flex-1 w-full relative min-h-[250px]"><canvas id="chartKonten"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Tim List -->
+            <section class="pt-4">
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-2 ml-2"><i class="ph-fill ph-address-book text-lg"></i> Susunan Tim Molusca</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="teamListContainer"></div>
+            </section>
+
+        </div>
+
+        <!-- ==================== TAB 2: TASK DESAINER (OLD VIEW) ==================== -->
+        <div id="tab-desain" class="hidden space-y-8">
+            <section class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
+                <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph-fill ph-plus-circle text-blue-600 text-lg"></i> Create New Task</h2>
+                <form id="taskForm" onsubmit="sendTask(event)" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <div class="relative"><i class="ph ph-hash absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="taskJO" required placeholder="JO CODE" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold uppercase focus:ring-2 focus:ring-blue-500/20"></div>
+                    <div class="relative md:col-span-1"><i class="ph ph-folder absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="taskTitle" required placeholder="PROJECT NAME" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20"></div>
+                    <div class="relative"><i class="ph ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="taskSender" required placeholder="SENDER" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20"></div>
+                    <div class="relative"><i class="ph ph-warning-circle absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><select id="taskPriority" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none"><option value="Normal">🟢 NORMAL</option><option value="Urgent">🔴 URGENT</option></select></div>
+                    <div class="relative"><i class="ph ph-users absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><select id="assignee" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none"></select></div>
+                    <button type="submit" class="md:col-span-5 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 transition flex justify-center items-center gap-2 mt-2"><i class="ph-fill ph-paper-plane-right"></i> KIRIM TUGAS</button>
+                </form>
+            </section>
+
+            <div id="dynamic-boards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full"></div>
+
+            <section class="pt-6 border-t border-slate-100">
+                <h2 class="text-xs font-black text-green-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-2"><i class="ph-fill ph-archive-box text-lg"></i> Final Archive</h2>
+                <div id="board-final" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+            </section>
+        </div>
+
     </main>
 </body>
 </html>
