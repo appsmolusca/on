@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Keuangan - Molusca</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style> body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } </style>
+</head>
+<body class="bg-[#FBFBFE] pb-20" onload="initApp()" oncontextmenu="return false;">
+    <script>
+        document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
+
+        // === GOOGLE SHEETS API ===
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
+        
+        async function dbCall(payload) {
+            try {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+                return await res.json();
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                return { status: 'error', data: [] };
+            }
+        }
+
+        const listTim = ['Indah', 'Nazma', 'Nayla', 'Feyy', 'Dadan', 'Tya', 'Opik'];
+        const jadwalPiket = { 1: ['Indah'], 2: ['Nazma'], 3: ['Nayla'], 4: ['Feyy'], 5: ['Dadan'], 6: ['Tya', 'Opik'], 0: [] };
+        
+        const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+        const dayIndex = new Date().getDay();
+
+        let globalPiketData = [];
+        let globalKasbon = [];
+        let globalKas = 0;
+
+        function initApp() {
+            if (localStorage.getItem('moluscaPiketUser') !== 'admin') window.location.href = 'index.html';
+            document.getElementById('tanggalHariIni').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            
+            const manualSelect = document.getElementById('manualUser');
+            listTim.forEach(n => manualSelect.innerHTML += `<option value="${n}">${n}</option>`);
+            
+            loadData();
+        }
+
+        function formatRupiah(angka) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka); }
+
+        async function loadData() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
+            const [resKas, resPiket, resKasbon] = await Promise.all([
+                dbCall({ action: 'read', sheetName: 'kas_balance' }),
+                dbCall({ action: 'read', sheetName: 'piket_log' }),
+                dbCall({ action: 'read', sheetName: 'kasbon' })
+            ]);
+
+            // Handler Saldo
+            if (resKas.status === 'success' && resKas.data && resKas.data.length > 0) {
+                globalKas = parseInt(resKas.data[0].saldo) || 0;
+            }
+            document.getElementById('saldoKas').innerText = formatRupiah(globalKas);
+
+            globalPiketData = resPiket.status === 'success' && resPiket.data ? resPiket.data : [];
+            globalKasbon = resKasbon.status === 'success' && resKasbon.data ? resKasbon.data : [];
+
+            await initTodayPiket();
+
+            renderPiketHariIni();
+            renderKasbon();
+            renderRekapPiket();
+
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        async function initTodayPiket() {
+            const petugas = jadwalPiket[dayIndex];
+            if (!petugas || petugas.length === 0) return;
+
+            let todayLogs = globalPiketData.filter(d => d.dateStr === todayStr);
+            let needsRefresh = false;
+
+            for (let name of petugas) {
+                let exists = todayLogs.find(d => d.name === name);
+                if (!exists) {
+                    await dbCall({
+                        action: 'insert', sheetName: 'piket_log',
+                        data: { id: `${todayStr}_${name}`, dateStr: todayStr, name: name, status: 'belum' }
+                    });
+                    needsRefresh = true;
+                }
+            }
+
+            if(needsRefresh) {
+                const refresh = await dbCall({ action: 'read', sheetName: 'piket_log' });
+                if(refresh.status === 'success') globalPiketData = refresh.data;
+            }
+        }
+
+        // ================== FUNGSI SALDO ==================
+        async function updateSaldoManual() {
+            const inputVal = document.getElementById('inputSaldoAwal').value;
+            if (!inputVal) return alert("Masukkan nominal!");
+            
+            if(confirm(`Tetapkan Total Saldo menjadi Rp ${formatRupiah(inputVal)}?`)) {
+                await dbCall({ action: 'update', sheetName: 'kas_balance', idValue: "1", updateData: { saldo: parseInt(inputVal) } });
+                document.getElementById('inputSaldoAwal').value = '';
+                loadData();
+            }
+        }
+
+        async function ubahSaldo(nominal, isTambah) {
+            let newSaldo = isTambah ? (globalKas + nominal) : (globalKas - nominal);
+            await dbCall({ action: 'update', sheetName: 'kas_balance', idValue: "1", updateData: { saldo: newSaldo } });
+        }
+
+        // ================== FUNGSI PIKET ==================
+        async function beriDenda(nama) {
+            if(confirm(`Tandai ${nama} Mangkir Piket? Status denda: BELUM BAYAR.`)) {
+                await dbCall({ action: 'update', sheetName: 'piket_log', idValue: `${todayStr}_${nama}`, updateData: { status: 'denda_belum' } });
+                loadData();
+            }
+        }
+
+        async function bayarDenda(nama, tgl) {
+            if(confirm(`${nama} bayar denda 5.000 untuk tanggal ${tgl}? Saldo kas otomatis bertambah.`)) {
+                await dbCall({ action: 'update', sheetName: 'piket_log', idValue: `${tgl}_${nama}`, updateData: { status: 'denda_lunas' } });
+                await ubahSaldo(5000, true);
+                loadData();
+            }
+        }
+
+        function renderPiketHariIni() {
+            const list = document.getElementById('piket-list');
+            list.innerHTML = '';
+            const petugas = jadwalPiket[dayIndex];
+            if (petugas.length === 0) { list.innerHTML = `<div class="text-center p-4 bg-slate-50 text-slate-400 font-bold rounded-2xl border border-dashed">Hari ini libur piket.</div>`; return; }
+
+            const todayLogs = globalPiketData.filter(d => d.dateStr === todayStr);
+
+            petugas.forEach(name => {
+                let log = todayLogs.find(d => d.name === name);
+                let status = log ? log.status : 'belum';
+                let ui = '';
+                
+                if (status === 'sudah') {
+                    ui = `<span class="bg-green-100 text-green-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase border border-green-200"><i class="ph-fill ph-check-circle"></i> Selesai Piket</span>`;
+                } else if (status === 'denda_belum') {
+                    ui = `
+                    <div class="flex gap-1 items-center">
+                        <span class="bg-orange-100 text-orange-600 px-2 py-2 rounded-lg text-[9px] font-black uppercase border border-orange-200"><i class="ph-fill ph-warning"></i> Nunggak 5k</span>
+                        <button onclick="bayarDenda('${name}', '${todayStr}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-[10px] font-black uppercase shadow-sm transition">Bayar</button>
+                    </div>`;
+                } else if (status === 'denda_lunas' || status === 'denda') {
+                    ui = `<span class="bg-red-100 text-red-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase border border-red-200"><i class="ph-fill ph-money"></i> Lunas (+5k)</span>`;
+                } else {
+                    ui = `<button onclick="beriDenda('${name}')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-md transition flex items-center gap-1"><i class="ph-fill ph-warning-circle"></i> Denda 5k</button>`;
+                }
+
+                list.innerHTML += `<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center"><h4 class="font-black text-slate-700 flex items-center gap-2"><i class="ph-fill ph-user-circle text-blue-500 text-xl"></i> ${name}</h4>${ui}</div>`;
+            });
+        }
+
+        // ================== MANUAL & REKAP ==================
+        async function inputPiketManual(e) {
+            e.preventDefault();
+            const dateInput = document.getElementById('manualDate').value;
+            if(!dateInput) return alert("Pilih tanggal!");
+            
+            const dateObj = new Date(dateInput);
+            const dateStr = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+            const nama = document.getElementById('manualUser').value;
+            const status = document.getElementById('manualStatus').value;
+            const idValue = `${dateStr}_${nama}`;
+
+            if(confirm(`Set status untuk ${nama} pada tanggal ${dateStr}?`)) {
+                // Cek apakah data sudah ada
+                const exists = globalPiketData.find(d => d.id === idValue);
+                if(exists) {
+                    await dbCall({ action: 'update', sheetName: 'piket_log', idValue: idValue, updateData: { status } });
+                } else {
+                    await dbCall({ action: 'insert', sheetName: 'piket_log', data: { id: idValue, dateStr, name: nama, status } });
+                }
+                
+                if(status === 'denda_lunas') await ubahSaldo(5000, true);
+                
+                document.getElementById('formManual').reset();
+                loadData();
+            }
+        }
+
+        async function ubahStatusLog(nama, tgl, statusLama, statusBaru) {
+            if (statusLama === statusBaru) return;
+
+            let isLamaLunas = (statusLama === 'denda_lunas' || statusLama === 'denda');
+            let isBaruLunas = (statusBaru === 'denda_lunas');
+
+            if (isLamaLunas && !isBaruLunas) await ubahSaldo(5000, false); 
+            else if (!isLamaLunas && isBaruLunas) await ubahSaldo(5000, true); 
+
+            await dbCall({ action: 'update', sheetName: 'piket_log', idValue: `${tgl}_${nama}`, updateData: { status: statusBaru } });
+            loadData();
+        }
+
+        async function hapusLog(nama, tgl, statusLama) {
+            if(confirm(`Yakin hapus data piket ${nama} pada tanggal ${tgl} permanen?`)) {
+                if (statusLama === 'denda_lunas' || statusLama === 'denda') {
+                    await ubahSaldo(5000, false); 
+                }
+                await dbCall({ action: 'delete', sheetName: 'piket_log', idValue: `${tgl}_${nama}` });
+                loadData();
+            }
+        }
+
+        function renderRekapPiket() {
+            const list = document.getElementById('rekap-list');
+            list.innerHTML = '';
+            
+            // Group By Date
+            const grouped = {};
+            globalPiketData.forEach(d => {
+                if(!grouped[d.dateStr]) grouped[d.dateStr] = [];
+                grouped[d.dateStr].push(d);
+            });
+
+            const sortedDates = Object.keys(grouped).sort((a,b) => {
+                let da = a.split('-').reverse().join('-'); let db = b.split('-').reverse().join('-');
+                return new Date(db) - new Date(da);
+            });
+
+            sortedDates.forEach(dateStr => {
+                const logs = grouped[dateStr];
+                let itemUI = '';
+                
+                logs.forEach(row => {
+                    let st = row.status;
+                    let selectHTML = `
+                        <select onchange="ubahStatusLog('${row.name}', '${dateStr}', '${st}', this.value)" class="text-[10px] font-bold bg-slate-50 border border-slate-200 rounded-md px-1 py-1 outline-none text-slate-700 cursor-pointer">
+                            <option value="sudah" ${st === 'sudah' ? 'selected' : ''}>✅ Hadir</option>
+                            <option value="denda_belum" ${(st === 'denda_belum' || st === 'belum') ? 'selected' : ''}>⚠️ Nunggak 5k</option>
+                            <option value="denda_lunas" ${(st === 'denda_lunas' || st === 'denda') ? 'selected' : ''}>❌ Lunas (+5k)</option>
+                        </select>
+                    `;
+                    let btnDelete = `<button onclick="hapusLog('${row.name}', '${dateStr}', '${st}')" class="text-slate-300 hover:text-red-500 bg-white shadow-sm border border-slate-100 p-1.5 rounded-md transition" title="Hapus"><i class="ph-fill ph-trash text-sm"></i></button>`;
+
+                    itemUI += `
+                    <div class="flex justify-between items-center py-2.5 border-b border-slate-50 last:border-0">
+                        <span class="font-bold text-xs text-slate-700 flex items-center gap-1"><i class="ph-fill ph-user-circle text-slate-400"></i> ${row.name}</span>
+                        <div class="flex items-center gap-1">${selectHTML}${btnDelete}</div>
+                    </div>`;
+                });
+
+                list.innerHTML += `
+                <div class="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 bg-slate-50 inline-block px-2 py-1 rounded"><i class="ph ph-calendar-blank"></i> ${dateStr}</div>
+                    ${itemUI}
+                </div>`;
+            });
+        }
+
+        // ================== FUNGSI KASBON ==================
+        async function setujuKasbon(id, nominal) { 
+            if(confirm(`Setujui dan POTONG saldo kas sebesar Rp ${formatRupiah(nominal)}?`)) {
+                await dbCall({ action: 'update', sheetName: 'kasbon', idValue: id, updateData: {status: 'Disetujui'} }); 
+                await ubahSaldo(nominal, false); 
+                loadData();
+            }
+        }
+        
+        async function tolakKasbon(id) { 
+            if(confirm("Tolak pengajuan ini?")) {
+                await dbCall({ action: 'delete', sheetName: 'kasbon', idValue: id });
+                loadData();
+            } 
+        }
+        
+        async function lunasKasbon(id, nominal) { 
+            if(confirm(`Tandai LUNAS? Saldo kas akan DITAMBAHKAN Rp ${formatRupiah(nominal)}`)) {
+                await dbCall({ action: 'delete', sheetName: 'kasbon', idValue: id }); 
+                await ubahSaldo(nominal, true); 
+                loadData();
+            }
+        }
+
+        function renderKasbon() {
+            const list = document.getElementById('kasbon-list');
+            list.innerHTML = '';
+            if(globalKasbon.length === 0) { list.innerHTML = `<div class="text-center p-6 bg-slate-50 rounded-2xl text-slate-400 font-bold text-xs border border-dashed">Aman! Tidak ada pengajuan kasbon.</div>`; return; }
+
+            [...globalKasbon].reverse().forEach(item => {
+                let btns = '';
+                let badge = item.status === 'Menunggu' ? `<span class="bg-orange-100 text-orange-600 px-2 py-1 rounded text-[9px] font-black uppercase border border-orange-200">Menunggu</span>` : `<span class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-[9px] font-black uppercase border border-blue-200">Disetujui</span>`;
+                
+                if (item.status === 'Menunggu') {
+                    btns = `<div class="flex gap-2 mt-3"><button onclick="setujuKasbon('${item.id}', ${item.amount})" class="flex-1 bg-green-500 hover:bg-green-600 transition text-white p-2 rounded-xl text-[10px] font-black uppercase shadow-sm">Setuju (Potong Kas)</button><button onclick="tolakKasbon('${item.id}')" class="flex-1 bg-red-50 border border-red-100 hover:bg-red-100 transition text-red-500 p-2 rounded-xl text-[10px] font-black uppercase shadow-sm">Tolak</button></div>`;
+                } else {
+                    btns = `<button onclick="lunasKasbon('${item.id}', ${item.amount})" class="w-full mt-3 bg-slate-900 hover:bg-slate-800 transition text-white p-3 rounded-xl text-[10px] font-black uppercase flex justify-center gap-1 shadow-md"><i class="ph-fill ph-seal-check"></i> Sudah Lunas (Balikin Kas)</button>`;
+                }
+
+                list.innerHTML += `<div class="bg-white p-5 rounded-[24px] border shadow-sm hover:shadow-md transition"><div class="flex justify-between items-start mb-2"><div><h4 class="font-black text-slate-900">${item.name}</h4><div class="text-[9px] font-bold text-slate-400 uppercase">${item.dateStr}</div></div>${badge}</div><div class="text-xl font-black text-slate-800 tracking-tighter mb-1">${formatRupiah(item.amount)}</div><div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-xl italic border border-slate-100">"${item.reason}"</div>${btns}</div>`;
+            });
+        }
+
+        function logout() { localStorage.removeItem('moluscaPiketUser'); window.location.href = 'index.html'; }
+    </script>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex justify-center items-center">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3">
+            <i class="ph ph-spinner animate-spin text-4xl text-blue-600"></i>
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Sinkronisasi Data...</span>
+        </div>
+    </div>
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <i class="ph-fill ph-wallet text-2xl text-orange-500"></i>
+            <div><h1 class="text-lg font-extrabold tracking-tight text-slate-900 leading-none">Bos Kas</h1></div>
+        </div>
+        <button onclick="logout()" class="text-[10px] font-black text-red-500 bg-red-50 border border-red-100 px-3 py-2 rounded-xl uppercase flex items-center gap-1 hover:bg-red-100 transition"><i class="ph-fill ph-sign-out"></i> LOGOUT</button>
+    </header>
+
+    <main class="p-4 max-w-xl mx-auto space-y-8 mt-2">
+        <section class="bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-[32px] shadow-xl text-white relative overflow-hidden">
+            <i class="ph-fill ph-coins absolute -right-4 -bottom-4 text-9xl opacity-10 pointer-events-none"></i>
+            <div class="relative z-10">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-orange-200 mb-1">Total Saldo Kas Molusca</h3>
+                <div id="saldoKas" class="text-4xl font-black tracking-tighter mb-4">Rp 0</div>
+                
+                <div class="pt-4 border-t border-orange-400/30">
+                    <h4 class="text-[9px] font-bold text-orange-200 uppercase tracking-widest mb-2 flex items-center gap-1"><i class="ph-fill ph-pencil-simple"></i> Edit Saldo Jika Perlu</h4>
+                    <div class="flex gap-2">
+                        <input type="number" id="inputSaldoAwal" placeholder="Contoh: 150000" class="flex-grow bg-white/20 border-none rounded-xl py-2 pl-4 pr-3 text-white text-xs font-bold outline-none focus:ring-2 focus:ring-white/50 placeholder-orange-200/70">
+                        <button onclick="updateSaldoManual()" class="bg-white text-orange-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-orange-50 transition shadow-sm">Set Saldo</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="flex justify-between items-end mb-4 ml-1">
+                <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><i class="ph-fill ph-broom text-blue-500"></i> Piket Hari Ini</h2>
+                <div id="tanggalHariIni" class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded"></div>
+            </div>
+            <div id="piket-list" class="space-y-3"></div>
+        </section>
+
+        <section>
+            <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1 flex items-center gap-2"><i class="ph-fill ph-receipt text-lg"></i> Approval Kasbon</h2>
+            <div id="kasbon-list" class="space-y-4"></div>
+        </section>
+
+        <section class="bg-slate-900 p-6 rounded-[32px] text-white shadow-xl">
+            <h2 class="text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph-fill ph-calendar-plus text-orange-500 text-lg"></i> Input Data Terlewat</h2>
+            <form id="formManual" onsubmit="inputPiketManual(event)" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="date" id="manualDate" required class="bg-white/10 border-none rounded-2xl p-4 text-white text-xs outline-none focus:ring-2 focus:ring-orange-500/50">
+                    <select id="manualUser" required class="bg-white/10 border-none rounded-2xl p-4 text-white text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer"></select>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <select id="manualStatus" class="w-full bg-white/10 border-none rounded-2xl p-4 text-white text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer">
+                        <option value="sudah" class="text-slate-900">✅ Hadir Piket</option>
+                        <option value="denda_belum" class="text-slate-900">⚠️ Nunggak Denda 5k</option>
+                        <option value="denda_lunas" class="text-slate-900">❌ Denda Lunas (+5K)</option>
+                    </select>
+                    <button type="submit" class="bg-orange-500 hover:bg-orange-600 transition shadow-md text-white px-6 py-4 rounded-2xl text-[10px] font-black uppercase whitespace-nowrap">Simpan</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="pt-4 border-t border-slate-200">
+            <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1 flex items-center gap-2"><i class="ph-fill ph-clock-counter-clockwise text-lg"></i> Log Riwayat Piket</h2>
+            <div id="rekap-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+    </main>
+</body>
+</html>
