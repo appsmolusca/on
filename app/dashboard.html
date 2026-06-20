@@ -18,17 +18,22 @@
         document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
 
         // === GOOGLE SHEETS API ===
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec"; // Ganti dengan URL Anda
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec"; 
         async function dbCall(payload) {
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            return await res.json();
+            try {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+                return await res.json();
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                return { status: 'error', data: [] };
+            }
         }
 
         let allUsers = [];
 
         function checkLogin() {
             if (localStorage.getItem('moluscaRole') !== 'admin') window.location.href = 'index.html';
-            switchTab('overview'); // Default tab
+            switchTab('overview'); 
             loadAllData();
         }
 
@@ -57,11 +62,9 @@
 
         // ================== LOAD SEMUA DATA ==================
         async function loadAllData() {
-            // Animasi Loading
             document.getElementById('loadingOverlay').classList.remove('hidden');
 
             try {
-                // Fetch data secara paralel agar lebih cepat
                 const [resUsers, resTasks, resIzin, resPiket, resCreator] = await Promise.all([
                     dbCall({ action: 'read', sheetName: 'users' }),
                     dbCall({ action: 'read', sheetName: 'tasks' }),
@@ -71,21 +74,22 @@
                 ]);
 
                 allUsers = [];
-                if(resUsers.status === 'success') {
-                    allUsers = resUsers.data.filter(u => u.role !== 'admin');
+                if(resUsers.status === 'success' && resUsers.data) {
+                    // AMAN DARI TYPO: Gunakan toLowerCase()
+                    allUsers = resUsers.data.filter(u => u.role && u.role.toLowerCase() !== 'admin');
                     renderTeamList(allUsers);
-                    renderUserBoards(allUsers); // Untuk Tab Desain
+                    renderUserBoards(allUsers); 
                 }
 
-                if(resTasks.status === 'success') renderBoard(resTasks.data); // Untuk Tab Desain
+                if(resTasks.status === 'success' && resTasks.data) {
+                    renderBoard(resTasks.data);
+                }
                 
-                // Render Widget Overview
                 processWidgetData(
                     resPiket.status === 'success' ? resPiket.data : [],
                     resIzin.status === 'success' ? resIzin.data : []
                 );
 
-                // Render Chart Overview
                 renderCharts(
                     resTasks.status === 'success' ? resTasks.data : [],
                     resCreator.status === 'success' ? resCreator.data : []
@@ -100,7 +104,6 @@
 
         // ================== LOGIC TAB 1: OVERVIEW ==================
         function processWidgetData(piketData, izinData) {
-            // 1. Piket Hari Ini
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
             const todayName = days[new Date().getDay()];
             const piketToday = piketData.filter(p => p.hari === todayName);
@@ -114,7 +117,6 @@
             document.getElementById('widgetPiketHari').innerText = todayName;
             document.getElementById('widgetPiketNama').innerHTML = piketHTML;
 
-            // 2. Izin Sakit Bulan Ini
             const currentMonth = new Date().getMonth();
             const currentYear = new Date().getFullYear();
             const sakitThisMonth = izinData.filter(i => i.type === 'Sakit' && new Date(i.startDate).getMonth() === currentMonth && new Date(i.startDate).getFullYear() === currentYear);
@@ -127,8 +129,10 @@
             document.getElementById('widgetTotalTim').innerText = users.length + " Orang";
 
             users.forEach(u => {
-                let icon = u.role === 'konten kreator' ? '<i class="ph-fill ph-camera text-pink-500 text-2xl"></i>' : '<i class="ph-fill ph-pencil-simple text-blue-500 text-2xl"></i>';
-                let roleColor = u.role === 'konten kreator' ? 'bg-pink-50 text-pink-600' : 'bg-blue-50 text-blue-600';
+                // AMAN DARI TYPO
+                let roleCheck = u.role ? u.role.toLowerCase() : '';
+                let icon = roleCheck === 'konten kreator' ? '<i class="ph-fill ph-camera text-pink-500 text-2xl"></i>' : '<i class="ph-fill ph-pencil-simple text-blue-500 text-2xl"></i>';
+                let roleColor = roleCheck === 'konten kreator' ? 'bg-pink-50 text-pink-600' : 'bg-blue-50 text-blue-600';
                 
                 container.innerHTML += `
                     <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 transition hover:shadow-sm">
@@ -149,18 +153,16 @@
             const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
             const currentYear = new Date().getFullYear();
 
-            // 1. Data Desain (Hitung task yang statusnya 'Final')
             let dataDesain = new Array(12).fill(0);
             tasks.forEach(t => {
                 if(t.status === 'Final') {
-                    let date = new Date(t.dateStr); // Asumsi dateStr bisa di-parse
+                    let date = new Date(t.dateStr); 
                     if(!isNaN(date.getTime()) && date.getFullYear() === currentYear) {
                         dataDesain[date.getMonth()] += 1;
                     }
                 }
             });
 
-            // 2. Data Konten (Hitung creator_task yang isCompleted 'true')
             let dataKonten = new Array(12).fill(0);
             creatorTasks.forEach(t => {
                 if(t.isCompleted === true || t.isCompleted === "true") {
@@ -171,7 +173,6 @@
                 }
             });
 
-            // Render Chart Desain
             const ctxDesain = document.getElementById('chartDesain').getContext('2d');
             if(chartDesainInstance) chartDesainInstance.destroy();
             chartDesainInstance = new Chart(ctxDesain, {
@@ -180,7 +181,6 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
             });
 
-            // Render Chart Konten
             const ctxKonten = document.getElementById('chartKonten').getContext('2d');
             if(chartKontenInstance) chartKontenInstance.destroy();
             chartKontenInstance = new Chart(ctxKonten, {
@@ -198,8 +198,14 @@
             
             const colors = ['text-blue-500', 'text-teal-500', 'text-indigo-500', 'text-purple-500'];
             
-            // Filter hanya user yang role nya 'desainer'
-            const desainerOnly = usersList.filter(u => u.role === 'desainer');
+            // AMAN DARI TYPO: Filter mengabaikan huruf besar/kecil
+            const desainerOnly = usersList.filter(u => u.role && u.role.toLowerCase() === 'desainer');
+
+            if(desainerOnly.length === 0) {
+                boardContainer.innerHTML = `<div class="col-span-full p-8 text-center text-xs font-bold text-slate-400 border-2 border-dashed border-slate-200 rounded-3xl">Belum ada tim dengan role 'Desainer' di Database. Silakan tambahkan di menu TIM.</div>`;
+                select.innerHTML = `<option value="" disabled selected>Belum ada tim...</option>`;
+                return;
+            }
 
             desainerOnly.forEach((u, index) => {
                 select.innerHTML += `<option value="${u.name}">${u.name}</option>`;
@@ -216,6 +222,13 @@
         async function sendTask(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
+            
+            // Validasi jika belum ada desainer
+            if(!document.getElementById('assignee').value) {
+                alert("Harap tambahkan tim Desainer terlebih dahulu di menu Tim!");
+                return;
+            }
+
             btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> MENGIRIM...'; btn.disabled = true;
 
             const taskData = {
@@ -231,7 +244,6 @@
             document.getElementById('taskForm').reset(); document.getElementById('taskJO').focus();
             btn.innerHTML = '<i class="ph-fill ph-paper-plane-right"></i> KIRIM TUGAS'; btn.disabled = false;
             
-            // Reload Tasks silently
             const resTasks = await dbCall({ action: 'read', sheetName: 'tasks' });
             if(resTasks.status === 'success') renderBoard(resTasks.data);
         }
@@ -251,9 +263,10 @@
         }
 
         function renderBoard(tasks) {
-            // Clear existing boards
             document.querySelectorAll('[id^="board-"]').forEach(el => { if(el.id !== 'board-final') el.innerHTML = ''; });
             document.getElementById('board-final').innerHTML = '';
+
+            if(!tasks || tasks.length === 0) return;
 
             tasks.sort((a,b) => a.id - b.id).reverse().forEach(task => {
                 const card = document.createElement('div');
@@ -292,7 +305,6 @@
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
     </script>
 
-    <!-- HEADER NAVIGASI -->
     <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex justify-between items-center">
         <div class="flex items-center gap-2">
             <i class="ph-fill ph-hexagon text-2xl text-blue-600"></i>
@@ -308,7 +320,6 @@
         </div>
     </header>
 
-    <!-- LOADING OVERLAY -->
     <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex justify-center items-center">
         <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3">
             <i class="ph ph-spinner animate-spin text-4xl text-blue-600"></i>
@@ -316,21 +327,16 @@
         </div>
     </div>
 
-    <!-- MAIN CONTAINER -->
     <main class="p-4 md:p-8 max-w-7xl mx-auto">
         
-        <!-- SWITCH TABS -->
         <div class="flex bg-slate-100 p-1.5 rounded-2xl mb-8 max-w-md mx-auto">
             <button onclick="switchTab('overview')" id="btn-overview" class="flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex justify-center items-center gap-2 bg-blue-600 text-white shadow-md"><i class="ph-fill ph-chart-pie-slice"></i> Overview</button>
             <button onclick="switchTab('desain')" id="btn-desain" class="flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex justify-center items-center gap-2 bg-slate-100 text-slate-500 hover:bg-slate-200"><i class="ph-fill ph-paint-brush"></i> Task Desain</button>
         </div>
 
-        <!-- ==================== TAB 1: OVERVIEW EKSEKUTIF ==================== -->
         <div id="tab-overview" class="space-y-8">
             
-            <!-- Widget Cards Row -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Piket Card -->
                 <div class="bg-gradient-to-br from-amber-400 to-orange-500 p-6 rounded-[32px] shadow-lg shadow-orange-500/20 text-white relative overflow-hidden">
                     <i class="ph-fill ph-broom absolute -right-4 -bottom-4 text-8xl opacity-20"></i>
                     <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-100 mb-2">Piket Hari Ini</h3>
@@ -338,14 +344,12 @@
                     <div id="widgetPiketNama" class="flex flex-wrap gap-2"></div>
                 </div>
 
-                <!-- Izin Sakit Card -->
                 <div class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
                     <div class="bg-red-50 w-12 h-12 rounded-full flex items-center justify-center text-red-500 text-2xl absolute top-6 right-6"><i class="ph-fill ph-thermometer"></i></div>
                     <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Tim Sakit Bulan Ini</h3>
                     <div class="text-3xl font-black text-slate-800 tracking-tighter mt-4" id="widgetSakit">0 Orang</div>
                 </div>
 
-                <!-- Total Tim Card -->
                 <div class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
                     <div class="bg-blue-50 w-12 h-12 rounded-full flex items-center justify-center text-blue-500 text-2xl absolute top-6 right-6"><i class="ph-fill ph-users"></i></div>
                     <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Total Karyawan Aktif</h3>
@@ -353,29 +357,23 @@
                 </div>
             </div>
 
-            <!-- Charts Row -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Chart Desain -->
                 <div class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex flex-col">
                     <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-trend-up text-blue-500 text-lg"></i> Kurva Desain Selesai (Tahun Ini)</h3>
                     <div class="flex-1 w-full relative min-h-[250px]"><canvas id="chartDesain"></canvas></div>
                 </div>
-                <!-- Chart Konten -->
                 <div class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex flex-col">
                     <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-video-camera text-pink-500 text-lg"></i> Kurva Konten Di-Take (Tahun Ini)</h3>
                     <div class="flex-1 w-full relative min-h-[250px]"><canvas id="chartKonten"></canvas></div>
                 </div>
             </div>
 
-            <!-- Tim List -->
             <section class="pt-4">
                 <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-2 ml-2"><i class="ph-fill ph-address-book text-lg"></i> Susunan Tim Molusca</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="teamListContainer"></div>
             </section>
-
         </div>
 
-        <!-- ==================== TAB 2: TASK DESAINER (OLD VIEW) ==================== -->
         <div id="tab-desain" class="hidden space-y-8">
             <section class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
                 <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph-fill ph-plus-circle text-blue-600 text-lg"></i> Create New Task</h2>
