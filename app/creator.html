@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creator Workspace - Molusca</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-[#FBFBFE] pb-24 text-slate-800" onload="initApp()" oncontextmenu="return false;">
+
+    <!-- Header Terintegrasi -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-2">
+            <i class="ph-fill ph-video-camera text-2xl text-blue-600"></i>
+            <h1 class="text-lg font-extrabold tracking-tight text-slate-900">Creator<span class="text-blue-600">Space.</span></h1>
+        </div>
+        <button onclick="goBack()" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl flex items-center gap-1 transition shadow-sm">
+            <i class="ph-fill ph-arrow-left text-lg"></i> Kembali
+        </button>
+    </header>
+
+    <div class="max-w-3xl mx-auto px-4 md:px-8 mt-6">
+        <div class="flex bg-slate-100 p-1.5 rounded-2xl">
+            <button onclick="switchTab('planner')" id="btnPlanner" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all bg-blue-600 text-white shadow-md flex justify-center items-center gap-2">
+                <i class="ph-fill ph-calendar-plus text-sm"></i> Rencana Konten
+            </button>
+            <button onclick="switchTab('report')" id="btnReport" class="flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all text-slate-500 hover:text-slate-700 flex justify-center items-center gap-2">
+                <i class="ph-fill ph-pencil-simple-line text-sm"></i> Laporan Harian
+            </button>
+        </div>
+    </div>
+
+    <main class="p-4 md:p-8 max-w-3xl mx-auto mt-2">
+        
+        <!-- ================= TAB 1: PLANNER KONTEN ================= -->
+        <div id="sectionPlanner" class="block space-y-6 animate-[fadeIn_0.3s_ease-in-out]">
+            <section class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
+                <h2 id="formTitle" class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i class="ph-fill ph-plus-circle text-blue-600 text-lg"></i> Tambah Rencana
+                </h2>
+                <form id="taskForm" onsubmit="saveTask(event)" class="space-y-3">
+                    <input type="hidden" id="editTaskId" value="">
+                    
+                    <div class="relative">
+                        <i class="ph ph-text-aa absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="taskTitle" required placeholder="Judul Konten (Contoh: POV Anak Agency)" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="relative">
+                            <i class="ph ph-briefcase absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="taskClient" required placeholder="Klien / Brand" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all">
+                        </div>
+                        <div class="relative">
+                            <input type="date" id="taskDate" required class="w-full bg-slate-50 border-none rounded-2xl py-4 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all appearance-none">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 pt-2">
+                        <button type="button" id="cancelEditBtn" onclick="cancelEdit()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-4 px-6 rounded-2xl transition items-center justify-center">Batal</button>
+                        <button type="submit" id="submitBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 transition flex justify-center items-center gap-2">
+                            <i class="ph-fill ph-paper-plane-right"></i> SIMPAN RENCANA
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section>
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ml-2">
+                    <i class="ph-fill ph-list-dashes text-lg text-blue-500"></i> Antrean Konten
+                </h2>
+                <div id="activeBoard" class="space-y-4"></div>
+            </section>
+
+            <section class="pt-2">
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ml-2">
+                    <i class="ph-fill ph-check-circle text-lg text-green-500"></i> Sudah Selesai
+                </h2>
+                <div id="completedBoard" class="space-y-3"></div>
+            </section>
+        </div>
+
+        <!-- ================= TAB 2: LAPORAN HARIAN ================= -->
+        <div id="sectionReport" class="hidden space-y-8 animate-[fadeIn_0.3s_ease-in-out]">
+            <section class="bg-slate-900 p-6 rounded-[32px] shadow-xl text-white">
+                <h2 class="text-xs font-black uppercase tracking-widest mb-5 flex items-center gap-2">
+                    <i class="ph-fill ph-pencil-simple-line text-blue-400 text-lg"></i> Input Laporan Harian
+                </h2>
+                <form id="reportForm" onsubmit="saveReport(event)" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="relative">
+                            <i class="ph-fill ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <select id="reportName" required class="w-full bg-white/10 border-none rounded-2xl py-3.5 pl-10 pr-4 text-white text-xs font-bold outline-none appearance-none">
+                                <option value="" disabled selected>Memuat nama...</option>
+                            </select>
+                        </div>
+                        <div class="relative">
+                            <input type="date" id="reportDate" required class="w-full bg-white/10 border-none rounded-2xl py-3.5 px-4 text-white text-xs font-bold outline-none appearance-none">
+                        </div>
+                    </div>
+                    
+                    <textarea id="reportTask" required rows="4" placeholder="Ketik kerjaan nyata hari ini...&#10;Contoh:&#10;- Take video skincare brand A&#10;- Cari referensi untuk besok" class="w-full bg-white/10 border-none rounded-2xl py-4 px-4 text-white text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500/50 resize-none"></textarea>
+                    
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl transition uppercase tracking-widest text-[10px] flex justify-center items-center gap-2 shadow-lg shadow-blue-900/20">
+                        <i class="ph-fill ph-paper-plane-right"></i> Kirim Laporan Ke Bos
+                    </button>
+                </form>
+            </section>
+
+            <section>
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 ml-2 flex items-center gap-2">
+                    <i class="ph-fill ph-clock-counter-clockwise text-lg text-slate-400"></i> Riwayat Laporan Terakhir
+                </h2>
+                <div id="historyContainer" class="space-y-3"></div>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        // Mencegah Inspect & Copas
+        document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoX3MZ0hxtL2j3ol3N_1w8ohYCdXPsUtI",
+            databaseURL: "https://appmoluscadesign-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "appmoluscadesign"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        const dbTasks = 'creator_tasks'; 
+        const dbReports = 'creator_reports_custom'; 
+
+        // Manajemen Sesi User
+        const userRole = localStorage.getItem('moluscaRole');
+        const userName = localStorage.getItem('moluscaUser');
+
+        function goBack() {
+            if(userRole === 'admin') window.location.href = 'dashboard.html';
+            else window.location.href = 'desainer.html'; // Hub utama untuk karyawan
+        }
+
+        // Fungsi Ganti Tab
+        function switchTab(tabName) {
+            const secPlanner = document.getElementById('sectionPlanner');
+            const secReport = document.getElementById('sectionReport');
+            const btnPlanner = document.getElementById('btnPlanner');
+            const btnReport = document.getElementById('btnReport');
+
+            const styleActive = "flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all bg-blue-600 text-white shadow-md flex justify-center items-center gap-2";
+            const styleInactive = "flex-1 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all text-slate-500 hover:text-slate-700 flex justify-center items-center gap-2";
+
+            if(tabName === 'planner') {
+                secPlanner.classList.remove('hidden'); secReport.classList.add('hidden');
+                btnPlanner.className = styleActive; btnReport.className = styleInactive;
+            } else {
+                secPlanner.classList.add('hidden'); secReport.classList.remove('hidden');
+                btnReport.className = styleActive; btnPlanner.className = styleInactive;
+            }
+        }
+
+        function initApp() {
+            if(!userName) window.location.href = 'index.html'; // Proteksi halaman
+
+            document.getElementById('taskDate').valueAsDate = new Date();
+            document.getElementById('reportDate').valueAsDate = new Date();
+
+            loadEmployees();
+            loadData();
+        }
+
+        // BACA NAMA DARI TABEL USERS UTAMA
+        function loadEmployees() {
+            db.ref('users').on('value', snapshot => {
+                const select = document.getElementById('reportName');
+                select.innerHTML = '';
+                
+                if(snapshot.exists()){
+                    Object.values(snapshot.val()).forEach(u => {
+                        if(u.role !== 'admin') {
+                            let selected = (u.name === userName) ? 'selected' : '';
+                            select.innerHTML += `<option value="${u.name}" ${selected}>${u.name}</option>`;
+                        }
+                    });
+                }
+                
+                // Kunci form untuk anggota tim (Hanya bisa buat laporan namanya sendiri)
+                if(userRole !== 'admin') {
+                    select.value = userName;
+                    select.disabled = true;
+                    select.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        function loadData() {
+            // Load Planner
+            db.ref(dbTasks).on('value', (snapshot) => {
+                const tasks = snapshot.val() ? Object.values(snapshot.val()) : [];
+                renderBoard(tasks);
+            });
+            // Load Reports
+            db.ref(dbReports).limitToLast(30).on('value', (snapshot) => {
+                const reports = snapshot.val() ? Object.values(snapshot.val()) : [];
+                renderHistory(reports);
+            });
+        }
+
+        // ================== PLANNER LOGIC ==================
+        async function saveTask(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editTaskId').value;
+            const taskId = editId ? editId : Date.now().toString();
+            
+            const taskData = {
+                id: taskId, title: document.getElementById('taskTitle').value,
+                client: document.getElementById('taskClient').value, targetDate: document.getElementById('taskDate').value,
+                isCompleted: editId ? undefined : false, createdAt: editId ? undefined : new Date().toISOString()
+            };
+
+            if (editId) {
+                await db.ref(`${dbTasks}/${taskId}`).update({ title: taskData.title, client: taskData.client, targetDate: taskData.targetDate });
+                cancelEdit();
+            } else {
+                await db.ref(`${dbTasks}/${taskId}`).set(taskData);
+                document.getElementById('taskForm').reset();
+                document.getElementById('taskDate').valueAsDate = new Date();
+            }
+        }
+
+        function toggleComplete(id, currentStatus) { db.ref(`${dbTasks}/${id}`).update({ isCompleted: !currentStatus }); }
+        
+        function deleteTask(id) { 
+            // Proteksi: Hanya admin yang bisa hapus planner
+            if(userRole !== 'admin') {
+                alert("Hanya Admin / Lead yang bisa menghapus rencana konten.");
+                return;
+            }
+            if(confirm("Hapus konten ini secara permanen?")) db.ref(`${dbTasks}/${id}`).remove(); 
+        }
+
+        function editTask(id, title, client, targetDate) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.getElementById('editTaskId').value = id;
+            document.getElementById('taskTitle').value = title;
+            document.getElementById('taskClient').value = client;
+            document.getElementById('taskDate').value = targetDate;
+            
+            document.getElementById('formTitle').innerHTML = `<i class="ph-fill ph-pencil-simple text-orange-500 text-lg"></i> Edit Konten`;
+            document.getElementById('submitBtn').innerHTML = `<i class="ph-fill ph-floppy-disk"></i> UPDATE RENCANA`;
+            document.getElementById('submitBtn').className = "flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-2xl shadow-lg transition flex justify-center items-center gap-2";
+            document.getElementById('cancelEditBtn').classList.remove('hidden'); document.getElementById('cancelEditBtn').classList.add('flex');
+        }
+
+        function cancelEdit() {
+            document.getElementById('editTaskId').value = "";
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskDate').valueAsDate = new Date();
+            
+            document.getElementById('formTitle').innerHTML = `<i class="ph-fill ph-plus-circle text-blue-600 text-lg"></i> Tambah Rencana`;
+            document.getElementById('submitBtn').innerHTML = `<i class="ph-fill ph-paper-plane-right"></i> SIMPAN RENCANA`;
+            document.getElementById('submitBtn').className = "flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg transition flex justify-center items-center gap-2";
+            document.getElementById('cancelEditBtn').classList.add('hidden'); document.getElementById('cancelEditBtn').classList.remove('flex');
+        }
+
+        function getDeadlineInfo(dateStr) {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const target = new Date(dateStr); target.setHours(0,0,0,0);
+            const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+            const formattedDate = target.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+
+            if (diffDays < 0) return { text: `Lewat (${formattedDate})`, bg: 'bg-red-50 text-red-600 border-red-200', icon: 'ph-warning-circle' };
+            if (diffDays === 0) return { text: 'Take Hari Ini!', bg: 'bg-red-500 text-white shadow-md border-red-500 animate-pulse', icon: 'ph-fire' };
+            if (diffDays === 1) return { text: 'Besok', bg: 'bg-orange-100 text-orange-600 border-orange-200', icon: 'ph-clock-countdown' };
+            if (diffDays <= 3) return { text: `H-${diffDays}`, bg: 'bg-yellow-50 text-yellow-600 border-yellow-200', icon: 'ph-clock-countdown' };
+            return { text: formattedDate, bg: 'bg-slate-100 text-slate-500 border-slate-100', icon: 'ph-calendar-blank' };
+        }
+
+        function renderBoard(tasks) {
+            const activeBoard = document.getElementById('activeBoard');
+            const completedBoard = document.getElementById('completedBoard');
+            activeBoard.innerHTML = ''; completedBoard.innerHTML = '';
+
+            const activeTasks = tasks.filter(t => !t.isCompleted).sort((a, b) => new Date(a.targetDate) - new Date(b.targetDate));
+            const completedTasks = tasks.filter(t => t.isCompleted).reverse();
+
+            if(activeTasks.length === 0) activeBoard.innerHTML = `<div class="text-center text-xs text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-3xl">Belum ada jadwal konten.</div>`;
+            if(completedTasks.length === 0) completedBoard.innerHTML = `<div class="text-center text-xs text-slate-400 py-4">Belum ada konten selesai.</div>`;
+
+            activeTasks.forEach(task => {
+                const d = getDeadlineInfo(task.targetDate);
+                const card = document.createElement('div');
+                
+                // Sembunyikan icon tong sampah jika bukan admin
+                const delIcon = userRole === 'admin' ? `<button onclick="deleteTask('${task.id}')" class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition flex items-center justify-center"><i class="ph-fill ph-trash"></i></button>` : '';
+
+                card.className = "bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm relative";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="text-[10px] font-black uppercase tracking-tighter px-2.5 py-1 rounded-lg border flex items-center gap-1 ${d.bg}"><i class="ph-fill ${d.icon}"></i> ${d.text}</span>
+                            <span class="text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border uppercase tracking-widest"><i class="ph-fill ph-user-circle"></i> ${task.client}</span>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="editTask('${task.id}', '${task.title}', '${task.client}', '${task.targetDate}')" class="w-8 h-8 rounded-full bg-orange-50 text-orange-500 hover:bg-orange-500 hover:text-white transition flex items-center justify-center"><i class="ph-fill ph-pencil-simple"></i></button>
+                            ${delIcon}
+                        </div>
+                    </div>
+                    <h3 class="font-extrabold text-slate-900 text-base leading-tight mb-4 pr-4">${task.title}</h3>
+                    <button onclick="toggleComplete('${task.id}', false)" class="w-full bg-slate-50 hover:bg-green-500 hover:text-white text-slate-500 text-[11px] font-extrabold p-3 rounded-xl uppercase tracking-widest flex justify-center items-center gap-2 transition border"><i class="ph-fill ph-check-circle text-lg"></i> Tandai Selesai Di-take</button>
+                `;
+                activeBoard.appendChild(card);
+            });
+
+            completedTasks.forEach(task => {
+                const delIcon = userRole === 'admin' ? `<button onclick="deleteTask('${task.id}')" class="w-8 h-8 rounded-full text-slate-300 hover:text-red-500 flex items-center justify-center transition"><i class="ph-fill ph-trash text-lg"></i></button>` : '';
+                const card = document.createElement('div');
+                card.className = "bg-white/60 p-4 rounded-2xl border border-slate-100 flex justify-between items-center gap-4 transition";
+                card.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-slate-500 text-sm truncate line-through mb-1">${task.title}</h4>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase"><span><i class="ph-fill ph-user-circle"></i> ${task.client}</span></div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleComplete('${task.id}', true)" class="text-xs font-bold text-slate-400 hover:text-blue-500 transition"><i class="ph-bold ph-arrow-u-up-left"></i> Batal</button>
+                        ${delIcon}
+                    </div>
+                `;
+                completedBoard.appendChild(card);
+            });
+        }
+
+        // ================== REPORT LOGIC ==================
+        async function saveReport(e) {
+            e.preventDefault();
+            const reportId = Date.now().toString();
+            const dateVal = document.getElementById('reportDate').value;
+            const dateObj = new Date(dateVal);
+            const dateStr = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+
+            // Tangkap nama (Atasi jika form select di-disable)
+            const finalName = userRole === 'admin' ? document.getElementById('reportName').value : userName;
+
+            const data = {
+                id: reportId, name: finalName,
+                dateVal: dateVal, dateStr: dateStr, task: document.getElementById('reportTask').value,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            await db.ref(`${dbReports}/${reportId}`).set(data);
+            document.getElementById('reportTask').value = '';
+            alert("Laporan harian berhasil dikirim!");
+        }
+
+        function deleteReportCustom(id, repName) {
+            // Proteksi: Hanya bisa hapus laporan sendiri atau jika dia Admin
+            if(userRole !== 'admin' && userName !== repName) {
+                alert("Anda hanya bisa menghapus laporan Anda sendiri.");
+                return;
+            }
+
+            if(confirm("Yakin ingin menghapus laporan ini?")) {
+                db.ref(`${dbReports}/${id}`).remove();
+            }
+        }
+
+        function renderHistory(reports) {
+            const container = document.getElementById('historyContainer');
+            container.innerHTML = '';
+            
+            if (reports.length === 0) {
+                container.innerHTML = `<div class="text-center text-xs text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-3xl">Belum ada riwayat laporan.</div>`;
+                return;
+            }
+
+            reports.sort((a, b) => new Date(b.dateVal) - new Date(a.dateVal));
+            reports.forEach(rep => {
+                // Tampilkan tombol hapus HANYA jika itu laporan miliknya atau jika dia admin
+                const delBtn = (userRole === 'admin' || userName === rep.name) ? `
+                    <button onclick="deleteReportCustom('${rep.id}', '${rep.name}')" class="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition p-1" title="Hapus Laporan">
+                        <i class="ph-fill ph-trash text-lg"></i>
+                    </button>` : '';
+
+                container.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-start gap-3 relative transition hover:shadow-md">
+                        <div class="bg-blue-50 text-blue-600 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-black text-lg"><i class="ph-fill ph-check-circle"></i></div>
+                        <div class="flex-1 pr-6">
+                            <h4 class="font-black text-slate-800 text-sm flex items-center gap-1">${rep.name} <span class="text-[9px] bg-slate-100 px-2 py-0.5 rounded text-slate-400 font-bold ml-1">${rep.dateStr}</span></h4>
+                            <p class="text-xs text-slate-600 mt-2 font-medium leading-relaxed whitespace-pre-wrap">${rep.task}</p>
+                        </div>
+                        ${delBtn}
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
