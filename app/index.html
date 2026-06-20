@@ -6,8 +6,6 @@
     <title>Login - Molusca Project</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style> body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } </style>
 </head>
@@ -39,14 +37,8 @@
     <script>
         document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDoX3MZ0hxtL2j3ol3N_1w8ohYCdXPsUtI",
-            authDomain: "appmoluscadesign.firebaseapp.com",
-            databaseURL: "https://appmoluscadesign-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "appmoluscadesign"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // URL GOOGLE APPS SCRIPT ANDA
+        const SCRIPT_URL = 'PASTE_URL_APPS_SCRIPT_DI_SINI';
 
         // Cek jika sudah login
         if(localStorage.getItem('moluscaUser')) {
@@ -54,41 +46,49 @@
             else window.location.href = 'desainer.html';
         }
 
-        db.ref('users').once('value', snapshot => {
-            if (!snapshot.exists()) {
-                db.ref('users').set({
-                    "admin": { password: "admin123", role: "admin", name: "admin" }
-                });
-            }
-        });
-
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
-            btn.innerHTML = 'Memeriksa...';
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Memeriksa...';
+            btn.disabled = true;
             
             const user = document.getElementById('username').value.toLowerCase().trim();
             const pass = document.getElementById('password').value;
 
-            db.ref('users/' + user).once('value', snapshot => {
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    if (userData.password === pass) {
-                        localStorage.setItem('moluscaUser', userData.name);
-                        localStorage.setItem('moluscaRole', userData.role); // Simpan Role
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'read', sheetName: 'users' })
+                });
+                const responseData = await res.json();
+                
+                let foundUser = responseData.data.find(u => u.username === user);
+
+                if (foundUser) {
+                    if (foundUser.password === pass) {
+                        localStorage.setItem('moluscaUser', foundUser.name);
+                        localStorage.setItem('moluscaRole', foundUser.role);
                         
-                        if (userData.role === 'admin') window.location.href = 'dashboard.html';
+                        if (foundUser.role === 'admin') window.location.href = 'dashboard.html';
                         else window.location.href = 'desainer.html';
                     } else {
                         alert('Password salah!');
-                        btn.innerHTML = 'Sign In <i class="ph ph-arrow-right"></i>';
+                        resetBtn(btn);
                     }
                 } else {
-                    alert('Username tidak ditemukan di database!');
-                    btn.innerHTML = 'Sign In <i class="ph ph-arrow-right"></i>';
+                    alert('Username tidak ditemukan di database Google Sheets!');
+                    resetBtn(btn);
                 }
-            });
+            } catch(err) {
+                alert('Gagal terhubung ke server.');
+                resetBtn(btn);
+            }
         });
+
+        function resetBtn(btn) {
+            btn.innerHTML = 'Sign In <i class="ph ph-arrow-right"></i>';
+            btn.disabled = false;
+        }
     </script>
 </body>
 </html>
