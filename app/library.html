@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molusca | Asset Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; }
+        .hidden-admin { display: none; }
+    </style>
+</head>
+<body class="pb-20" onload="initApp()" oncontextmenu="return false;">
+    <script>
+        document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
+    </script>
+
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200 py-4 px-6">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="ph-fill ph-folder-open text-2xl text-blue-600"></i>
+                <h1 class="font-extrabold text-slate-900 text-lg">Asset Library</h1>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="goBack()" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl flex items-center gap-1 transition shadow-sm">
+                    <i class="ph-fill ph-arrow-left text-lg"></i> Kembali
+                </button>
+                <button onclick="toggleAdmin()" id="btnToggle" class="text-[10px] font-bold bg-slate-900 text-white px-4 py-2.5 rounded-xl hover:bg-slate-700 transition flex items-center gap-1 shadow-sm">
+                    <i class="ph-fill ph-shield-check text-sm"></i> Admin Mode
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 md:p-5 space-y-8 mt-4">
+        
+        <div id="adminSection" class="hidden-admin bg-white p-6 rounded-[32px] shadow-sm border border-slate-200 space-y-6">
+            <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2"><i class="ph-bold ph-shield-check text-blue-600 text-lg"></i> Admin Panel</h2>
+            
+            <div class="flex flex-col md:flex-row gap-3">
+                <input type="text" id="newCat" placeholder="Nama Kategori (ex: Katalog Tumbler)" class="flex-1 p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-500/20 outline-none">
+                <button onclick="addCategory()" id="btnCat" class="bg-blue-600 text-white px-6 py-4 rounded-2xl font-bold text-xs hover:bg-blue-700 shadow-md shadow-blue-200 flex justify-center items-center gap-2 transition"><i class="ph-bold ph-plus"></i> Tambah Kategori</button>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <form id="formAsset" class="space-y-4">
+                <select id="catSelect" class="w-full p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-500/20 outline-none appearance-none cursor-pointer"></select>
+                <input type="text" id="assetName" placeholder="Nama Item (ex: Desain Mockup Tumbler)" required class="w-full p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-500/20 outline-none">
+                
+                <div id="linkContainer" class="space-y-3">
+                    <div class="flex gap-2">
+                        <input type="text" placeholder="Label (ex: PDF)" required class="w-1/3 p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-500/20 outline-none link-label">
+                        <input type="url" placeholder="Link URL (https://...)" required class="flex-1 p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-500/20 outline-none link-url">
+                    </div>
+                </div>
+                <button type="button" onclick="addLinkField()" class="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-800 transition flex items-center gap-1"><i class="ph-bold ph-plus"></i> Tambah Link Lain</button>
+                <button type="submit" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition flex justify-center items-center gap-2 shadow-lg shadow-slate-200 mt-2"><i class="ph-fill ph-floppy-disk"></i> Simpan Ke Database</button>
+            </form>
+        </div>
+
+        <div id="appContainer" class="space-y-8">
+            <div class="text-center py-10 text-slate-400 font-bold text-xs"><i class="ph ph-spinner animate-spin text-2xl mb-2"></i><br>Memuat data...</div>
+        </div>
+    </main>
+
+    <script>
+        // === GOOGLE SHEETS API ===
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
+        
+        async function dbCall(payload) {
+            try {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+                return await res.json();
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                return { status: 'error', data: [] };
+            }
+        }
+
+        let isAdmin = false;
+        let globalCategories = [];
+        let globalAssets = [];
+        const userRole = localStorage.getItem('moluscaRole');
+
+        function goBack() {
+            if(userRole === 'admin') window.location.href = 'dashboard.html';
+            else window.location.href = 'desainer.html'; 
+        }
+
+        function initApp() {
+            if(!localStorage.getItem('moluscaUser')) window.location.href = 'index.html';
+            // Hanya admin yang boleh melihat tombol Admin Mode
+            if(userRole !== 'admin') {
+                document.getElementById('btnToggle').style.display = 'none';
+            }
+            loadData();
+        }
+
+        // Toggle UI Admin Mode
+        function toggleAdmin() {
+            isAdmin = !isAdmin;
+            document.getElementById('adminSection').classList.toggle('hidden-admin');
+            document.getElementById('btnToggle').innerHTML = isAdmin ? '<i class="ph-fill ph-x text-sm"></i> Keluar Admin' : '<i class="ph-fill ph-shield-check text-sm"></i> Admin Mode';
+            document.getElementById('btnToggle').className = isAdmin ? "text-[10px] font-bold bg-red-500 text-white px-4 py-2.5 rounded-xl hover:bg-red-600 transition flex items-center gap-1 shadow-sm" : "text-[10px] font-bold bg-slate-900 text-white px-4 py-2.5 rounded-xl hover:bg-slate-700 transition flex items-center gap-1 shadow-sm";
+            renderView();
+        }
+
+        // Add Input Row (Multiple Links)
+        function addLinkField() {
+            const div = document.createElement('div');
+            div.className = "flex gap-2";
+            div.innerHTML = `<input type="text" placeholder="Label (ex: Drive)" required class="w-1/3 p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-500/20 outline-none link-label"><input type="url" placeholder="Link URL" required class="flex-1 p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-500/20 outline-none link-url">`;
+            document.getElementById('linkContainer').appendChild(div);
+        }
+
+        async function loadData() {
+            const [resCat, resAst] = await Promise.all([
+                dbCall({ action: 'read', sheetName: 'asset_categories' }),
+                dbCall({ action: 'read', sheetName: 'assets' })
+            ]);
+            
+            globalCategories = resCat.status === 'success' && resCat.data ? resCat.data : [];
+            globalAssets = resAst.status === 'success' && resAst.data ? resAst.data : [];
+            
+            const catSelect = document.getElementById('catSelect');
+            catSelect.innerHTML = '<option value="" disabled selected>Pilih Kategori...</option>';
+            globalCategories.forEach(c => {
+                catSelect.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+            });
+            
+            renderView();
+        }
+
+        // Simpan Kategori Baru
+        async function addCategory() {
+            const cat = document.getElementById('newCat').value.trim();
+            if(!cat) return alert("Nama kategori tidak boleh kosong!");
+            
+            const btn = document.getElementById('btnCat');
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>'; btn.disabled = true;
+
+            await dbCall({ action: 'insert', sheetName: 'asset_categories', data: { id: Date.now().toString(), name: cat } });
+            
+            document.getElementById('newCat').value = '';
+            btn.innerHTML = '<i class="ph-bold ph-plus"></i> Tambah Kategori'; btn.disabled = false;
+            loadData();
+        }
+
+        // Simpan Asset Baru
+        document.getElementById('formAsset').onsubmit = async (e) => {
+            e.preventDefault();
+            const cat = document.getElementById('catSelect').value;
+            const name = document.getElementById('assetName').value;
+            
+            if(!cat) return alert("Silakan pilih kategori!");
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> MENYIMPAN...'; btn.disabled = true;
+
+            const labels = document.querySelectorAll('.link-label');
+            const urls = document.querySelectorAll('.link-url');
+            let links = [];
+            
+            labels.forEach((l, i) => {
+                if(l.value && urls[i].value) links.push({label: l.value, url: urls[i].value});
+            });
+
+            await dbCall({ 
+                action: 'insert', 
+                sheetName: 'assets', 
+                data: { id: Date.now().toString(), category: cat, name: name, links: JSON.stringify(links) } 
+            });
+
+            document.getElementById('formAsset').reset();
+            // Reset input form links kembali jadi 1 baris
+            document.getElementById('linkContainer').innerHTML = `<div class="flex gap-2"><input type="text" placeholder="Label (ex: PDF)" required class="w-1/3 p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-500/20 outline-none link-label"><input type="url" placeholder="Link URL (https://...)" required class="flex-1 p-4 bg-slate-50 rounded-2xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-500/20 outline-none link-url"></div>`;
+            
+            btn.innerHTML = '<i class="ph-fill ph-floppy-disk"></i> Simpan Ke Database'; btn.disabled = false;
+            alert('Aset berhasil disimpan!');
+            loadData();
+        };
+
+        // Render Antarmuka
+        function renderView() {
+            const container = document.getElementById('appContainer');
+            container.innerHTML = '';
+            
+            if(globalCategories.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-400 font-bold text-xs border-2 border-dashed border-slate-200 rounded-[32px] bg-slate-50/50">Belum ada kategori dan aset.</div>`;
+                return;
+            }
+
+            globalCategories.forEach(catObj => {
+                const catName = catObj.name;
+                const catAssets = globalAssets.filter(a => a.category === catName);
+
+                let section = `
+                <section>
+                    <div class="flex justify-between items-center mb-4 ml-1">
+                        <h2 class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2"><i class="ph-fill ph-folder text-blue-500 text-lg"></i> ${catName}</h2>
+                        ${isAdmin ? `<button onclick="delCategory('${catObj.id}', '${catName}')" class="text-[9px] font-bold text-red-500 hover:text-red-700 bg-red-50 px-2.5 py-1 rounded-lg transition"><i class="ph-fill ph-trash"></i> Hapus Kategori</button>` : ''}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">`;
+                
+                if (catAssets.length === 0) {
+                    section += `<div class="col-span-full p-4 text-xs font-bold text-slate-300 italic border-2 border-dashed border-slate-100 rounded-2xl text-center">Tidak ada aset di kategori ini.</div>`;
+                }
+
+                catAssets.reverse().forEach(item => {
+                    let parsedLinks = [];
+                    try { parsedLinks = JSON.parse(item.links); } catch(e) {}
+
+                    section += `
+                    <div class="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <h3 class="font-extrabold text-slate-900 leading-tight pr-4">${item.name}</h3>
+                                ${isAdmin ? `<button onclick="delAsset('${item.id}')" class="text-slate-300 hover:text-red-500 transition"><i class="ph-fill ph-trash text-lg"></i></button>` : ''}
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${parsedLinks.map(l => `<a href="${l.url}" target="_blank" class="text-[10px] font-black bg-slate-100 text-slate-600 px-3 py-1.5 rounded-xl uppercase tracking-widest hover:bg-blue-600 hover:text-white transition shadow-sm border border-slate-200 hover:border-blue-600 flex items-center gap-1"><i class="ph-bold ph-link"></i> ${l.label}</a>`).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+                });
+                
+                section += `</div></section>`;
+                container.innerHTML += section;
+            });
+        }
+
+        async function delAsset(id) { 
+            if(confirm('Hapus item ini secara permanen?')) {
+                await dbCall({ action: 'delete', sheetName: 'assets', idValue: id });
+                loadData();
+            }
+        }
+
+        async function delCategory(id, catName) { 
+            if(confirm(`Hapus kategori "${catName}"? (Aset di dalamnya tidak akan tampil lagi)`)) {
+                await dbCall({ action: 'delete', sheetName: 'asset_categories', idValue: id });
+                loadData();
+            }
+        }
+    </script>
+</body>
+</html>
