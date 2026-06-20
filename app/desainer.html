@@ -6,8 +6,6 @@
     <title>Workspace - Molusca Project</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style> body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } </style>
 </head>
@@ -15,13 +13,12 @@
     <script>
         document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDoX3MZ0hxtL2j3ol3N_1w8ohYCdXPsUtI",
-            databaseURL: "https://appmoluscadesign-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "appmoluscadesign"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // === GOOGLE SHEETS API ===
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
+        async function dbCall(payload) {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+            return await res.json();
+        }
 
         let currentUser = localStorage.getItem('moluscaUser');
         
@@ -31,55 +28,52 @@
             loadMyTasks();
         }
 
-        function loadMyTasks() {
-            db.ref('tasks').on('value', (snapshot) => {
-                const data = snapshot.val();
-                const tasks = data ? Object.values(data).filter(t => t.assignee === currentUser) : [];
+        async function loadMyTasks() {
+            const res = await dbCall({ action: 'read', sheetName: 'tasks' });
+            if(res.status === 'success') {
+                const tasks = res.data.filter(t => t.assignee === currentUser);
                 renderTasks(tasks);
-            });
+            }
         }
 
-        function updateStatus(id, status) { db.ref('tasks/' + id).update({ status: status }); }
+        async function updateStatus(id, status) { 
+            await dbCall({ action: 'update', sheetName: 'tasks', idValue: id, updateData: { status: status } });
+            loadMyTasks(); 
+        }
 
         async function sendPrintilan(e) {
             e.preventDefault();
-            const taskId = Date.now();
+            const btn = e.target.querySelector('button'); btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>'; btn.disabled = true;
+
             const data = {
-                id: taskId, joCode: 'EXTRA', title: document.getElementById('pTitle').value,
+                id: Date.now().toString(), joCode: 'EXTRA', title: document.getElementById('pTitle').value,
                 sender: currentUser, priority: 'Normal', assignee: currentUser,
                 dateStr: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
                 timeAssigned: new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0'),
                 status: 'Lagi Dikerjain', isPrintilan: true, isApproved: false
             };
-            db.ref('tasks/' + taskId).set(data);
+            
+            await dbCall({ action: 'insert', sheetName: 'tasks', data: data });
             document.getElementById('pTitle').value = '';
+            btn.innerHTML = '<i class="ph-fill ph-paper-plane-right"></i>'; btn.disabled = false;
+            loadMyTasks();
         }
 
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 
         function renderTasks(myTasks) {
-            const active = document.getElementById('active-list');
-            const final = document.getElementById('final-list');
+            const active = document.getElementById('active-list'); const final = document.getElementById('final-list');
             active.innerHTML = ''; final.innerHTML = '';
 
-            myTasks.reverse().forEach(task => {
+            myTasks.sort((a,b) => a.id - b.id).reverse().forEach(task => {
                 const card = document.createElement('div');
-                let badge = (task.isPrintilan && !task.isApproved) ? `<div class="text-[9px] bg-yellow-400 font-black px-2 py-1 rounded-md mb-3 inline-flex items-center gap-1 tracking-tighter uppercase"><i class="ph-fill ph-hourglass-high"></i> Waiting Approval</div>` : '';
+                let badge = (task.isPrintilan === "true" && task.isApproved === "false") ? `<div class="text-[9px] bg-yellow-400 font-black px-2 py-1 rounded-md mb-3 inline-flex items-center gap-1 tracking-tighter uppercase"><i class="ph-fill ph-hourglass-high"></i> Waiting Approval</div>` : '';
                 let jo = `<span class="bg-blue-50 text-blue-600 px-2 py-1 rounded-lg font-black mr-2 uppercase text-[11px] tracking-tighter"><i class="ph ph-hash"></i>${task.joCode}</span>`;
 
                 if(task.status === 'Final') {
                     card.className = "bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center text-xs font-bold opacity-70 hover:opacity-100 transition-opacity";
-                    card.innerHTML = `
-                        <span class="text-slate-400 truncate mr-2">${jo} ${task.title}</span> 
-                        <div class="relative shrink-0">
-                            <select onchange="updateStatus('${task.id}', this.value)" class="text-[10px] bg-green-50 text-green-600 border border-green-100 py-1 pl-2 pr-6 rounded-md font-black outline-none cursor-pointer appearance-none transition hover:bg-green-100">
-                                <option value="Final" selected>✅ FINAL</option>
-                                <option value="Lagi Dikerjain">⏳ Lagi Dikerjain</option>
-                                <option value="Nunggu Revisi">✍️ Nunggu Revisi</option>
-                                <option value="Tinggal Layout">🧩 Tinggal Layout</option>
-                            </select>
-                            <i class="ph-fill ph-caret-down absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-green-600 text-[10px]"></i>
-                        </div>`;
+                    card.innerHTML = `<span class="text-slate-400 truncate mr-2">${jo} ${task.title}</span> 
+                        <div class="relative shrink-0"><select onchange="updateStatus('${task.id}', this.value)" class="text-[10px] bg-green-50 text-green-600 border border-green-100 py-1 pl-2 pr-6 rounded-md font-black outline-none cursor-pointer appearance-none transition hover:bg-green-100"><option value="Final" selected>✅ FINAL</option><option value="Lagi Dikerjain">⏳ Lagi Dikerjain</option><option value="Nunggu Revisi">✍️ Nunggu Revisi</option><option value="Tinggal Layout">🧩 Tinggal Layout</option></select><i class="ph-fill ph-caret-down absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-green-600 text-[10px]"></i></div>`;
                     final.appendChild(card);
                 } else {
                     let statusColor = "text-blue-600 bg-blue-50/50 border-blue-100";
@@ -88,26 +82,12 @@
 
                     let isUrgent = task.priority === 'Urgent';
                     let urgentUI = isUrgent ? `<span class="text-[10px] font-black text-red-500 uppercase flex items-center gap-1 bg-red-50 px-2 py-1 rounded-md animate-pulse border border-red-200 shadow-[0_0_10px_rgba(239,68,68,0.5)]"><i class="ph-fill ph-warning-circle"></i> URGENT</span>` : '';
-                    let cardBorder = isUrgent ? 'border-red-300 shadow-red-100 ring-2 ring-red-50' : 'border-slate-100';
 
-                    card.className = `bg-white p-6 rounded-[32px] border shadow-sm flex flex-col gap-4 transition-all ${cardBorder}`;
-                    card.innerHTML = `
-                        ${badge}
-                        <div class="flex justify-between items-center">
-                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1"><i class="ph ph-calendar-blank"></i> ${task.dateStr} | ${task.timeAssigned} WIB</div>
-                            ${urgentUI}
-                        </div>
+                    card.className = `bg-white p-6 rounded-[32px] border shadow-sm flex flex-col gap-4 transition-all ${isUrgent ? 'border-red-300 shadow-red-100 ring-2 ring-red-50' : 'border-slate-100'}`;
+                    card.innerHTML = `${badge}<div class="flex justify-between items-center"><div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1"><i class="ph ph-calendar-blank"></i> ${task.dateStr} | ${task.timeAssigned} WIB</div>${urgentUI}</div>
                         <h4 class="font-black text-xl leading-tight text-slate-900 tracking-tighter mt-1">${jo} ${task.title}</h4>
                         <div class="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest flex items-center gap-1"><i class="ph-fill ph-paper-plane-tilt"></i> From: ${task.sender}</div>
-                        <div class="relative">
-                            <select onchange="updateStatus('${task.id}', this.value)" class="w-full border p-4 rounded-[20px] font-black text-sm outline-none cursor-pointer transition appearance-none pl-10 ${statusColor}">
-                                <option value="Lagi Dikerjain" ${task.status === 'Lagi Dikerjain' ? 'selected' : ''}>⏳ Lagi Dikerjain</option>
-                                <option value="Nunggu Revisi" ${task.status === 'Nunggu Revisi' ? 'selected' : ''}>✍️ Nunggu Revisi</option>
-                                <option value="Tinggal Layout" ${task.status === 'Tinggal Layout' ? 'selected' : ''}>🧩 Tinggal Layout</option>
-                                <option value="Final" ${task.status === 'Final' ? 'selected' : ''}>✅ Final</option>
-                            </select>
-                            <i class="ph-fill ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"></i>
-                        </div>`;
+                        <div class="relative"><select onchange="updateStatus('${task.id}', this.value)" class="w-full border p-4 rounded-[20px] font-black text-sm outline-none cursor-pointer transition appearance-none pl-10 ${statusColor}"><option value="Lagi Dikerjain" ${task.status === 'Lagi Dikerjain' ? 'selected' : ''}>⏳ Lagi Dikerjain</option><option value="Nunggu Revisi" ${task.status === 'Nunggu Revisi' ? 'selected' : ''}>✍️ Nunggu Revisi</option><option value="Tinggal Layout" ${task.status === 'Tinggal Layout' ? 'selected' : ''}>🧩 Tinggal Layout</option><option value="Final" ${task.status === 'Final' ? 'selected' : ''}>✅ Final</option></select><i class="ph-fill ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"></i></div>`;
                     active.appendChild(card);
                 }
             });
@@ -116,9 +96,11 @@
 
     <header class="bg-white/80 backdrop-blur-md px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 z-50">
         <h1 class="text-xs font-black text-slate-900 uppercase tracking-[0.3em] flex items-center gap-2"><i class="ph-fill ph-hexagon text-blue-600 text-lg"></i> Molusca | <span id="userName" class="text-blue-600">...</span></h1>
-        
-        <div class="flex items-center gap-2">
-            <a href="izin.html" class="text-[10px] md:text-xs font-bold text-red-500 bg-red-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-red-100"><i class="ph-fill ph-first-aid text-sm md:text-base"></i> <span class="hidden md:inline">FORM IZIN</span></a>
+        <div class="flex items-center gap-2 flex-wrap justify-end">
+            <a href="izin.html" class="text-[10px] md:text-xs font-bold text-red-500 bg-red-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-red-100"><i class="ph-fill ph-first-aid text-sm md:text-base"></i> <span class="hidden md:inline">IZIN</span></a>
+            <a href="piket.html" class="text-[10px] md:text-xs font-bold text-amber-500 bg-amber-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-amber-100"><i class="ph-fill ph-broom text-sm md:text-base"></i> <span class="hidden md:inline">PIKET</span></a>
+            <a href="peminjaman.html" class="text-[10px] md:text-xs font-bold text-indigo-600 bg-indigo-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-indigo-100"><i class="ph-fill ph-package text-sm md:text-base"></i> <span class="hidden md:inline">INVENTARIS</span></a>
+            <a href="creator.html" class="text-[10px] md:text-xs font-bold text-blue-600 bg-blue-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-blue-100"><i class="ph-fill ph-video-camera text-sm md:text-base"></i> <span class="hidden md:inline">KONTEN</span></a>
             <button onclick="logout()" class="text-[10px] md:text-xs font-bold text-slate-500 bg-slate-100 px-3 md:px-4 py-2 rounded-xl hover:bg-slate-200 flex items-center gap-1"><i class="ph-fill ph-sign-out text-sm md:text-base"></i></button>
         </div>
     </header>
