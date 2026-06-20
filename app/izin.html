@@ -101,7 +101,7 @@
 
     <script>
         // CORE: GOOGLE SHEETS API UTILS
-        const SCRIPT_URL = 'PASTE_URL_APPS_SCRIPT_DI_SINI';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec';
         
         async function dbCall(payload) {
             const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
