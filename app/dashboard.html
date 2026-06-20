@@ -6,8 +6,6 @@
     <title>Dashboard - Molusca Project</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style> body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } </style>
 </head>
@@ -15,13 +13,12 @@
     <script>
         document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDoX3MZ0hxtL2j3ol3N_1w8ohYCdXPsUtI",
-            databaseURL: "https://appmoluscadesign-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "appmoluscadesign"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // === GOOGLE SHEETS API ===
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
+        async function dbCall(payload) {
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+            return await res.json();
+        }
 
         let allUsers = [];
 
@@ -30,33 +27,27 @@
             loadDynamicUsers();
         }
 
-        // BACA USER DARI DB UNTUK DIBUATKAN KOLOM
-        function loadDynamicUsers() {
-            db.ref('users').on('value', userSnap => {
-                allUsers = [];
-                if(userSnap.exists()){
-                    Object.values(userSnap.val()).forEach(u => {
-                        if(u.role !== 'admin') allUsers.push(u.name);
-                    });
-                }
-                renderUserBoards();
-                
-                // Setelah kolom siap, baru load tugas
-                db.ref('tasks').on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    renderBoard(data ? Object.values(data) : []);
-                });
-            });
+        async function loadDynamicUsers() {
+            const res = await dbCall({ action: 'read', sheetName: 'users' });
+            allUsers = [];
+            if(res.status === 'success'){
+                res.data.forEach(u => { if(u.role !== 'admin') allUsers.push(u.name); });
+            }
+            renderUserBoards();
+            loadTasks();
+        }
+
+        async function loadTasks() {
+            const res = await dbCall({ action: 'read', sheetName: 'tasks' });
+            renderBoard(res.status === 'success' ? res.data : []);
         }
 
         function renderUserBoards() {
             const select = document.getElementById('assignee');
             const boardContainer = document.getElementById('dynamic-boards');
-            select.innerHTML = '';
-            boardContainer.innerHTML = '';
+            select.innerHTML = ''; boardContainer.innerHTML = '';
             
             const colors = ['text-pink-500', 'text-purple-500', 'text-teal-500', 'text-blue-500', 'text-orange-500'];
-
             allUsers.forEach((name, index) => {
                 select.innerHTML += `<option value="${name}">${name}</option>`;
                 let color = colors[index % colors.length];
@@ -71,36 +62,45 @@
 
         async function sendTask(e) {
             e.preventDefault();
-            const taskId = Date.now();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> MENGIRIM...'; btn.disabled = true;
+
             const taskData = {
-                id: taskId,
-                joCode: document.getElementById('taskJO').value.toUpperCase(),
-                title: document.getElementById('taskTitle').value,
-                sender: document.getElementById('taskSender').value,
-                priority: document.getElementById('taskPriority').value,
-                assignee: document.getElementById('assignee').value,
+                id: Date.now().toString(), joCode: document.getElementById('taskJO').value.toUpperCase(),
+                title: document.getElementById('taskTitle').value, sender: document.getElementById('taskSender').value,
+                priority: document.getElementById('taskPriority').value, assignee: document.getElementById('assignee').value,
                 dateStr: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
                 timeAssigned: new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0'),
                 status: 'Lagi Dikerjain', isPrintilan: false, isApproved: true
             };
-            db.ref('tasks/' + taskId).set(taskData);
+            
+            await dbCall({ action: 'insert', sheetName: 'tasks', data: taskData });
             document.getElementById('taskForm').reset();
             document.getElementById('taskJO').focus();
+            
+            btn.innerHTML = '<i class="ph-fill ph-paper-plane-right"></i> KIRIM TUGAS'; btn.disabled = false;
+            loadTasks();
         }
 
-        function approveTask(id) { db.ref('tasks/' + id).update({ isApproved: true }); }
-        function deleteTask(id) { if(confirm("Yakin hapus tugas ini permanen?")) db.ref('tasks/' + id).remove(); }
+        async function approveTask(id) { 
+            await dbCall({ action: 'update', sheetName: 'tasks', idValue: id, updateData: { isApproved: true } });
+            loadTasks();
+        }
+        
+        async function deleteTask(id) { 
+            if(confirm("Yakin hapus tugas ini permanen?")) {
+                await dbCall({ action: 'delete', sheetName: 'tasks', idValue: id });
+                loadTasks();
+            }
+        }
+        
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 
         function renderBoard(tasks) {
-            // Bersihkan kolom
-            allUsers.forEach(name => {
-                let el = document.getElementById('board-' + name);
-                if(el) el.innerHTML = '';
-            });
+            allUsers.forEach(name => { let el = document.getElementById('board-' + name); if(el) el.innerHTML = ''; });
             document.getElementById('board-final').innerHTML = '';
 
-            tasks.reverse().forEach(task => {
+            tasks.sort((a,b) => a.id - b.id).reverse().forEach(task => {
                 const card = document.createElement('div');
                 let jo = `<span class="bg-blue-50 text-blue-600 px-2 py-1 rounded-lg text-[10px] font-black mr-2 tracking-tighter uppercase"><i class="ph ph-hash"></i>${task.joCode}</span>`;
                 let delBtn = `<button onclick="deleteTask('${task.id}')" class="text-slate-300 hover:text-red-500 transition-colors"><i class="ph-fill ph-trash text-lg"></i></button>`;
@@ -111,7 +111,7 @@
                     document.getElementById('board-final').appendChild(card);
                 } else {
                     let border = task.priority === 'Urgent' ? 'border-red-200 bg-red-50/20' : 'border-slate-100 bg-white';
-                    let approval = (task.isPrintilan && !task.isApproved) ? `<div class="mt-4 flex gap-2"><button onclick="approveTask('${task.id}')" class="bg-green-500 text-white text-[10px] font-bold p-3 rounded-xl flex-1 uppercase tracking-tighter flex justify-center items-center gap-1"><i class="ph-fill ph-check-circle"></i> Approve</button></div>` : '';
+                    let approval = (task.isPrintilan === "true" && task.isApproved === "false") ? `<div class="mt-4 flex gap-2"><button onclick="approveTask('${task.id}')" class="bg-green-500 text-white text-[10px] font-bold p-3 rounded-xl flex-1 uppercase tracking-tighter flex justify-center items-center gap-1"><i class="ph-fill ph-check-circle"></i> Approve</button></div>` : '';
                     
                     card.className = `p-5 rounded-[24px] border shadow-sm transition-all relative ${border}`;
                     card.innerHTML = `
@@ -124,7 +124,7 @@
                         <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-1"><i class="ph-fill ph-paper-plane-tilt"></i> By: ${task.sender}</div>
                         <div class="flex items-center gap-2">
                             <span class="text-[9px] font-black bg-slate-100 text-slate-500 px-2 py-1.5 rounded-md uppercase flex items-center gap-1"><i class="ph-fill ph-clock-countdown"></i> ${task.status}</span>
-                            ${task.isPrintilan ? '<span class="text-[9px] font-black text-orange-500 uppercase flex items-center gap-1"><i class="ph-fill ph-lightning"></i> EXTRA</span>' : ''}
+                            ${task.isPrintilan === "true" ? '<span class="text-[9px] font-black text-orange-500 uppercase flex items-center gap-1"><i class="ph-fill ph-lightning"></i> EXTRA</span>' : ''}
                         </div>
                         ${approval}`;
                     
@@ -140,12 +140,12 @@
             <i class="ph-fill ph-hexagon text-2xl text-blue-600"></i>
             <h1 class="text-lg font-extrabold tracking-tight text-slate-900">Molusca<span class="text-blue-600">.</span></h1>
         </div>
-        <div class="flex items-center gap-2 md:gap-3">
-            
-            <a href="peminjaman.html" class="text-[10px] md:text-xs font-bold text-indigo-600 bg-indigo-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-indigo-100"><i class="ph-fill ph-package text-sm md:text-base"></i> <span class="hidden md:inline">INVENTARIS</span></a><a href="izin.html" class="text-[10px] md:text-xs font-bold text-red-500 bg-red-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-red-100"><i class="ph-fill ph-first-aid text-sm md:text-base"></i> <span class="hidden md:inline">DATA IZIN</span></a>
-            <a href="creator.html" class="text-[10px] md:text-xs font-bold text-blue-600 bg-blue-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-blue-100"><i class="ph-fill ph-video-camera text-sm md:text-base"></i> <span class="hidden md:inline">KONTEN</span></a>
+        <div class="flex items-center gap-2 md:gap-3 flex-wrap justify-end">
+            <a href="izin.html" class="text-[10px] md:text-xs font-bold text-red-500 bg-red-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-red-100"><i class="ph-fill ph-first-aid text-sm md:text-base"></i> <span class="hidden md:inline">IZIN</span></a>
             <a href="piket.html" class="text-[10px] md:text-xs font-bold text-amber-500 bg-amber-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-amber-100"><i class="ph-fill ph-broom text-sm md:text-base"></i> <span class="hidden md:inline">PIKET</span></a>
-            <a href="user.html" class="text-[10px] md:text-xs font-bold text-blue-600 bg-blue-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-blue-100"><i class="ph-fill ph-users text-sm md:text-base"></i> <span class="hidden md:inline">KELOLA TIM</span></a>
+            <a href="peminjaman.html" class="text-[10px] md:text-xs font-bold text-indigo-600 bg-indigo-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-indigo-100"><i class="ph-fill ph-package text-sm md:text-base"></i> <span class="hidden md:inline">INVENTARIS</span></a>
+            <a href="creator.html" class="text-[10px] md:text-xs font-bold text-blue-600 bg-blue-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-blue-100"><i class="ph-fill ph-video-camera text-sm md:text-base"></i> <span class="hidden md:inline">KONTEN</span></a>
+            <a href="user.html" class="text-[10px] md:text-xs font-bold text-slate-600 bg-slate-100 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-slate-200"><i class="ph-fill ph-users text-sm md:text-base"></i> <span class="hidden md:inline">TIM</span></a>
             <button onclick="logout()" class="text-[10px] md:text-xs font-bold text-slate-500 bg-slate-100 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-slate-200"><i class="ph-fill ph-sign-out text-sm md:text-base"></i></button>
         </div>
     </header>
@@ -154,29 +154,11 @@
         <section class="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
             <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph-fill ph-plus-circle text-blue-600 text-lg"></i> Create New Task</h2>
             <form id="taskForm" onsubmit="sendTask(event)" class="grid grid-cols-1 md:grid-cols-5 gap-3">
-                <div class="relative">
-                    <i class="ph ph-hash absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="taskJO" required placeholder="JO CODE" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold uppercase focus:ring-2 focus:ring-blue-500/20">
-                </div>
-                <div class="relative md:col-span-1">
-                    <i class="ph ph-folder absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="taskTitle" required placeholder="PROJECT NAME" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20">
-                </div>
-                <div class="relative">
-                    <i class="ph ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="taskSender" required placeholder="SENDER" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20">
-                </div>
-                <div class="relative">
-                    <i class="ph ph-warning-circle absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <select id="taskPriority" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none">
-                        <option value="Normal">🟢 NORMAL</option>
-                        <option value="Urgent">🔴 URGENT</option>
-                    </select>
-                </div>
-                <div class="relative">
-                    <i class="ph ph-users absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <select id="assignee" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none"></select>
-                </div>
+                <div class="relative"><i class="ph ph-hash absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="taskJO" required placeholder="JO CODE" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold uppercase focus:ring-2 focus:ring-blue-500/20"></div>
+                <div class="relative md:col-span-1"><i class="ph ph-folder absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="taskTitle" required placeholder="PROJECT NAME" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20"></div>
+                <div class="relative"><i class="ph ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="taskSender" required placeholder="SENDER" autocomplete="off" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20"></div>
+                <div class="relative"><i class="ph ph-warning-circle absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><select id="taskPriority" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none"><option value="Normal">🟢 NORMAL</option><option value="Urgent">🔴 URGENT</option></select></div>
+                <div class="relative"><i class="ph ph-users absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><select id="assignee" class="w-full bg-slate-50 border-none rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none"></select></div>
                 <button type="submit" class="md:col-span-5 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 transition flex justify-center items-center gap-2 mt-2"><i class="ph-fill ph-paper-plane-right"></i> KIRIM TUGAS</button>
             </form>
         </section>
