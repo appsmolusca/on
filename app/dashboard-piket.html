@@ -3,13 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Keuangan - Molusca</title>
+    <title>Bos Kas - Molusca</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style> body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } </style>
 </head>
-<body class="bg-[#FBFBFE] pb-20" onload="initApp()" oncontextmenu="return false;">
+<body class="bg-[#FBFBFE] pb-24 text-slate-800" onload="initApp()" oncontextmenu="return false;">
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center">
+        <div class="bg-white p-8 rounded-[32px] shadow-2xl flex flex-col items-center gap-4 text-center max-w-[280px]">
+            <i class="ph ph-spinner animate-spin text-5xl text-orange-500"></i>
+            <div>
+                <span id="loadingTitle" class="text-xs font-black text-slate-800 uppercase tracking-widest block mb-1">Memproses...</span>
+                <span class="text-[10px] font-bold text-slate-400">Sinkronisasi Google Sheets</span>
+            </div>
+            <button onclick="hideLoading()" class="mt-3 text-[10px] font-black uppercase text-red-400 hover:text-red-600 tracking-widest border-b border-red-200 pb-0.5 transition-colors">Tutup Paksa</button>
+        </div>
+    </div>
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-4 md:px-6 border-b border-slate-100 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-2 md:gap-3">
+            <div class="bg-orange-50 text-orange-500 w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center shadow-inner">
+                <i class="ph-fill ph-wallet text-xl md:text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-sm md:text-lg font-extrabold tracking-tight text-slate-900 leading-none">BOS KAS</h1>
+                <span class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Admin Panel</span>
+            </div>
+        </div>
+        <button onclick="window.location.href='dashboard.html'" class="text-[10px] md:text-xs font-black text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 md:py-3 rounded-xl uppercase flex items-center gap-1.5 hover:bg-slate-200 hover:text-slate-800 transition tracking-widest shadow-sm">
+            <i class="ph-bold ph-arrow-left text-sm md:text-lg"></i> <span class="hidden sm:inline">KEMBALI KE DASHBOARD</span>
+        </button>
+    </header>
+
+    <main class="p-4 md:p-8 max-w-4xl mx-auto space-y-8 md:space-y-10 mt-2">
+        
+        <section class="bg-gradient-to-br from-orange-500 to-red-600 p-6 md:p-10 rounded-[32px] shadow-xl shadow-orange-500/20 text-white relative overflow-hidden">
+            <i class="ph-fill ph-coins absolute -right-4 -bottom-4 text-9xl md:text-[200px] opacity-10 pointer-events-none"></i>
+            <div class="relative z-10">
+                <h3 class="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-orange-200 mb-2">Total Saldo Kas Molusca</h3>
+                <div id="saldoKas" class="text-4xl md:text-6xl font-black tracking-tighter mb-6 drop-shadow-md">Rp 0</div>
+                
+                <div class="pt-5 border-t border-orange-400/30">
+                    <h4 class="text-[9px] md:text-[10px] font-bold text-orange-200 uppercase tracking-widest mb-3 flex items-center gap-1.5"><i class="ph-fill ph-pencil-simple text-sm"></i> Edit Saldo Jika Perlu</h4>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="number" id="inputSaldoAwal" placeholder="Contoh: 150000" class="flex-grow bg-white/20 border border-white/10 rounded-xl md:rounded-2xl py-3.5 px-5 text-white text-xs md:text-sm font-bold outline-none focus:ring-2 focus:ring-white/50 placeholder-orange-200/70 shadow-inner">
+                        <button onclick="updateSaldoManual()" class="w-full sm:w-auto bg-white text-orange-600 px-6 py-3.5 rounded-xl md:rounded-2xl text-[10px] md:text-xs font-black uppercase hover:bg-orange-50 transition shadow-md whitespace-nowrap">Set Saldo Baru</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2 mb-5 md:mb-6 ml-1">
+                <h2 class="text-sm md:text-base font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><i class="ph-fill ph-broom text-blue-500 text-xl md:text-2xl"></i> Piket Hari Ini</h2>
+                <div id="tanggalHariIni" class="text-[10px] md:text-xs font-bold text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg"></div>
+            </div>
+            <div id="piket-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
+        <section class="pt-4 border-t border-slate-200">
+            <h2 class="text-xs md:text-sm font-black text-slate-400 uppercase tracking-[0.3em] mb-5 md:mb-6 ml-1 flex items-center gap-2"><i class="ph-fill ph-receipt text-lg md:text-xl text-slate-300"></i> Approval Kasbon</h2>
+            <div id="kasbon-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6"></div>
+        </section>
+
+        <section class="bg-slate-900 p-6 md:p-10 rounded-[32px] text-white shadow-xl shadow-slate-900/20">
+            <h2 class="text-xs md:text-sm font-black uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-calendar-plus text-orange-500 text-xl"></i> Input Data Terlewat (Manual)</h2>
+            <form id="formManual" onsubmit="inputPiketManual(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input type="date" id="manualDate" required class="w-full bg-white/10 border border-white/5 rounded-2xl p-4 md:p-5 text-white text-xs md:text-sm outline-none focus:ring-2 focus:ring-orange-500/50 appearance-none shadow-inner">
+                    <select id="manualUser" required class="w-full bg-white/10 border border-white/5 rounded-2xl p-4 md:p-5 text-white text-xs md:text-sm font-bold outline-none appearance-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer shadow-inner"></select>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <select id="manualStatus" class="w-full bg-white/10 border border-white/5 rounded-2xl p-4 md:p-5 text-white text-xs md:text-sm font-bold outline-none appearance-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer shadow-inner">
+                        <option value="sudah" class="text-slate-900">✅ Hadir Bersih-bersih</option>
+                        <option value="denda_belum" class="text-slate-900">⚠️ Mangkir (Denda 5k - Belum Bayar)</option>
+                        <option value="denda_lunas" class="text-slate-900">❌ Mangkir (Denda Lunas +5K)</option>
+                    </select>
+                    <button type="submit" class="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 transition shadow-lg text-white px-8 py-4 md:py-5 rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest whitespace-nowrap"><i class="ph-bold ph-floppy-disk text-sm mr-1"></i> Simpan Data</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="pt-6 border-t border-slate-200">
+            <h2 class="text-xs md:text-sm font-black text-slate-400 uppercase tracking-[0.3em] mb-5 ml-1 flex items-center gap-2"><i class="ph-fill ph-clock-counter-clockwise text-lg md:text-xl"></i> Log Riwayat Piket</h2>
+            <div id="rekap-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"></div>
+        </section>
+    </main>
+
     <script>
         document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
 
@@ -17,13 +99,18 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
         
         async function dbCall(payload) {
-            try {
-                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-                return await res.json();
-            } catch (error) {
-                console.error("Fetch Error:", error);
-                return { status: 'error', data: [] };
-            }
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+            if(!res.ok) throw new Error("Gagal mengambil API");
+            return await res.json();
+        }
+
+        // --- MANAJEMEN LOADING UI ---
+        function showLoading(title = "Memproses...") {
+            document.getElementById('loadingTitle').innerText = title;
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
         }
 
         const listTim = ['Indah', 'Nazma', 'Nayla', 'Feyy', 'Dadan', 'Tya', 'Opik'];
@@ -49,25 +136,19 @@
         function formatRupiah(angka) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka); }
 
         async function loadData() {
-            // Mencegah error menghentikan loading screen menggunakan try-catch-finally
+            showLoading("Memuat Database...");
             try {
-                document.getElementById('loadingOverlay').classList.remove('hidden');
-
                 const [resKas, resPiket, resKasbon] = await Promise.all([
                     dbCall({ action: 'read', sheetName: 'kas_balance' }),
                     dbCall({ action: 'read', sheetName: 'piket_log' }),
                     dbCall({ action: 'read', sheetName: 'kasbon' })
                 ]);
 
-                // Handler Saldo (Aman dari array kosong)
                 if (resKas.status === 'success' && Array.isArray(resKas.data) && resKas.data.length > 0) {
                     globalKas = parseInt(resKas.data[0].saldo) || 0;
-                } else {
-                    globalKas = 0;
-                }
+                } else { globalKas = 0; }
                 document.getElementById('saldoKas').innerText = formatRupiah(globalKas);
 
-                // Handler Piket & Kasbon (Aman dari tipe data selain array)
                 globalPiketData = (resPiket.status === 'success' && Array.isArray(resPiket.data)) ? resPiket.data : [];
                 globalKasbon = (resKasbon.status === 'success' && Array.isArray(resKasbon.data)) ? resKasbon.data : [];
 
@@ -77,11 +158,10 @@
                 renderKasbon();
                 renderRekapPiket();
             } catch (error) {
-                console.error("Gagal memuat data:", error);
+                console.error(error);
                 alert("Terjadi masalah jaringan atau format data salah. Coba refresh halaman.");
             } finally {
-                // Di kondisi apapun (berhasil/gagal), loading screen PASTI tertutup
-                document.getElementById('loadingOverlay').classList.add('hidden');
+                hideLoading();
             }
         }
 
@@ -95,19 +175,14 @@
             for (let name of petugas) {
                 let exists = todayLogs.find(d => d.name === name);
                 if (!exists) {
-                    await dbCall({
-                        action: 'insert', sheetName: 'piket_log',
-                        data: { id: `${todayStr}_${name}`, dateStr: todayStr, name: name, status: 'belum' }
-                    });
+                    await dbCall({ action: 'insert', sheetName: 'piket_log', data: { id: `${todayStr}_${name}`, dateStr: todayStr, name: name, status: 'belum' } });
                     needsRefresh = true;
                 }
             }
 
             if(needsRefresh) {
                 const refresh = await dbCall({ action: 'read', sheetName: 'piket_log' });
-                if(refresh.status === 'success' && Array.isArray(refresh.data)) {
-                    globalPiketData = refresh.data;
-                }
+                if(refresh.status === 'success' && Array.isArray(refresh.data)) globalPiketData = refresh.data;
             }
         }
 
@@ -117,10 +192,12 @@
             if (!inputVal) return alert("Masukkan nominal!");
             
             if(confirm(`Tetapkan Total Saldo menjadi Rp ${formatRupiah(inputVal)}?`)) {
-                document.getElementById('loadingOverlay').classList.remove('hidden');
-                await dbCall({ action: 'update', sheetName: 'kas_balance', idValue: "1", updateData: { saldo: parseInt(inputVal) } });
-                document.getElementById('inputSaldoAwal').value = '';
-                loadData();
+                showLoading("Menyimpan Saldo...");
+                try {
+                    await dbCall({ action: 'update', sheetName: 'kas_balance', idValue: "1", updateData: { saldo: parseInt(inputVal) } });
+                    document.getElementById('inputSaldoAwal').value = '';
+                    await loadData();
+                } catch(e) { alert("Gagal update saldo!"); hideLoading(); }
             }
         }
 
@@ -132,18 +209,22 @@
         // ================== FUNGSI PIKET ==================
         async function beriDenda(nama) {
             if(confirm(`Tandai ${nama} Mangkir Piket? Status denda: BELUM BAYAR.`)) {
-                document.getElementById('loadingOverlay').classList.remove('hidden');
-                await dbCall({ action: 'update', sheetName: 'piket_log', idValue: `${todayStr}_${nama}`, updateData: { status: 'denda_belum' } });
-                loadData();
+                showLoading("Mencatat Denda...");
+                try {
+                    await dbCall({ action: 'update', sheetName: 'piket_log', idValue: `${todayStr}_${nama}`, updateData: { status: 'denda_belum' } });
+                    await loadData();
+                } catch(e) { alert("Gagal!"); hideLoading(); }
             }
         }
 
         async function bayarDenda(nama, tgl) {
             if(confirm(`${nama} bayar denda 5.000 untuk tanggal ${tgl}? Saldo kas otomatis bertambah.`)) {
-                document.getElementById('loadingOverlay').classList.remove('hidden');
-                await dbCall({ action: 'update', sheetName: 'piket_log', idValue: `${tgl}_${nama}`, updateData: { status: 'denda_lunas' } });
-                await ubahSaldo(5000, true);
-                loadData();
+                showLoading("Memproses Pembayaran...");
+                try {
+                    await dbCall({ action: 'update', sheetName: 'piket_log', idValue: `${tgl}_${nama}`, updateData: { status: 'denda_lunas' } });
+                    await ubahSaldo(5000, true);
+                    await loadData();
+                } catch(e) { alert("Gagal!"); hideLoading(); }
             }
         }
 
@@ -151,7 +232,7 @@
             const list = document.getElementById('piket-list');
             list.innerHTML = '';
             const petugas = jadwalPiket[dayIndex] || [];
-            if (petugas.length === 0) { list.innerHTML = `<div class="text-center p-4 bg-slate-50 text-slate-400 font-bold rounded-2xl border border-dashed">Hari ini libur piket.</div>`; return; }
+            if (petugas.length === 0) { list.innerHTML = `<div class="col-span-full text-center p-6 bg-slate-50 text-slate-400 font-bold rounded-[24px] border-2 border-dashed border-slate-200">Hari ini libur piket studio.</div>`; return; }
 
             const todayLogs = globalPiketData.filter(d => d.dateStr === todayStr);
 
@@ -161,20 +242,24 @@
                 let ui = '';
                 
                 if (status === 'sudah') {
-                    ui = `<span class="bg-green-100 text-green-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase border border-green-200"><i class="ph-fill ph-check-circle"></i> Selesai Piket</span>`;
+                    ui = `<span class="bg-green-100 text-green-700 px-4 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase border border-green-200 flex items-center gap-1.5"><i class="ph-fill ph-check-circle text-sm md:text-base"></i> Aman</span>`;
                 } else if (status === 'denda_belum') {
                     ui = `
-                    <div class="flex gap-1 items-center">
-                        <span class="bg-orange-100 text-orange-600 px-2 py-2 rounded-lg text-[9px] font-black uppercase border border-orange-200"><i class="ph-fill ph-warning"></i> Nunggak 5k</span>
-                        <button onclick="bayarDenda('${name}', '${todayStr}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-[10px] font-black uppercase shadow-sm transition">Bayar</button>
+                    <div class="flex flex-col sm:flex-row gap-2 items-end sm:items-center">
+                        <span class="bg-orange-50 text-orange-600 px-3 py-2 rounded-xl text-[9px] md:text-[10px] font-black uppercase border border-orange-200 flex items-center gap-1"><i class="ph-fill ph-warning"></i> Nunggak</span>
+                        <button onclick="bayarDenda('${name}', '${todayStr}')" class="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-md transition">Bayar 5k</button>
                     </div>`;
                 } else if (status === 'denda_lunas' || status === 'denda') {
-                    ui = `<span class="bg-red-100 text-red-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase border border-red-200"><i class="ph-fill ph-money"></i> Lunas (+5k)</span>`;
+                    ui = `<span class="bg-red-50 text-red-600 px-4 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase border border-red-200 flex items-center gap-1.5"><i class="ph-fill ph-money text-sm md:text-base"></i> Lunas (+5k)</span>`;
                 } else {
-                    ui = `<button onclick="beriDenda('${name}')" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-md transition flex items-center gap-1"><i class="ph-fill ph-warning-circle"></i> Denda 5k</button>`;
+                    ui = `<button onclick="beriDenda('${name}')" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase shadow-lg shadow-red-500/30 transition flex items-center gap-1.5"><i class="ph-fill ph-warning-circle text-sm md:text-base"></i> Denda</button>`;
                 }
 
-                list.innerHTML += `<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center"><h4 class="font-black text-slate-700 flex items-center gap-2"><i class="ph-fill ph-user-circle text-blue-500 text-xl"></i> ${name}</h4>${ui}</div>`;
+                list.innerHTML += `
+                <div class="bg-white p-5 md:p-6 rounded-[24px] border border-slate-100 shadow-sm flex justify-between items-center hover:shadow-md transition">
+                    <h4 class="font-black text-slate-800 text-sm md:text-base flex items-center gap-2 md:gap-3"><i class="ph-fill ph-user-circle text-blue-500 text-3xl md:text-4xl"></i> ${name}</h4>
+                    ${ui}
+                </div>`;
             });
         }
 
@@ -191,44 +276,43 @@
             const idValue = `${dateStr}_${nama}`;
 
             if(confirm(`Set status untuk ${nama} pada tanggal ${dateStr}?`)) {
-                document.getElementById('loadingOverlay').classList.remove('hidden');
-                
-                const exists = globalPiketData.find(d => d.id === idValue);
-                if(exists) {
-                    await dbCall({ action: 'update', sheetName: 'piket_log', idValue: idValue, updateData: { status } });
-                } else {
-                    await dbCall({ action: 'insert', sheetName: 'piket_log', data: { id: idValue, dateStr, name: nama, status } });
-                }
-                
-                if(status === 'denda_lunas') await ubahSaldo(5000, true);
-                
-                document.getElementById('formManual').reset();
-                loadData();
+                showLoading("Menyimpan Manual...");
+                try {
+                    const exists = globalPiketData.find(d => d.id === idValue);
+                    if(exists) await dbCall({ action: 'update', sheetName: 'piket_log', idValue: idValue, updateData: { status } });
+                    else await dbCall({ action: 'insert', sheetName: 'piket_log', data: { id: idValue, dateStr, name: nama, status } });
+                    
+                    if(status === 'denda_lunas') await ubahSaldo(5000, true);
+                    
+                    document.getElementById('formManual').reset();
+                    await loadData();
+                } catch(e) { alert("Gagal menyimpan!"); hideLoading(); }
             }
         }
 
         async function ubahStatusLog(nama, tgl, statusLama, statusBaru) {
             if (statusLama === statusBaru) return;
-            document.getElementById('loadingOverlay').classList.remove('hidden');
+            showLoading("Mengubah Status...");
+            try {
+                let isLamaLunas = (statusLama === 'denda_lunas' || statusLama === 'denda');
+                let isBaruLunas = (statusBaru === 'denda_lunas');
 
-            let isLamaLunas = (statusLama === 'denda_lunas' || statusLama === 'denda');
-            let isBaruLunas = (statusBaru === 'denda_lunas');
+                if (isLamaLunas && !isBaruLunas) await ubahSaldo(5000, false); 
+                else if (!isLamaLunas && isBaruLunas) await ubahSaldo(5000, true); 
 
-            if (isLamaLunas && !isBaruLunas) await ubahSaldo(5000, false); 
-            else if (!isLamaLunas && isBaruLunas) await ubahSaldo(5000, true); 
-
-            await dbCall({ action: 'update', sheetName: 'piket_log', idValue: `${tgl}_${nama}`, updateData: { status: statusBaru } });
-            loadData();
+                await dbCall({ action: 'update', sheetName: 'piket_log', idValue: `${tgl}_${nama}`, updateData: { status: statusBaru } });
+                await loadData();
+            } catch(e) { alert("Gagal update!"); hideLoading(); }
         }
 
         async function hapusLog(nama, tgl, statusLama) {
-            if(confirm(`Yakin hapus data piket ${nama} pada tanggal ${tgl} permanen?`)) {
-                document.getElementById('loadingOverlay').classList.remove('hidden');
-                if (statusLama === 'denda_lunas' || statusLama === 'denda') {
-                    await ubahSaldo(5000, false); 
-                }
-                await dbCall({ action: 'delete', sheetName: 'piket_log', idValue: `${tgl}_${nama}` });
-                loadData();
+            if(confirm(`Yakin hapus riwayat piket ${nama} (${tgl}) permanen?`)) {
+                showLoading("Menghapus Riwayat...");
+                try {
+                    if (statusLama === 'denda_lunas' || statusLama === 'denda') await ubahSaldo(5000, false); 
+                    await dbCall({ action: 'delete', sheetName: 'piket_log', idValue: `${tgl}_${nama}` });
+                    await loadData();
+                } catch(e) { alert("Gagal Hapus!"); hideLoading(); }
             }
         }
 
@@ -238,18 +322,21 @@
             
             const grouped = {};
             globalPiketData.forEach(d => {
-                // Filter data kosong yang mungkin terbaca dari spasi bawah Google Sheet
                 if(d && d.dateStr && d.dateStr.includes('-')) {
                     if(!grouped[d.dateStr]) grouped[d.dateStr] = [];
                     grouped[d.dateStr].push(d);
                 }
             });
 
-            // Sorting aman dengan proteksi
             const sortedDates = Object.keys(grouped).sort((a,b) => {
                 let da = String(a).split('-').reverse().join('-'); let db = String(b).split('-').reverse().join('-');
                 return new Date(db) - new Date(da);
             });
+
+            if (sortedDates.length === 0) {
+                list.innerHTML = `<div class="col-span-full text-center p-6 text-slate-400 font-bold text-xs border-2 border-dashed border-slate-200 rounded-3xl bg-white">Belum ada riwayat.</div>`;
+                return;
+            }
 
             sortedDates.forEach(dateStr => {
                 const logs = grouped[dateStr];
@@ -258,24 +345,24 @@
                 logs.forEach(row => {
                     let st = row.status;
                     let selectHTML = `
-                        <select onchange="ubahStatusLog('${row.name}', '${dateStr}', '${st}', this.value)" class="text-[10px] font-bold bg-slate-50 border border-slate-200 rounded-md px-1 py-1 outline-none text-slate-700 cursor-pointer">
+                        <select onchange="ubahStatusLog('${row.name}', '${dateStr}', '${st}', this.value)" class="text-[9px] md:text-[10px] font-bold bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 outline-none text-slate-700 cursor-pointer w-[110px] md:w-auto">
                             <option value="sudah" ${st === 'sudah' ? 'selected' : ''}>✅ Hadir</option>
                             <option value="denda_belum" ${(st === 'denda_belum' || st === 'belum') ? 'selected' : ''}>⚠️ Nunggak 5k</option>
                             <option value="denda_lunas" ${(st === 'denda_lunas' || st === 'denda') ? 'selected' : ''}>❌ Lunas (+5k)</option>
                         </select>
                     `;
-                    let btnDelete = `<button onclick="hapusLog('${row.name}', '${dateStr}', '${st}')" class="text-slate-300 hover:text-red-500 bg-white shadow-sm border border-slate-100 p-1.5 rounded-md transition" title="Hapus"><i class="ph-fill ph-trash text-sm"></i></button>`;
+                    let btnDelete = `<button onclick="hapusLog('${row.name}', '${dateStr}', '${st}')" class="text-slate-300 hover:text-red-500 bg-white shadow-sm border border-slate-200 p-2 rounded-lg transition" title="Hapus"><i class="ph-fill ph-trash text-sm md:text-base"></i></button>`;
 
                     itemUI += `
-                    <div class="flex justify-between items-center py-2.5 border-b border-slate-50 last:border-0">
-                        <span class="font-bold text-xs text-slate-700 flex items-center gap-1"><i class="ph-fill ph-user-circle text-slate-400"></i> ${row.name}</span>
-                        <div class="flex items-center gap-1">${selectHTML}${btnDelete}</div>
+                    <div class="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
+                        <span class="font-bold text-xs md:text-sm text-slate-800 flex items-center gap-2"><i class="ph-fill ph-user-circle text-slate-400 text-lg"></i> ${row.name}</span>
+                        <div class="flex items-center gap-1.5">${selectHTML}${btnDelete}</div>
                     </div>`;
                 });
 
                 list.innerHTML += `
-                <div class="bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm">
-                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 bg-slate-50 inline-block px-2 py-1 rounded"><i class="ph ph-calendar-blank"></i> ${dateStr}</div>
+                <div class="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm hover:shadow-md transition">
+                    <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 bg-slate-50 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200"><i class="ph-bold ph-calendar-blank"></i> ${dateStr}</div>
                     ${itemUI}
                 </div>`;
             });
@@ -284,27 +371,33 @@
         // ================== FUNGSI KASBON ==================
         async function setujuKasbon(id, nominal) { 
             if(confirm(`Setujui dan POTONG saldo kas sebesar Rp ${formatRupiah(nominal)}?`)) {
-                document.getElementById('loadingOverlay').classList.remove('hidden');
-                await dbCall({ action: 'update', sheetName: 'kasbon', idValue: id, updateData: {status: 'Disetujui'} }); 
-                await ubahSaldo(nominal, false); 
-                loadData();
+                showLoading("Acc Kasbon...");
+                try {
+                    await dbCall({ action: 'update', sheetName: 'kasbon', idValue: id, updateData: {status: 'Disetujui'} }); 
+                    await ubahSaldo(nominal, false); 
+                    await loadData();
+                } catch(e) { alert("Gagal!"); hideLoading(); }
             }
         }
         
         async function tolakKasbon(id) { 
-            if(confirm("Tolak pengajuan ini?")) {
-                document.getElementById('loadingOverlay').classList.remove('hidden');
-                await dbCall({ action: 'delete', sheetName: 'kasbon', idValue: id });
-                loadData();
+            if(confirm("Tolak pengajuan ini permanen?")) {
+                showLoading("Menolak Kasbon...");
+                try {
+                    await dbCall({ action: 'delete', sheetName: 'kasbon', idValue: id });
+                    await loadData();
+                } catch(e) { alert("Gagal!"); hideLoading(); }
             } 
         }
         
         async function lunasKasbon(id, nominal) { 
             if(confirm(`Tandai LUNAS? Saldo kas akan DITAMBAHKAN Rp ${formatRupiah(nominal)}`)) {
-                document.getElementById('loadingOverlay').classList.remove('hidden');
-                await dbCall({ action: 'delete', sheetName: 'kasbon', idValue: id }); 
-                await ubahSaldo(nominal, true); 
-                loadData();
+                showLoading("Melunasi Kasbon...");
+                try {
+                    await dbCall({ action: 'delete', sheetName: 'kasbon', idValue: id }); 
+                    await ubahSaldo(nominal, true); 
+                    await loadData();
+                } catch(e) { alert("Gagal!"); hideLoading(); }
             }
         }
 
@@ -313,108 +406,39 @@
             list.innerHTML = '';
             
             if(!Array.isArray(globalKasbon) || globalKasbon.length === 0) { 
-                list.innerHTML = `<div class="text-center p-6 bg-slate-50 rounded-2xl text-slate-400 font-bold text-xs border border-dashed">Aman! Tidak ada pengajuan kasbon.</div>`; 
+                list.innerHTML = `<div class="col-span-full text-center p-8 bg-white rounded-[24px] text-slate-400 font-bold text-xs border-2 border-dashed border-slate-200">Aman! Tidak ada tim yang kasbon.</div>`; 
                 return; 
             }
 
             [...globalKasbon].reverse().forEach(item => {
-                // Filter jika ada baris kosong di Google Sheet
                 if (!item.id || !item.name) return;
 
                 let btns = '';
-                let badge = item.status === 'Menunggu' ? `<span class="bg-orange-100 text-orange-600 px-2 py-1 rounded text-[9px] font-black uppercase border border-orange-200">Menunggu</span>` : `<span class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-[9px] font-black uppercase border border-blue-200">Disetujui</span>`;
+                let badge = item.status === 'Menunggu' ? `<span class="bg-orange-100 text-orange-600 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase border border-orange-200">Menunggu ACC</span>` : `<span class="bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase border border-blue-200">Disetujui</span>`;
                 
                 if (item.status === 'Menunggu') {
-                    btns = `<div class="flex gap-2 mt-3"><button onclick="setujuKasbon('${item.id}', ${item.amount})" class="flex-1 bg-green-500 hover:bg-green-600 transition text-white p-2 rounded-xl text-[10px] font-black uppercase shadow-sm">Setuju (Potong Kas)</button><button onclick="tolakKasbon('${item.id}')" class="flex-1 bg-red-50 border border-red-100 hover:bg-red-100 transition text-red-500 p-2 rounded-xl text-[10px] font-black uppercase shadow-sm">Tolak</button></div>`;
+                    btns = `<div class="flex gap-2 mt-4 pt-4 border-t border-slate-100"><button onclick="setujuKasbon('${item.id}', ${item.amount})" class="flex-1 bg-green-500 hover:bg-green-600 transition text-white py-3 rounded-xl text-[10px] md:text-xs font-black uppercase shadow-sm">Setuju (Potong)</button><button onclick="tolakKasbon('${item.id}')" class="flex-1 bg-red-50 border border-red-100 hover:bg-red-100 transition text-red-500 py-3 rounded-xl text-[10px] md:text-xs font-black uppercase shadow-sm">Tolak</button></div>`;
                 } else {
-                    btns = `<button onclick="lunasKasbon('${item.id}', ${item.amount})" class="w-full mt-3 bg-slate-900 hover:bg-slate-800 transition text-white p-3 rounded-xl text-[10px] font-black uppercase flex justify-center gap-1 shadow-md"><i class="ph-fill ph-seal-check"></i> Sudah Lunas (Balikin Kas)</button>`;
+                    btns = `<div class="mt-4 pt-4 border-t border-slate-100"><button onclick="lunasKasbon('${item.id}', ${item.amount})" class="w-full bg-slate-900 hover:bg-slate-800 transition text-white p-3.5 rounded-xl text-[10px] md:text-xs font-black uppercase flex justify-center items-center gap-2 shadow-md"><i class="ph-fill ph-seal-check text-lg"></i> Tandai Sudah Lunas (+Kas)</button></div>`;
                 }
 
-                list.innerHTML += `<div class="bg-white p-5 rounded-[24px] border shadow-sm hover:shadow-md transition"><div class="flex justify-between items-start mb-2"><div><h4 class="font-black text-slate-900">${item.name}</h4><div class="text-[9px] font-bold text-slate-400 uppercase">${item.dateStr}</div></div>${badge}</div><div class="text-xl font-black text-slate-800 tracking-tighter mb-1">${formatRupiah(item.amount)}</div><div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-xl italic border border-slate-100">"${item.reason}"</div>${btns}</div>`;
+                list.innerHTML += `
+                <div class="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-black text-slate-900 text-base mb-1">${item.name}</h4>
+                                <div class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 inline-block px-2 py-1 rounded"><i class="ph-fill ph-calendar-blank"></i> ${item.dateStr}</div>
+                            </div>
+                            ${badge}
+                        </div>
+                        <div class="text-2xl md:text-3xl font-black text-slate-800 tracking-tighter mb-3">${formatRupiah(item.amount)}</div>
+                        <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl italic border border-slate-200">"${item.reason}"</div>
+                    </div>
+                    ${btns}
+                </div>`;
             });
         }
-
-        function logout() { 
-            // Kembali ke halaman dashboard utama admin agar seragam
-            window.location.href = 'dashboard.html'; 
-        }
     </script>
-
-    <!-- LOADING OVERLAY DENGAN PROTEKSI TUTUP MANUAL -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4 text-center max-w-[250px]">
-            <i class="ph ph-spinner animate-spin text-5xl text-blue-600"></i>
-            <div>
-                <span class="text-xs font-black text-slate-700 uppercase tracking-widest block mb-1">Sinkronisasi Data</span>
-                <span class="text-[10px] font-bold text-slate-400">Menghubungkan ke Sheets...</span>
-            </div>
-            <!-- Tombol Darurat jika jaringan sangat lemot -->
-            <button onclick="document.getElementById('loadingOverlay').classList.add('hidden')" class="mt-2 text-[9px] font-black uppercase text-red-400 hover:text-red-600 tracking-widest border-b border-red-200 pb-0.5">Tutup Paksa</button>
-        </div>
-    </div>
-
-    <!-- HEADER -->
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-2">
-            <i class="ph-fill ph-wallet text-2xl text-orange-500"></i>
-            <div><h1 class="text-lg font-extrabold tracking-tight text-slate-900 leading-none">Bos Kas</h1></div>
-        </div>
-        <button onclick="logout()" class="text-[10px] font-black text-slate-500 bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-xl uppercase flex items-center gap-1.5 hover:bg-slate-200 hover:text-slate-700 transition tracking-widest"><i class="ph-bold ph-arrow-left text-sm"></i> KEMBALI KE DASHBOARD</button>
-    </header>
-
-    <main class="p-4 max-w-xl mx-auto space-y-8 mt-2">
-        <!-- (Sisa Section UI sama persis tidak ada yang diubah agar tampilan Anda tidak berantakan) -->
-        <section class="bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-[32px] shadow-xl text-white relative overflow-hidden">
-            <i class="ph-fill ph-coins absolute -right-4 -bottom-4 text-9xl opacity-10 pointer-events-none"></i>
-            <div class="relative z-10">
-                <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-orange-200 mb-1">Total Saldo Kas Molusca</h3>
-                <div id="saldoKas" class="text-4xl font-black tracking-tighter mb-4">Rp 0</div>
-                
-                <div class="pt-4 border-t border-orange-400/30">
-                    <h4 class="text-[9px] font-bold text-orange-200 uppercase tracking-widest mb-2 flex items-center gap-1"><i class="ph-fill ph-pencil-simple"></i> Edit Saldo Jika Perlu</h4>
-                    <div class="flex gap-2">
-                        <input type="number" id="inputSaldoAwal" placeholder="Contoh: 150000" class="flex-grow bg-white/20 border-none rounded-xl py-2 pl-4 pr-3 text-white text-xs font-bold outline-none focus:ring-2 focus:ring-white/50 placeholder-orange-200/70">
-                        <button onclick="updateSaldoManual()" class="bg-white text-orange-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase hover:bg-orange-50 transition shadow-sm">Set Saldo</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section>
-            <div class="flex justify-between items-end mb-4 ml-1">
-                <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><i class="ph-fill ph-broom text-blue-500 text-lg"></i> Piket Hari Ini</h2>
-                <div id="tanggalHariIni" class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded"></div>
-            </div>
-            <div id="piket-list" class="space-y-3"></div>
-        </section>
-
-        <section>
-            <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1 flex items-center gap-2"><i class="ph-fill ph-receipt text-lg"></i> Approval Kasbon</h2>
-            <div id="kasbon-list" class="space-y-4"></div>
-        </section>
-
-        <section class="bg-slate-900 p-6 rounded-[32px] text-white shadow-xl">
-            <h2 class="text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph-fill ph-calendar-plus text-orange-500 text-lg"></i> Input Data Terlewat</h2>
-            <form id="formManual" onsubmit="inputPiketManual(event)" class="space-y-3">
-                <div class="grid grid-cols-2 gap-3">
-                    <input type="date" id="manualDate" required class="bg-white/10 border-none rounded-2xl p-4 text-white text-xs outline-none focus:ring-2 focus:ring-orange-500/50 appearance-none">
-                    <select id="manualUser" required class="bg-white/10 border-none rounded-2xl p-4 text-white text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer"></select>
-                </div>
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <select id="manualStatus" class="w-full bg-white/10 border-none rounded-2xl p-4 text-white text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer">
-                        <option value="sudah" class="text-slate-900">✅ Hadir Piket</option>
-                        <option value="denda_belum" class="text-slate-900">⚠️ Nunggak Denda 5k</option>
-                        <option value="denda_lunas" class="text-slate-900">❌ Denda Lunas (+5K)</option>
-                    </select>
-                    <button type="submit" class="bg-orange-500 hover:bg-orange-600 transition shadow-md text-white px-6 py-4 rounded-2xl text-[10px] font-black uppercase whitespace-nowrap">Simpan</button>
-                </div>
-            </form>
-        </section>
-
-        <section class="pt-4 border-t border-slate-200">
-            <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1 flex items-center gap-2"><i class="ph-fill ph-clock-counter-clockwise text-lg"></i> Log Riwayat Piket</h2>
-            <div id="rekap-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-        </section>
-    </main>
 </body>
 </html>
