@@ -3,14 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piket & Kas - Molusca</title>
+    <title>Inventory Aset - Molusca</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style> body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } </style>
 </head>
-<body class="bg-[#FBFBFE] pb-20" onload="initApp()" oncontextmenu="return false;">
+<body class="bg-[#FBFBFE] pb-24 text-slate-800" onload="initApp()" oncontextmenu="return false;">
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4 text-center max-w-[250px]">
+            <i class="ph ph-spinner animate-spin text-5xl text-indigo-600"></i>
+            <div>
+                <span class="text-xs font-black text-slate-700 uppercase tracking-widest block mb-1">Menarik Data</span>
+                <span class="text-[10px] font-bold text-slate-400">Sinkronisasi Google Sheets...</span>
+            </div>
+            <button onclick="document.getElementById('loadingOverlay').classList.add('hidden')" class="mt-2 text-[9px] font-black uppercase text-red-400 hover:text-red-600 tracking-widest border-b border-red-200 pb-0.5">Tutup Paksa</button>
+        </div>
+    </div>
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-4 md:px-6 border-b border-slate-100 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-2">
+            <i class="ph-fill ph-package text-2xl text-indigo-600"></i>
+            <h1 class="text-lg font-extrabold tracking-tight text-slate-900">Inventory<span class="text-indigo-600">.</span></h1>
+        </div>
+        <button onclick="goBack()" class="text-[10px] md:text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition shadow-sm uppercase tracking-widest">
+            <i class="ph-bold ph-arrow-left text-sm md:text-lg"></i> Kembali
+        </button>
+    </header>
+
+    <main class="p-4 md:p-8 max-w-5xl mx-auto space-y-6 md:space-y-8 mt-2">
+        <section class="bg-gradient-to-br from-indigo-600 to-blue-800 p-6 md:p-8 rounded-[32px] shadow-lg text-white relative overflow-hidden">
+            <i class="ph-fill ph-boxes absolute -right-6 -bottom-6 text-9xl opacity-20 pointer-events-none"></i>
+            <div class="relative z-10 flex justify-between items-end">
+                <div>
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-200 mb-1">Status Keamanan Aset Studio</h3>
+                    <div class="text-4xl md:text-5xl font-black tracking-tighter flex items-end gap-2 mt-2">
+                        <span id="countAktif">0</span>
+                        <span class="text-sm md:text-base text-indigo-200 mb-1.5 font-bold tracking-normal">Barang Belum Kembali</span>
+                    </div>
+                </div>
+                <div id="realtimeClock" class="text-[10px] font-bold text-indigo-200 text-right bg-black/20 px-3 py-1.5 rounded-lg hidden md:block border border-white/10">Memuat waktu...</div>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+            <section class="lg:col-span-5 bg-white p-5 md:p-8 rounded-[32px] border border-slate-100 shadow-sm h-fit sticky top-24">
+                <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-plus-circle text-indigo-600 text-lg"></i> Catat Peminjaman</h2>
+                <datalist id="userList"></datalist>
+                <form id="formPeminjaman" onsubmit="pinjamBarang(event)" class="space-y-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Nama Barang</label>
+                        <div class="relative">
+                            <i class="ph-fill ph-camera absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="inputBarang" required placeholder="Cth: Sony A7III + Lensa" autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Siapa yg Pakai?</label>
+                            <div class="relative">
+                                <i class="ph-fill ph-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="inputPeminjam" list="userList" required placeholder="Pilih / Ketik..." autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-9 pr-3 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500/30">
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Atas Nama (PJ)</label>
+                            <div class="relative">
+                                <i class="ph-fill ph-shield-check absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="inputPenanggungJawab" list="userList" required placeholder="Pilih / Ketik..." autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-9 pr-3 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500/30">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Diserahkan Oleh</label>
+                        <div class="relative">
+                            <i class="ph-fill ph-handshake absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="inputPemberi" list="userList" required placeholder="Pilih / Ketik..." autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-9 pr-3 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500/30">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest mt-2 shadow-lg transition flex justify-center items-center gap-2">
+                        <i class="ph-fill ph-paper-plane-right text-base"></i> SIMPAN DATA LOG
+                    </button>
+                </form>
+            </section>
+            
+            <div class="lg:col-span-7 space-y-6 md:space-y-8">
+                <section>
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ml-2"><i class="ph-fill ph-warning-circle text-orange-500 text-lg"></i> Sedang Dipinjam</h2>
+                    <div id="listAktif" class="space-y-4"></div>
+                </section>
+                <section class="pt-4 border-t border-slate-200">
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ml-2"><i class="ph-fill ph-check-square-offset text-green-500 text-lg"></i> Riwayat Pengembalian</h2>
+                    <div id="listRiwayat" class="grid grid-cols-1 gap-3"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+
     <script>
+        document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
+
         // === GOOGLE SHEETS API ===
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
         
@@ -24,230 +117,174 @@
             }
         }
 
-        // Jadwal & List Tim
-        const jadwalPiket = { 1: ['Indah'], 2: ['Nazma'], 3: ['Nayla'], 4: ['Feyy'], 5: ['Dadan'], 6: ['Tya', 'Opik'], 0: [] };
-        const listTim = ['Dadan', 'Indah', 'Tya', 'Nayla', 'Opik', 'Feyy', 'Nazma'];
-        
-        const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
-        const dayIndex = new Date().getDay();
-        
-        let globalPiketData = [];
+        const userRole = localStorage.getItem('moluscaRole');
+        const userName = localStorage.getItem('moluscaUser');
 
-        function initApp() {
-            if (localStorage.getItem('moluscaPiketUser') !== 'tim') window.location.href = 'index.html';
-            document.getElementById('tanggalHariIni').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-            
-            const selectUser = document.getElementById('kbUser');
-            listTim.forEach(nama => selectUser.innerHTML += `<option value="${nama}">${nama}</option>`);
-
-            loadData();
+        // PERBAIKAN: Tombol Kembali Pintar
+        function goBack() { 
+            if(userRole === 'admin') window.location.href = 'dashboard.html';
+            else if(userRole === 'konten') window.location.href = 'konten.html';
+            else window.location.href = 'desainer.html'; 
         }
 
-        function formatRupiah(angka) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka); }
+        async function initApp() {
+            if(!userName) window.location.href = 'index.html';
+            
+            setInterval(() => { 
+                document.getElementById('realtimeClock').innerText = new Date().toLocaleString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' }) + ' WIB'; 
+            }, 1000);
 
-        async function loadData() {
+            // Buka Loading, Jalankan Data, Tutup Loading
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            try {
+                await loadUsers();
+                await loadData();
+            } catch (e) {
+                console.error(e);
+            } finally {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        }
+
+        async function loadUsers() {
+            const res = await dbCall({ action: 'read', sheetName: 'users' });
+            const datalist = document.getElementById('userList'); 
+            datalist.innerHTML = '';
+            
+            if(res.status === 'success' && Array.isArray(res.data)) {
+                res.data.forEach(u => { 
+                    if(u.role && u.role.toLowerCase() !== 'admin') {
+                        datalist.innerHTML += `<option value="${u.name}">`; 
+                    }
+                });
+            }
+            document.getElementById('inputPemberi').value = userName;
+        }
+
+        function getWaktuSekarang() { 
+            return new Date().toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' }) + ' WIB'; 
+        }
+
+        async function pinjamBarang(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button'); 
+            btn.disabled = true; 
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-base"></i> MENYIMPAN...';
             document.getElementById('loadingOverlay').classList.remove('hidden');
             
-            // 1. Ambil Semua Data
-            const [resPiket, resKasbon] = await Promise.all([
-                dbCall({ action: 'read', sheetName: 'piket_log' }),
-                dbCall({ action: 'read', sheetName: 'kasbon' })
-            ]);
+            const dataPeminjaman = {
+                id: Date.now().toString(), 
+                barang: document.getElementById('inputBarang').value, 
+                peminjam: document.getElementById('inputPeminjam').value,
+                penanggungJawab: document.getElementById('inputPenanggungJawab').value, 
+                pemberi: document.getElementById('inputPemberi').value,
+                waktuPinjam: getWaktuSekarang(), 
+                waktuKembali: "", 
+                status: "dipinjam", 
+                timestamp: Date.now().toString()
+            };
 
-            globalPiketData = resPiket.status === 'success' && resPiket.data ? resPiket.data : [];
-            const kasbonData = resKasbon.status === 'success' && resKasbon.data ? resKasbon.data : [];
-
-            // 2. Inisialisasi Piket Hari Ini (Jika belum ada di DB)
-            await initTodayPiket();
-
-            // 3. Render UI
-            renderPiket();
-            renderDenda();
-            renderKasbon(kasbonData);
+            await dbCall({ action: 'insert', sheetName: 'log_barang', data: dataPeminjaman });
             
+            document.getElementById('formPeminjaman').reset(); 
+            document.getElementById('inputPemberi').value = userName;
+            btn.disabled = false; 
+            btn.innerHTML = `<i class="ph-fill ph-paper-plane-right text-base"></i> SIMPAN DATA LOG`;
+            
+            await loadData();
             document.getElementById('loadingOverlay').classList.add('hidden');
         }
 
-        async function initTodayPiket() {
-            const petugas = jadwalPiket[dayIndex];
-            if (!petugas || petugas.length === 0) return;
-
-            let todayLogs = globalPiketData.filter(d => d.dateStr === todayStr);
-            let needsRefresh = false;
-
-            for (let name of petugas) {
-                let exists = todayLogs.find(d => d.name === name);
-                if (!exists) {
-                    await dbCall({
-                        action: 'insert', sheetName: 'piket_log',
-                        data: { id: `${todayStr}_${name}`, dateStr: todayStr, name: name, status: 'belum' }
-                    });
-                    needsRefresh = true;
-                }
-            }
-
-            // Jika ada yang baru diinsert, tarik data ulang secara senyap
-            if(needsRefresh) {
-                const refresh = await dbCall({ action: 'read', sheetName: 'piket_log' });
-                if(refresh.status === 'success') globalPiketData = refresh.data;
+        async function kembalikanBarang(id, namaBarang) {
+            if(confirm(`Konfirmasi: "${namaBarang}" sudah kembali dengan aman?`)) {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
+                await dbCall({ action: 'update', sheetName: 'log_barang', idValue: id, updateData: { status: 'dikembalikan', waktuKembali: getWaktuSekarang() } });
+                await loadData();
+                document.getElementById('loadingOverlay').classList.add('hidden');
             }
         }
 
-        async function absenPiket(namaYangPiket, btnId) {
-            if(confirm(`Yakin ${namaYangPiket} sudah bersih-bersih?`)) {
-                const btn = document.getElementById(btnId);
-                btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Loading...';
+        async function hapusRiwayat(id) {
+            if(confirm("Hapus data riwayat ini permanen?")) {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
+                await dbCall({ action: 'delete', sheetName: 'log_barang', idValue: id });
+                await loadData();
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+        }
+
+        async function loadData() {
+            const res = await dbCall({ action: 'read', sheetName: 'log_barang' });
+            let aktifHTML = ''; let riwayatHTML = ''; let jumlahAktif = 0;
+
+            // PERBAIKAN: Proteksi jika data kosong agar tidak error `.reverse()`
+            if (res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
+                const safeData = [...res.data]; // Copy array
                 
-                await dbCall({ 
-                    action: 'update', sheetName: 'piket_log', 
-                    idValue: `${todayStr}_${namaYangPiket}`, 
-                    updateData: { status: 'sudah' } 
+                safeData.reverse().forEach(item => {
+                    // Filter baris kosong dari Google Sheet
+                    if (!item.id || !item.barang) return; 
+
+                    let delBtn = userRole === 'admin' ? `<button onclick="hapusRiwayat('${item.id}')" class="text-[10px] text-red-500 bg-red-50 hover:bg-red-500 hover:text-white px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition shadow-sm border border-red-100" title="Hapus Permanen"><i class="ph-fill ph-trash text-sm"></i></button>` : '';
+                    
+                    if (item.status === 'dipinjam') {
+                        jumlahAktif++;
+                        aktifHTML += `
+                        <div class="bg-white p-5 md:p-6 rounded-[24px] border border-slate-100 shadow-sm relative overflow-hidden hover:shadow-md transition-all">
+                            <div class="absolute top-0 right-0 bg-orange-100 text-orange-600 px-4 py-1.5 rounded-bl-[20px] text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+                                <i class="ph-fill ph-clock-countdown"></i> Belum Kembali
+                            </div>
+                            <div class="mt-4 mb-5 flex justify-between items-start pr-24">
+                                <div>
+                                    <h3 class="text-xl font-black text-slate-800 leading-tight">${item.barang}</h3>
+                                    <div class="text-[10px] md:text-[11px] font-bold text-slate-500 mt-2 flex items-center gap-1">
+                                        <i class="ph-fill ph-calendar-check text-indigo-500"></i> Keluar: ${item.waktuPinjam}
+                                    </div>
+                                </div>
+                                ${delBtn}
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 mb-5 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs">
+                                <div>
+                                    <span class="block text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-1">Peminjam</span>
+                                    <span class="font-black text-slate-700 flex items-center gap-1.5"><i class="ph-fill ph-user-circle text-indigo-500 text-lg"></i> <span class="truncate">${item.peminjam}</span></span>
+                                </div>
+                                <div>
+                                    <span class="block text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-1">Diserahkan Oleh</span>
+                                    <span class="font-black text-slate-700 flex items-center gap-1.5"><i class="ph-fill ph-handshake text-slate-400 text-lg"></i> <span class="truncate">${item.pemberi}</span></span>
+                                </div>
+                                <div class="col-span-2 pt-3 border-t border-slate-200 mt-1">
+                                    <span class="block text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-1">Tanggung Jawab (PJ)</span>
+                                    <span class="font-black text-slate-700 flex items-center gap-1.5"><i class="ph-fill ph-shield-check text-green-500 text-lg"></i> <span class="truncate">${item.penanggungJawab}</span></span>
+                                </div>
+                            </div>
+                            <button onclick="kembalikanBarang('${item.id}', '${item.barang}')" class="w-full bg-slate-900 hover:bg-slate-800 transition text-white py-3.5 rounded-xl text-xs font-black uppercase tracking-widest flex justify-center items-center gap-2 shadow-md">
+                                <i class="ph-bold ph-check-circle text-lg text-green-400"></i> Tandai Sudah Kembali
+                            </button>
+                        </div>`;
+                    } else {
+                        let delBtnHistory = userRole === 'admin' ? `<button onclick="hapusRiwayat('${item.id}')" class="text-slate-300 hover:text-red-500 transition-colors p-1" title="Hapus Riwayat"><i class="ph-fill ph-trash text-lg"></i></button>` : '';
+                        riwayatHTML += `
+                        <div class="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm opacity-70 hover:opacity-100 transition flex items-center justify-between gap-4">
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-black text-slate-700 line-through decoration-slate-300 decoration-2 mb-2 truncate">${item.barang}</h3>
+                                <div class="text-[10px] font-bold text-slate-400 flex flex-wrap items-center gap-2">
+                                    <span class="bg-slate-100 px-2 py-1 rounded text-slate-500 flex items-center gap-1 truncate max-w-[100px] sm:max-w-none"><i class="ph-fill ph-user"></i> ${item.peminjam}</span>
+                                    <span class="flex items-center gap-1 text-green-600"><i class="ph-fill ph-info text-sm"></i> ${item.waktuKembali}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-2 shrink-0">
+                                <span class="bg-green-100 text-green-700 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1"><i class="ph-fill ph-check-circle text-sm"></i> Aman</span>
+                                ${delBtnHistory}
+                            </div>
+                        </div>`;
+                    }
                 });
-                loadData(); // Refresh UI
-            }
-        }
-
-        async function ajukanKasbon(e) {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Mengirim...'; btn.disabled = true;
-
-            const id = Date.now().toString();
-            const namaPemohon = document.getElementById('kbUser').value; 
-            
-            await dbCall({
-                action: 'insert', sheetName: 'kasbon',
-                data: {
-                    id: id, name: namaPemohon, amount: parseInt(document.getElementById('kbAmount').value),
-                    reason: document.getElementById('kbReason').value, dateStr: todayStr, status: 'Menunggu'
-                }
-            });
-
-            document.getElementById('formKasbon').reset();
-            btn.innerHTML = '<i class="ph-fill ph-paper-plane-right"></i> Kirim Pengajuan'; btn.disabled = false;
-            alert(`Pengajuan kasbon atas nama ${namaPemohon} berhasil terkirim!`);
-            loadData();
-        }
-
-        function renderPiket() {
-            const list = document.getElementById('piket-list');
-            list.innerHTML = '';
-            const petugas = jadwalPiket[dayIndex];
-            if (petugas.length === 0) { list.innerHTML = `<div class="text-center p-4 bg-slate-50 text-slate-400 font-bold text-xs rounded-2xl border border-dashed">Hari ini libur piket.</div>`; return; }
-
-            const todayLogs = globalPiketData.filter(d => d.dateStr === todayStr);
-
-            petugas.forEach((name, index) => {
-                let log = todayLogs.find(d => d.name === name);
-                let status = log ? log.status : 'belum';
-                let ui = '';
-
-                let btnId = `btn-absen-${index}`;
-
-                if (status === 'sudah') ui = `<span class="bg-green-100 text-green-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase border border-green-200"><i class="ph-fill ph-check-circle"></i> Selesai Piket</span>`;
-                else if (status === 'denda_belum') ui = `<span class="bg-red-100 text-red-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase">Didenda Bos (Belum Bayar)</span>`;
-                else if (status === 'denda_lunas' || status === 'denda') ui = `<span class="bg-orange-100 text-orange-600 px-3 py-2 rounded-xl text-[10px] font-black uppercase">Denda Lunas</span>`;
-                else ui = `<button id="${btnId}" onclick="absenPiket('${name}', '${btnId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-md transition flex gap-1 items-center"><i class="ph-fill ph-hand-pointing"></i> Klik Absen</button>`;
-
-                list.innerHTML += `<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center"><h4 class="font-black text-slate-700 flex items-center gap-2"><i class="ph-fill ph-user-circle text-blue-500 text-xl"></i> ${name}</h4>${ui}</div>`;
-            });
-        }
-
-        function renderDenda() {
-            const list = document.getElementById('denda-list');
-            list.innerHTML = '';
-            
-            // Filter: Status Denda Belum ATAU (Belum Absen dan tanggal bukan hari ini)
-            const nunggakList = globalPiketData.filter(d => d.status === 'denda_belum' || (d.status === 'belum' && d.dateStr !== todayStr));
-
-            if (nunggakList.length === 0) {
-                list.innerHTML = `<div class="text-center p-4 bg-green-50 text-green-600 font-bold text-xs rounded-2xl border border-dashed border-green-200">Aman! Tidak ada tim yang nunggak denda. 🎉</div>`;
-                return;
             }
 
-            nunggakList.forEach(item => {
-                list.innerHTML += `
-                    <div class="bg-red-50 p-4 rounded-2xl border border-red-100 flex justify-between items-center shadow-sm">
-                        <div>
-                            <h4 class="font-black text-red-700 flex items-center gap-1"><i class="ph-fill ph-warning-circle"></i> ${item.name}</h4>
-                            <div class="text-[9px] font-bold text-red-400 mt-1 uppercase tracking-widest"><i class="ph ph-calendar-blank"></i> Tgl Bolos: ${item.dateStr}</div>
-                        </div>
-                        <span class="bg-red-500 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase shadow-sm flex items-center gap-1">Ngutang 5k</span>
-                    </div>
-                `;
-            });
+            document.getElementById('listAktif').innerHTML = aktifHTML || `<div class="text-center py-10 text-slate-400 font-bold text-xs border-2 border-dashed border-slate-200 rounded-[32px] bg-slate-50/50">Semua aset aman di studio!</div>`;
+            document.getElementById('listRiwayat').innerHTML = riwayatHTML || `<div class="text-center p-4 text-slate-400 font-bold text-xs border-2 border-dashed border-slate-200 rounded-2xl">Belum ada riwayat.</div>`;
+            document.getElementById('countAktif').innerText = jumlahAktif;
         }
-
-        function renderKasbon(data) {
-            const list = document.getElementById('kasbon-list');
-            list.innerHTML = '';
-            if(data.length === 0) { list.innerHTML = `<div class="text-center p-6 bg-slate-50 rounded-2xl text-slate-400 font-bold text-xs border border-dashed">Belum ada riwayat pengajuan.</div>`; return; }
-
-            data.reverse().forEach(item => {
-                let badge = item.status === 'Menunggu' ? `<span class="bg-orange-100 text-orange-600 px-2 py-1 rounded text-[9px] font-black uppercase border border-orange-200">Menunggu ACC</span>` : `<span class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-[9px] font-black uppercase border border-blue-200">Disetujui</span>`;
-                list.innerHTML += `<div class="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm"><div class="flex justify-between items-start mb-2"><div><h4 class="font-black text-slate-900">${item.name}</h4><div class="text-[9px] font-bold text-slate-400 uppercase">${item.dateStr}</div></div>${badge}</div><div class="text-xl font-black text-slate-800 tracking-tighter mb-1">${formatRupiah(item.amount)}</div><div class="text-xs text-slate-500 bg-slate-50 p-2 rounded-xl italic">"${item.reason}"</div></div>`;
-            });
-        }
-
-        function logout() { localStorage.removeItem('moluscaPiketUser'); window.location.href = 'index.html'; }
     </script>
-
-    <!-- LOADING OVERLAY -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex justify-center items-center">
-        <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3">
-            <i class="ph ph-spinner animate-spin text-4xl text-blue-600"></i>
-            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Sinkronisasi Data...</span>
-        </div>
-    </div>
-
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-6 border-b border-slate-100 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <i class="ph-fill ph-hexagon text-2xl text-blue-600"></i>
-            <div><h1 class="text-lg font-extrabold tracking-tight text-slate-900 leading-none">Piket & Kas</h1></div>
-        </div>
-        <button onclick="goBack()" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl flex items-center gap-1 transition shadow-sm">
-                    <i class="ph-fill ph-arrow-left text-lg"></i> Kembali
-                </button>
-        <button onclick="logout()" class="text-[10px] font-black text-red-500 bg-red-50 px-3 py-2 rounded-xl uppercase hover:bg-red-100 flex items-center gap-1 transition"><i class="ph-fill ph-sign-out"></i> LOGOUT</button>
-    </header>
-
-    <main class="p-4 max-w-xl mx-auto space-y-8 mt-2">
-        <section>
-            <div class="flex justify-between items-end mb-4 ml-1">
-                <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest"><i class="ph-fill ph-broom text-blue-500"></i> Jadwal Piket Hari Ini</h2>
-                <div id="tanggalHariIni" class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded"></div>
-            </div>
-            <div id="piket-list" class="space-y-3"></div>
-        </section>
-
-        <section class="pt-4 border-t border-slate-200">
-            <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1 flex items-center gap-2"><i class="ph-fill ph-warning-circle text-lg text-red-500"></i> Daftar Nunggak Denda</h2>
-            <div id="denda-list" class="space-y-3"></div>
-        </section>
-
-        <section class="bg-slate-900 p-6 rounded-[32px] shadow-xl text-white">
-            <h2 class="text-xs font-black uppercase tracking-widest mb-5 flex items-center gap-2"><i class="ph-fill ph-hand-coins text-orange-500 text-lg"></i> Form Kasbon</h2>
-            <form id="formKasbon" onsubmit="ajukanKasbon(event)" class="space-y-4">
-                <div class="relative">
-                    <i class="ph-fill ph-users absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <select id="kbUser" class="w-full bg-white/10 border-none rounded-2xl py-4 pl-12 pr-4 text-white text-sm font-black outline-none appearance-none cursor-pointer"></select>
-                </div>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">Rp</span>
-                    <input type="number" id="kbAmount" required placeholder="Cth: 50000" class="w-full bg-white/10 border-none rounded-2xl py-4 pl-12 pr-4 text-white text-sm font-black outline-none focus:ring-2 focus:ring-orange-500/50">
-                </div>
-                <div class="relative">
-                    <i class="ph-fill ph-text-align-left absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="kbReason" required placeholder="Keperluan..." autocomplete="off" class="w-full bg-white/10 border-none rounded-2xl py-4 pl-10 pr-4 text-white text-xs font-bold outline-none focus:ring-2 focus:ring-orange-500/50">
-                </div>
-                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-2xl transition uppercase tracking-widest text-[10px] flex justify-center gap-2"><i class="ph-fill ph-paper-plane-right"></i> Kirim Pengajuan</button>
-            </form>
-        </section>
-
-        <section>
-            <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-4 ml-1"><i class="ph-fill ph-receipt text-lg"></i> Riwayat Kasbon Tim</h2>
-            <div id="kasbon-list" class="space-y-4"></div>
-        </section>
-    </main>
 </body>
 </html>
