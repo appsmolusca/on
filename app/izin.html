@@ -23,10 +23,7 @@
             <h1 class="text-sm font-extrabold tracking-widest text-slate-900 uppercase">MOLUSCA <span class="text-slate-300 mx-1">|</span> <span id="headerName" class="text-red-500">USER</span></h1>
         </div>
         <div class="flex items-center gap-2 flex-wrap" id="navMenu">
-            <a href="izin.html" class="text-[10px] font-black bg-red-100 text-red-700 px-4 py-2.5 rounded-xl flex items-center gap-1.5 uppercase tracking-widest cursor-default"><i class="ph-fill ph-first-aid"></i> Izin</a>
-            <a href="piket.html" id="navPiket" class="text-[10px] font-black bg-orange-50 hover:bg-orange-100 text-orange-500 px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition uppercase tracking-widest"><i class="ph-fill ph-broom"></i> Piket</a>
-            <a href="asset.html" id="navAsset" class="text-[10px] font-black bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition uppercase tracking-widest"><i class="ph-fill ph-package"></i> Inventaris</a>
-            <a href="konten.html" id="navKonten" class="text-[10px] font-black bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2.5 rounded-xl flex items-center gap-1.5 uppercase tracking-widest transition"><i class="ph-fill ph-video-camera"></i> Konten</a>
+           
             <button onclick="goBack()" class="text-[10px] font-black bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition uppercase tracking-widest"><i class="ph-bold ph-kanban"></i> Dashboard</button>
         </div>
     </header>
@@ -55,7 +52,7 @@
                                 <i class="ph-fill ph-tag absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                                 <select id="leaveType" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-10 pr-4 text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-red-500/20 cursor-pointer">
                                     <option value="Sakit">Sakit</option>
-                                    <option value="Izin">Izin Keperluan</option>
+                                    <option value=""> Keperluan</option>
                                     <option value="Cuti">Cuti</option>
                                 </select>
                                 <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
@@ -134,7 +131,7 @@
         // === KONFIGURASI GOOGLE SHEETS & CLOUDINARY ===
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
         let CLOUD_NAME = localStorage.getItem('molusca_cloud_name') || "";
-        const CLOUDINARY_UPLOAD_PRESET = "molusca_izin";
+        const CLOUDINARY_UPLOAD_PRESET = "molusca_";
 
         async function dbCall(payload) {
             try {
@@ -203,7 +200,7 @@
                 });
             }
             
-            // Proteksi: Anggota tim hanya bisa izin untuk dirinya sendiri
+            // Proteksi: Anggota tim hanya bisa  untuk dirinya sendiri
             if(userRole !== 'admin') {
                 select.value = userName;
                 select.disabled = true;
@@ -261,7 +258,7 @@
 
                 // 2. Simpan ke Sheets
                 btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> MENYIMPAN...`;
-                await dbCall({ action: 'insert', sheetName: 'izin', data: reqData });
+                await dbCall({ action: 'insert', sheetName: '', data: reqData });
 
                 document.getElementById('leaveForm').reset();
                 if(userRole !== 'admin') document.getElementById('employeeName').value = userName;
@@ -282,7 +279,7 @@
         }
 
         async function loadData() {
-            const response = await dbCall({ action: 'read', sheetName: 'izin' });
+            const response = await dbCall({ action: 'read', sheetName: '' });
             if(response.status === 'success') {
                 globalRequestsData = response.data;
                 renderBoard(globalRequestsData);
@@ -290,9 +287,9 @@
             }
         }
 
-        async function deleteIzin(id) {
-            if(confirm('Yakin ingin hapus riwayat izin ini permanen?')) {
-                await dbCall({ action: 'delete', sheetName: 'izin', idValue: id });
+        async function delete(id) {
+            if(confirm('Yakin ingin hapus riwayat  ini permanen?')) {
+                await dbCall({ action: 'delete', sheetName: '', idValue: id });
                 loadData(); 
             }
         }
@@ -302,11 +299,11 @@
             const selectedMonth = parseInt(document.getElementById('chartMonth').value);
             
             let stats = {};
-            globalEmployees.forEach(emp => stats[emp] = { Sakit: 0, Izin: 0, Cuti: 0 });
+            globalEmployees.forEach(emp => stats[emp] = { Sakit: 0, : 0, Cuti: 0 });
 
             globalRequestsData.forEach(req => {
                 if(new Date(req.startDate).getMonth() === selectedMonth) {
-                    if (!stats[req.name]) stats[req.name] = { Sakit: 0, Izin: 0, Cuti: 0 };
+                    if (!stats[req.name]) stats[req.name] = { Sakit: 0, : 0, Cuti: 0 };
                     stats[req.name][req.type] += 1; 
                 }
             });
@@ -319,7 +316,7 @@
                     labels: labels,
                     datasets: [
                         { label: 'Sakit', data: labels.map(n => stats[n].Sakit), backgroundColor: '#ef4444', borderRadius: 4 },
-                        { label: 'Izin', data: labels.map(n => stats[n].Izin), backgroundColor: '#eab308', borderRadius: 4 },
+                        { label: '', data: labels.map(n => stats[n].), backgroundColor: '#eab308', borderRadius: 4 },
                         { label: 'Cuti', data: labels.map(n => stats[n].Cuti), backgroundColor: '#a855f7', borderRadius: 4 }
                     ]
                 },
@@ -338,7 +335,7 @@
 
             requests.sort((a, b) => b.id - a.id).forEach(req => {
                 let badgeColor = req.type === 'Sakit' ? 'bg-red-50 text-red-500' : req.type === 'Cuti' ? 'bg-purple-50 text-purple-500' : 'bg-yellow-50 text-yellow-600';
-                let delBtn = userRole === 'admin' ? `<button onclick="deleteIzin('${req.id}')" class="text-slate-300 hover:text-red-500 transition"><i class="ph-fill ph-trash text-lg"></i></button>` : '';
+                let delBtn = userRole === 'admin' ? `<button onclick="delete('${req.id}')" class="text-slate-300 hover:text-red-500 transition"><i class="ph-fill ph-trash text-lg"></i></button>` : '';
 
                 let proofBtn = req.proofUrl ? 
                     `<button onclick="openModal('${req.proofUrl}')" class="mt-4 w-full bg-slate-50 hover:bg-slate-100 text-blue-600 text-[10px] font-extrabold p-3 rounded-xl uppercase tracking-widest flex justify-center items-center gap-2 transition-colors border border-slate-200"><i class="ph-bold ph-image text-lg"></i> Lihat Bukti Foto</button>` : '';
@@ -376,7 +373,7 @@
             const workbook = XLSX.utils.book_new();
             
             const detailData = globalRequestsData.sort((a, b) => b.id - a.id).map((req, i) => ({
-                "No": i + 1, "Nama Karyawan": req.name, "Tipe Izin": req.type,
+                "No": i + 1, "Nama Karyawan": req.name, "Tipe ": req.type,
                 "Dari Tanggal": new Date(req.startDate).toLocaleDateString('id-ID'), "Sampai Tanggal": new Date(req.endDate).toLocaleDateString('id-ID'),
                 "Alasan Lengkap": req.reason, "Link Bukti Foto": req.proofUrl || "Tidak Ada"
             }));
@@ -386,19 +383,19 @@
 
             // Sheet 2: Rekap
             let rekapStats = {};
-            globalEmployees.forEach(emp => rekapStats[emp] = { Sakit: 0, Izin: 0, Cuti: 0, Total: 0 });
+            globalEmployees.forEach(emp => rekapStats[emp] = { Sakit: 0, : 0, Cuti: 0, Total: 0 });
             globalRequestsData.forEach(req => {
-                if (!rekapStats[req.name]) rekapStats[req.name] = { Sakit: 0, Izin: 0, Cuti: 0, Total: 0 };
+                if (!rekapStats[req.name]) rekapStats[req.name] = { Sakit: 0, : 0, Cuti: 0, Total: 0 };
                 rekapStats[req.name][req.type] += 1; rekapStats[req.name].Total += 1;
             });
 
-            const rekap = [["Nama Pegawai", "Total Sakit", "Total Izin", "Total Cuti", "TOTAL SEMUA"]];
-            for (const [name, d] of Object.entries(rekapStats)) rekap.push([name, d.Sakit, d.Izin, d.Cuti, d.Total]);
+            const rekap = [["Nama Pegawai", "Total Sakit", "Total ", "Total Cuti", "TOTAL SEMUA"]];
+            for (const [name, d] of Object.entries(rekapStats)) rekap.push([name, d.Sakit, d., d.Cuti, d.Total]);
             const wsRekap = XLSX.utils.aoa_to_sheet(rekap);
             wsRekap['!cols'] = [ {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15} ];
             XLSX.utils.book_append_sheet(workbook, wsRekap, "Rekapitulasi");
 
-            XLSX.writeFile(workbook, `Rekap_Izin_Molusca.xlsx`);
+            XLSX.writeFile(workbook, `Rekap__Molusca.xlsx`);
         }
     </script>
 </body>
