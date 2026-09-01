@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Molusca System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } 
+    </style>
+</head>
+<body class="bg-[#FBFBFE] text-slate-800 flex items-center justify-center min-h-screen p-4" onload="initLogin()">
+
+    <div class="w-full max-w-sm bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden">
+        <!-- Dekorasi Background -->
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-50 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-50 rounded-full blur-3xl"></div>
+
+        <div class="relative z-10 text-center mb-8">
+            <div class="w-16 h-16 bg-slate-900 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-slate-900/20">
+                <i class="ph-fill ph-infinity text-3xl text-white"></i>
+            </div>
+            <h1 class="text-xl font-extrabold tracking-widest text-slate-900 uppercase">Molusca V.1</h1>
+            <p class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Internal Management System</p>
+        </div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)" class="relative z-10 space-y-5">
+            <div class="space-y-1.5">
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Username</label>
+                <div class="relative">
+                    <i class="ph-fill ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="username" required placeholder="Masukkan username" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 pl-10 pr-4 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-slate-900/10 transition-all">
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Password</label>
+                <div class="relative">
+                    <i class="ph-fill ph-lock-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="password" id="password" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 pl-10 pr-4 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-slate-900/10 transition-all">
+                </div>
+            </div>
+
+            <button type="submit" id="btnLogin" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-black uppercase tracking-widest text-xs py-4 rounded-2xl shadow-lg shadow-slate-900/20 transition flex justify-center items-center gap-2 mt-2">
+                MASUK <i class="ph-bold ph-arrow-right text-sm"></i>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // API URL Google Apps Script yang sudah dimasukkan
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
+
+        function initLogin() {
+            // Bersihkan sesi lama setiap kali buka halaman login
+            localStorage.removeItem('moluscaUser');
+            localStorage.removeItem('moluscaRole');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const userIn = document.getElementById('username').value.trim();
+            const passIn = document.getElementById('password').value;
+            const btn = document.getElementById('btnLogin');
+
+            // Ubah tombol jadi loading
+            btn.disabled = true;
+            btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> MEMPROSES...`;
+
+            try {
+                // Ambil data dari Google Sheets via Apps Script
+                const response = await fetch(SCRIPT_URL + "?action=getUsers");
+                const users = await response.json();
+                
+                // Cari kecocokan username dan password
+                let userData = null;
+                for (let i = 0; i < users.length; i++) {
+                    if (users[i].username === userIn && users[i].password === passIn) {
+                        userData = users[i];
+                        break;
+                    }
+                }
+
+                if (!userData) {
+                    throw new Error("Username atau Password salah!");
+                }
+
+                // Simpan Sesi Login ke LocalStorage
+                localStorage.setItem('moluscaUser', userData.name);
+                localStorage.setItem('moluscaRole', userData.role.toLowerCase());
+
+                // Arahkan ke halaman sesuai Role
+                const role = userData.role.toLowerCase();
+                if (role === 'admin') window.location.href = 'dashboard.html';
+                else if (role === 'konten') window.location.href = 'konten.html';
+                else window.location.href = 'desainer.html';
+
+            } catch (error) {
+                // Tampilkan pesan error dan kembalikan tombol
+                alert(error.message);
+                btn.disabled = false;
+                btn.innerHTML = `MASUK <i class="ph-bold ph-arrow-right text-sm"></i>`;
+            }
+        }
+    </script>
+</body>
+</html>
