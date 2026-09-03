@@ -107,37 +107,37 @@
             }
         }
 
-        // Variabel Sesi User
         const userRole = localStorage.getItem('moluscaRole');
         const userName = localStorage.getItem('moluscaUser');
 
         function goBack() {
             if (userRole === 'admin') window.location.href = 'dashboard.html';
-            else if (userRole === 'konten') window.location.href = 'konten.html';
+            else if (userRole === 'konten' || userRole === 'konten kreator') window.location.href = 'konten.html';
             else window.location.href = 'desainer.html';
         }
 
-        // Jadwal & List Tim
-        const jadwalPiket = { 1: ['Indah'], 2: ['Nazma'], 3: ['Nayla'], 4: ['Feyy'], 5: ['Dadan'], 6: ['Tya', 'Opik'], 0: [] };
-        const listTim = ['Dadan', 'Indah', 'Tya', 'Nayla', 'Opik', 'Feyy', 'Nazma'];
+        // Susunan jadwal disamakan dengan ejaan di sheet Data (karena di sheet belum ada kolom jadwal)
+        const jadwalPiket = { 
+            1: ['Indah'], 
+            2: ['nazma'], 
+            3: ['nayla'], 
+            4: ['Elfrida', 'Esa'], 
+            5: ['Dadan'], 
+            6: ['opik', 'Taufik'], 
+            0: [] 
+        };
         
+        let listTim = []; 
         const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
         const dayIndex = new Date().getDay();
-        
         let globalPiketData = [];
 
         async function initApp() {
             if (!userName) window.location.href = 'index.html';
 
-            // Menampilkan nama user di header
             document.getElementById('userInfoHeader').innerText = `Login sbg: ${userName} (${userRole})`;
-            
             document.getElementById('tanggalHariIni').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             
-            const selectUser = document.getElementById('kbUser');
-            selectUser.innerHTML = '<option value="" disabled selected class="text-slate-900">Pilih Nama Pemohon...</option>';
-            listTim.forEach(nama => selectUser.innerHTML += `<option value="${nama}" class="text-slate-900">${nama}</option>`);
-
             await loadData();
         }
 
@@ -147,10 +147,20 @@
             document.getElementById('loadingOverlay').classList.remove('hidden');
             
             try {
-                const [resPiket, resKasbon] = await Promise.all([
+                // Fetch Piket, Kasbon, dan list user dari sheet "Data" secara bersamaan
+                const [resPiket, resKasbon, resUsers] = await Promise.all([
                     dbCall({ action: 'read', sheetName: 'piket_log' }),
-                    dbCall({ action: 'read', sheetName: 'kasbon' })
+                    dbCall({ action: 'read', sheetName: 'kasbon' }),
+                    dbCall({ action: 'read', sheetName: 'Data' })
                 ]);
+
+                // Ekstraksi Data dari Sheet 'Data' untuk Form Kasbon
+                if (resUsers.status === 'success' && Array.isArray(resUsers.data)) {
+                    listTim = resUsers.data.filter(u => u.role !== 'admin' && u.name).map(u => u.name);
+                    const selectUser = document.getElementById('kbUser');
+                    selectUser.innerHTML = '<option value="" disabled selected class="text-slate-900">Pilih Nama Pemohon...</option>';
+                    listTim.forEach(nama => selectUser.innerHTML += `<option value="${nama}" class="text-slate-900">${nama}</option>`);
+                }
 
                 globalPiketData = (resPiket.status === 'success' && Array.isArray(resPiket.data)) ? resPiket.data : [];
                 const kasbonData = (resKasbon.status === 'success' && Array.isArray(resKasbon.data)) ? resKasbon.data : [];
@@ -276,7 +286,6 @@
                 let ui = '';
                 let btnId = `btn-absen-${index}`;
 
-                // HANYA NAMA YANG BERSANGKUTAN ATAU ADMIN YANG BISA ABSEN
                 let isMyTurn = (userName === name || userRole === 'admin');
 
                 if (status === 'sudah') {
@@ -305,7 +314,6 @@
             const list = document.getElementById('denda-list');
             list.innerHTML = '';
             
-            // Logika Telat Absen: Jika ada data tanggal kemarin dengan status 'belum', maka itu dianggap denda.
             const nunggakList = globalPiketData.filter(d => 
                 d.status === 'denda_belum' || 
                 (d.status === 'belum' && d.dateStr !== todayStr && d.dateStr && d.dateStr.includes('-'))
@@ -319,7 +327,6 @@
             nunggakList.forEach(item => {
                 let adminControls = '';
                 
-                // JIKA ADMIN, MUNCULKAN TOMBOL MANAJEMEN DENDA
                 if (userRole === 'admin') {
                     adminControls = `
                     <div class="flex gap-1.5 mt-3">
