@@ -116,7 +116,7 @@
             else window.location.href = 'desainer.html';
         }
 
-        // Susunan jadwal disamakan dengan ejaan di sheet Data (karena di sheet belum ada kolom jadwal)
+        // Susunan jadwal disamakan dengan nama di database users
         const jadwalPiket = { 
             1: ['Indah'], 
             2: ['nazma'], 
@@ -147,14 +147,14 @@
             document.getElementById('loadingOverlay').classList.remove('hidden');
             
             try {
-                // Fetch Piket, Kasbon, dan list user dari sheet "Data" secara bersamaan
+                // MENGAMBIL DARI SHEET "users" (Sesuai tab di screenshot)
                 const [resPiket, resKasbon, resUsers] = await Promise.all([
                     dbCall({ action: 'read', sheetName: 'piket_log' }),
                     dbCall({ action: 'read', sheetName: 'kasbon' }),
-                    dbCall({ action: 'read', sheetName: 'Data' })
+                    dbCall({ action: 'read', sheetName: 'users' }) 
                 ]);
 
-                // Ekstraksi Data dari Sheet 'Data' untuk Form Kasbon
+                // Ekstraksi Data dari Sheet 'users' untuk Form Kasbon
                 if (resUsers.status === 'success' && Array.isArray(resUsers.data)) {
                     listTim = resUsers.data.filter(u => u.role !== 'admin' && u.name).map(u => u.name);
                     const selectUser = document.getElementById('kbUser');
