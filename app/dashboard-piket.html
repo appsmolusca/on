@@ -114,7 +114,7 @@
         }
 
         // ==========================================
-        // UPDATE JADWAL PIKET TERBARU (SINKRON DENGAN TIM)
+        // UPDATE JADWAL PIKET TERBARU
         // ==========================================
         const listTim = ['Opik', 'Indah', 'Elfrida', 'nayla', 'nazma', 'Esa', 'Dadan'];
         const jadwalPiket = { 
@@ -184,17 +184,22 @@
             }
         }
 
+        // --- PERBAIKAN: CEK BERDASARKAN ID, BUKAN TANGGAL ---
         async function initTodayPiket() {
             const petugas = jadwalPiket[dayIndex] || [];
             if (petugas.length === 0) return;
 
-            let todayLogs = globalPiketData.filter(d => d.dateStr === todayStr);
             let needsRefresh = false;
 
             for (let name of petugas) {
-                let exists = todayLogs.find(d => d.name === name);
+                // Kita gabungkan tanggal dan nama sebagai Target ID
+                let expectedId = `${todayStr}_${name}`;
+                
+                // Cari apakah ID tersebut sudah ada di database
+                let exists = globalPiketData.find(d => d.id === expectedId);
+                
                 if (!exists) {
-                    await dbCall({ action: 'insert', sheetName: 'piket_log', data: { id: `${todayStr}_${name}`, dateStr: todayStr, name: name, status: 'belum' } });
+                    await dbCall({ action: 'insert', sheetName: 'piket_log', data: { id: expectedId, dateStr: todayStr, name: name, status: 'belum' } });
                     needsRefresh = true;
                 }
             }
@@ -253,7 +258,8 @@
             const petugas = jadwalPiket[dayIndex] || [];
             if (petugas.length === 0) { list.innerHTML = `<div class="col-span-full text-center p-6 bg-slate-50 text-slate-400 font-bold rounded-[24px] border-2 border-dashed border-slate-200">Hari ini libur piket studio.</div>`; return; }
 
-            const todayLogs = globalPiketData.filter(d => d.dateStr === todayStr);
+            // PERBAIKAN: Filter berdasarkan awalan ID agar kebal auto-format Sheets
+            const todayLogs = globalPiketData.filter(d => d.id && d.id.startsWith(todayStr));
 
             petugas.forEach(name => {
                 let log = todayLogs.find(d => d.name === name);
@@ -341,9 +347,11 @@
             
             const grouped = {};
             globalPiketData.forEach(d => {
-                if(d && d.dateStr && d.dateStr.includes('-')) {
-                    if(!grouped[d.dateStr]) grouped[d.dateStr] = [];
-                    grouped[d.dateStr].push(d);
+                // Ambil tanggal langsung dari ID untuk keamanan dari format error Sheet
+                if(d && d.id && d.id.includes('_')) {
+                    let extractedDate = d.id.split('_')[0]; 
+                    if(!grouped[extractedDate]) grouped[extractedDate] = [];
+                    grouped[extractedDate].push(d);
                 }
             });
 
