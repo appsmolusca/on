@@ -24,7 +24,7 @@
 
     <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-4 md:px-6 border-b border-slate-100 flex justify-between items-center shadow-sm">
         <div class="flex items-center gap-2 md:gap-3">
-            <div class="bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center shadow-inner">
+            <div class="bg-blue-50 text-blue-600 w-10 h-10 md:w-12 h-12 rounded-xl flex items-center justify-center shadow-inner">
                 <i class="ph-fill ph-broom text-xl md:text-2xl"></i>
             </div>
             <div>
@@ -127,10 +127,18 @@
             0: [] 
         };
         
-        let listTim = []; 
-        const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+        // Fungsi bantu agar format tanggal selalu konsisten: DD-MM-YYYY
+        function getFormattedDate(dateObj) {
+            let dd = String(dateObj.getDate()).padStart(2, '0');
+            let mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            let yyyy = dateObj.getFullYear();
+            return `${dd}-${mm}-${yyyy}`;
+        }
+
+        const todayStr = getFormattedDate(new Date());
         const dayIndex = new Date().getDay();
         let globalPiketData = [];
+        let listTim = []; 
 
         async function initApp() {
             if (!userName) window.location.href = 'index.html';
@@ -147,14 +155,12 @@
             document.getElementById('loadingOverlay').classList.remove('hidden');
             
             try {
-                // MENGAMBIL DARI SHEET "users" (Sesuai tab di screenshot)
                 const [resPiket, resKasbon, resUsers] = await Promise.all([
                     dbCall({ action: 'read', sheetName: 'piket_log' }),
                     dbCall({ action: 'read', sheetName: 'kasbon' }),
                     dbCall({ action: 'read', sheetName: 'users' }) 
                 ]);
 
-                // Ekstraksi Data dari Sheet 'users' untuk Form Kasbon
                 if (resUsers.status === 'success' && Array.isArray(resUsers.data)) {
                     listTim = resUsers.data.filter(u => u.role !== 'admin' && u.name).map(u => u.name);
                     const selectUser = document.getElementById('kbUser');
@@ -165,7 +171,8 @@
                 globalPiketData = (resPiket.status === 'success' && Array.isArray(resPiket.data)) ? resPiket.data : [];
                 const kasbonData = (resKasbon.status === 'success' && Array.isArray(resKasbon.data)) ? resKasbon.data : [];
 
-                await initTodayPiket();
+                // Cek jadwal hari ini & 3 hari ke belakang untuk mendeteksi siapa yang nunggak
+                await syncPiketData();
 
                 renderPiket();
                 renderDenda();
@@ -178,24 +185,53 @@
             }
         }
 
-        async function initTodayPiket() {
-            const petugas = jadwalPiket[dayIndex] || [];
-            if (petugas.length === 0) return;
-
-            let todayLogs = globalPiketData.filter(d => d.dateStr === todayStr);
+        // ==============================================================
+        // FUNGSI BARU: Mengecek & Menetapkan Denda Secara Otomatis
+        // ==============================================================
+        async function syncPiketData() {
             let needsRefresh = false;
 
-            for (let name of petugas) {
-                let exists = todayLogs.find(d => d.name === name);
-                if (!exists) {
-                    await dbCall({
-                        action: 'insert', sheetName: 'piket_log',
-                        data: { id: `${todayStr}_${name}`, dateStr: todayStr, name: name, status: 'belum' }
-                    });
-                    needsRefresh = true;
+            // Loop 0 sampai 3 (Mengecek hari ini, dan 3 hari ke belakang)
+            for(let i = 0; i <= 3; i++) {
+                let checkDate = new Date();
+                checkDate.setDate(checkDate.getDate() - i);
+                
+                let checkDateStr = getFormattedDate(checkDate);
+                let checkDayIndex = checkDate.getDay();
+                
+                let petugas = jadwalPiket[checkDayIndex] || [];
+                if (petugas.length === 0) continue; // Skip kalau hari itu libur piket
+
+                let dayLogs = globalPiketData.filter(log => log.dateStr === checkDateStr);
+
+                for (let name of petugas) {
+                    let logExists = dayLogs.find(log => log.name === name);
+
+                    if (!logExists) {
+                        // Jika log belum ada sama sekali:
+                        // Kalau i === 0 (hari ini), status 'belum'
+                        // Kalau i > 0 (hari kemarin dsb), berarti dia lolos ga absen kemarin, langsung tembak 'denda_belum'
+                        let setStatus = (i === 0) ? 'belum' : 'denda_belum';
+                        
+                        await dbCall({
+                            action: 'insert', sheetName: 'piket_log',
+                            data: { id: `${checkDateStr}_${name}`, dateStr: checkDateStr, name: name, status: setStatus }
+                        });
+                        needsRefresh = true;
+                    } else if (i > 0 && logExists.status === 'belum') {
+                        // Jika log ada, tapi statusnya masih 'belum' dan ini adalah jadwal kemarin/lewat
+                        // Update statusnya secara permanen menjadi 'denda_belum'
+                        await dbCall({ 
+                            action: 'update', sheetName: 'piket_log', 
+                            idValue: `${checkDateStr}_${name}`, 
+                            updateData: { status: 'denda_belum' } 
+                        });
+                        needsRefresh = true;
+                    }
                 }
             }
 
+            // Jika ada perubahan pada database (denda baru tercatat), ambil data terbaru
             if(needsRefresh) {
                 const refresh = await dbCall({ action: 'read', sheetName: 'piket_log' });
                 if(refresh.status === 'success' && Array.isArray(refresh.data)) globalPiketData = refresh.data;
@@ -314,9 +350,11 @@
             const list = document.getElementById('denda-list');
             list.innerHTML = '';
             
+            // Sekarang sistem hanya perlu memfilter status 'denda_belum' 
+            // karena data yg 'belum' di hari sebelumnya sudah otomatis diubah ke 'denda_belum' oleh sistem
             const nunggakList = globalPiketData.filter(d => 
                 d.status === 'denda_belum' || 
-                (d.status === 'belum' && d.dateStr !== todayStr && d.dateStr && d.dateStr.includes('-'))
+                (d.status === 'belum' && d.dateStr !== todayStr && d.dateStr && d.dateStr.includes('-')) // Failsafe untuk data lama
             );
 
             if (nunggakList.length === 0) {
