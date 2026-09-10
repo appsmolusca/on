@@ -113,10 +113,29 @@
             document.getElementById('loadingOverlay').classList.add('hidden');
         }
 
-        const listTim = ['Indah', 'Nazma', 'Nayla', 'Feyy', 'Dadan', 'Tya', 'Opik'];
-        const jadwalPiket = { 1: ['Indah'], 2: ['Nazma'], 3: ['Nayla'], 4: ['Feyy'], 5: ['Dadan'], 6: ['Tya', 'Opik'], 0: [] };
+        // ==========================================
+        // UPDATE JADWAL PIKET TERBARU (SINKRON DENGAN TIM)
+        // ==========================================
+        const listTim = ['Opik', 'Indah', 'Elfrida', 'nayla', 'nazma', 'Esa', 'Dadan'];
+        const jadwalPiket = { 
+            1: ['Opik'],              // Senin
+            2: ['Indah', 'Elfrida'],  // Selasa
+            3: ['nayla'],             // Rabu
+            4: ['nazma'],             // Kamis
+            5: ['Esa'],               // Jumat
+            6: ['Dadan'],             // Sabtu
+            0: []                     // Minggu
+        };
         
-        const todayStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+        // Format tanggal agar 100% cocok dengan database
+        function getFormattedDate(dateObj) {
+            let dd = String(dateObj.getDate()).padStart(2, '0');
+            let mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            let yyyy = dateObj.getFullYear();
+            return `${dd}-${mm}-${yyyy}`;
+        }
+
+        const todayStr = getFormattedDate(new Date());
         const dayIndex = new Date().getDay();
 
         let globalPiketData = [];
@@ -270,7 +289,7 @@
             if(!dateInput) return alert("Pilih tanggal!");
             
             const dateObj = new Date(dateInput);
-            const dateStr = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+            const dateStr = getFormattedDate(dateObj); // Menggunakan format DD-MM-YYYY
             const nama = document.getElementById('manualUser').value;
             const status = document.getElementById('manualStatus').value;
             const idValue = `${dateStr}_${nama}`;
