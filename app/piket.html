@@ -188,7 +188,7 @@
         }
 
         // ==============================================================
-        // FUNGSI BARU: Mengecek & Menetapkan Denda Secara Otomatis
+        // PERBAIKAN: Mengecek & Menetapkan Denda Berdasarkan ID (Anti Dobel)
         // ==============================================================
         async function syncPiketData() {
             let needsRefresh = false;
@@ -204,20 +204,18 @@
                 let petugas = jadwalPiket[checkDayIndex] || [];
                 if (petugas.length === 0) continue; // Skip kalau hari itu libur piket
 
-                let dayLogs = globalPiketData.filter(log => log.dateStr === checkDateStr);
-
                 for (let name of petugas) {
-                    let logExists = dayLogs.find(log => log.name === name);
+                    // Gabungkan ID target secara pasti
+                    let expectedId = `${checkDateStr}_${name}`;
+                    // Cek apakah ID tersebut sudah ada
+                    let logExists = globalPiketData.find(log => log.id === expectedId);
 
                     if (!logExists) {
-                        // Jika log belum ada sama sekali:
-                        // Kalau i === 0 (hari ini), status 'belum'
-                        // Kalau i > 0 (hari kemarin dsb), berarti dia lolos ga absen kemarin, langsung tembak 'denda_belum'
                         let setStatus = (i === 0) ? 'belum' : 'denda_belum';
                         
                         await dbCall({
                             action: 'insert', sheetName: 'piket_log',
-                            data: { id: `${checkDateStr}_${name}`, dateStr: checkDateStr, name: name, status: setStatus }
+                            data: { id: expectedId, dateStr: checkDateStr, name: name, status: setStatus }
                         });
                         needsRefresh = true;
                     } else if (i > 0 && logExists.status === 'belum') {
@@ -225,7 +223,7 @@
                         // Update statusnya secara permanen menjadi 'denda_belum'
                         await dbCall({ 
                             action: 'update', sheetName: 'piket_log', 
-                            idValue: `${checkDateStr}_${name}`, 
+                            idValue: expectedId, 
                             updateData: { status: 'denda_belum' } 
                         });
                         needsRefresh = true;
@@ -316,7 +314,8 @@
                 return; 
             }
 
-            const todayLogs = globalPiketData.filter(d => d.dateStr === todayStr);
+            // PERBAIKAN: Memfilter menggunakan id untuk keamanan penuh
+            const todayLogs = globalPiketData.filter(d => d.id && d.id.startsWith(todayStr));
 
             petugas.forEach((name, index) => {
                 let log = todayLogs.find(d => d.name === name);
@@ -352,11 +351,10 @@
             const list = document.getElementById('denda-list');
             list.innerHTML = '';
             
-            // Sekarang sistem hanya perlu memfilter status 'denda_belum' 
-            // karena data yg 'belum' di hari sebelumnya sudah otomatis diubah ke 'denda_belum' oleh sistem
+            // PERBAIKAN: Mengganti pengecekan dateStr dengan id.startsWith 
             const nunggakList = globalPiketData.filter(d => 
                 d.status === 'denda_belum' || 
-                (d.status === 'belum' && d.dateStr !== todayStr && d.dateStr && d.dateStr.includes('-')) // Failsafe untuk data lama
+                (d.status === 'belum' && d.id && !d.id.startsWith(todayStr))
             );
 
             if (nunggakList.length === 0) {
@@ -375,11 +373,14 @@
                     </div>`;
                 }
 
+                // PERBAIKAN: Mengambil tanggal bolos murni dari ID agar kebal bug Sheet
+                let tglBolos = item.id.split('_')[0] || item.dateStr;
+
                 list.innerHTML += `
                     <div class="bg-red-50 p-5 rounded-[24px] border border-red-100 flex justify-between items-start shadow-sm hover:shadow-md transition">
                         <div>
                             <h4 class="font-black text-red-700 text-sm md:text-base flex items-center gap-1.5"><i class="ph-fill ph-warning-circle text-lg"></i> ${item.name}</h4>
-                            <div class="text-[9px] md:text-[10px] font-bold text-red-400 mt-1 uppercase tracking-widest flex items-center gap-1"><i class="ph ph-calendar-blank"></i> Bolos: ${item.dateStr}</div>
+                            <div class="text-[9px] md:text-[10px] font-bold text-red-400 mt-1 uppercase tracking-widest flex items-center gap-1"><i class="ph ph-calendar-blank"></i> Bolos: ${tglBolos}</div>
                             ${adminControls}
                         </div>
                         <span class="bg-red-500 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-xl text-[9px] md:text-[10px] font-black uppercase shadow-sm flex items-center gap-1 mt-1">Utang 5k</span>
