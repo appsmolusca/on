@@ -24,7 +24,7 @@
 
     <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-4 md:px-6 border-b border-slate-100 flex justify-between items-center shadow-sm">
         <div class="flex items-center gap-2 md:gap-3">
-            <div class="bg-blue-50 text-blue-600 w-10 h-10 md:w-12 h-12 rounded-xl flex items-center justify-center shadow-inner">
+            <div class="bg-blue-50 text-blue-600 w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center shadow-inner">
                 <i class="ph-fill ph-broom text-xl md:text-2xl"></i>
             </div>
             <div>
@@ -116,15 +116,17 @@
             else window.location.href = 'desainer.html';
         }
 
-        // Susunan jadwal disamakan dengan nama di database users
+        // ==========================================
+        // UPDATE JADWAL PIKET TERBARU
+        // ==========================================
         const jadwalPiket = { 
-            1: ['Taufik'], 
-            2: ['Indah','Elfrida'], 
-            3: ['nayla'], 
-            4: ['Nazma], 
-            5: ['Esa'], 
-            6: ['Dadan'], 
-            0: [] 
+            1: ['Opik'],              // Senin
+            2: ['Indah', 'Elfrida'],  // Selasa
+            3: ['nayla'],             // Rabu
+            4: ['nazma'],             // Kamis
+            5: ['Esa'],               // Jumat
+            6: ['Dadan'],             // Sabtu
+            0: []                     // Minggu (Libur)
         };
         
         // Fungsi bantu agar format tanggal selalu konsisten: DD-MM-YYYY
