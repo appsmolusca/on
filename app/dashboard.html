@@ -1,4 +1,24 @@
-<script>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Eksekutif - Molusca</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; background-color: #F8FAFC; } 
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Sembunyikan scrollbar untuk elemen scroll horizontal (Mobile) */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="pb-24 text-slate-800" onload="checkLogin()" oncontextmenu="return false;">
+    
+    <script>
         document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
 
         // === GOOGLE SHEETS API ===
@@ -15,17 +35,6 @@
         }
 
         let allUsers = [];
-
-        // JADWAL PIKET FIX (Sama seperti di App Piket)
-        const jadwalPiket = { 
-            1: ['Opik'],              // Senin
-            2: ['Indah', 'Elfrida'],  // Selasa
-            3: ['nayla'],             // Rabu
-            4: ['nazma'],             // Kamis
-            5: ['Esa'],               // Jumat
-            6: ['Dadan'],             // Sabtu
-            0: []                     // Minggu
-        };
 
         function checkLogin() {
             if (localStorage.getItem('moluscaRole') !== 'admin') window.location.href = 'index.html';
@@ -56,13 +65,13 @@
             }
         }
 
-        // ================== HELPER: PARSER TANGGAL ==================
+        // ================== HELPER: PARSER TANGGAL ANTI-GAGAL ==================
         function parseIndoDate(dateStr) {
             if (!dateStr) return new Date();
             let str = String(dateStr);
             const idMonths = {"Jan":"Jan", "Feb":"Feb", "Mar":"Mar", "Apr":"Apr", "Mei":"May", "Jun":"Jun", "Jul":"Jul", "Ags":"Aug", "Sep":"Sep", "Okt":"Oct", "Nov":"Nov", "Des":"Dec"};
             for (let key in idMonths) { if (str.includes(key)) { str = str.replace(key, idMonths[key]); break; } }
-            if (!/\d{4}/.test(str)) str += " " + new Date().getFullYear(); 
+            if (!/\d{4}/.test(str)) str += " " + new Date().getFullYear(); // Tambah tahun jika tidak ada
             let d = new Date(str);
             return isNaN(d.getTime()) ? new Date() : d;
         }
@@ -72,11 +81,11 @@
             document.getElementById('loadingOverlay').classList.remove('hidden');
 
             try {
-                // Tidak perlu lagi narik resPiket karena jadwalnya sudah fix di coding
-                const [resUsers, resTasks, resIzin, resCreator] = await Promise.all([
+                const [resUsers, resTasks, resIzin, resPiket, resCreator] = await Promise.all([
                     dbCall({ action: 'read', sheetName: 'users' }),
                     dbCall({ action: 'read', sheetName: 'tasks' }),
                     dbCall({ action: 'read', sheetName: 'izin' }),
+                    dbCall({ action: 'read', sheetName: 'piket' }),
                     dbCall({ action: 'read', sheetName: 'creator_tasks' })
                 ]);
 
@@ -89,7 +98,10 @@
 
                 if(resTasks.status === 'success' && resTasks.data) renderBoard(resTasks.data);
                 
-                processWidgetData(resIzin.status === 'success' ? resIzin.data : []);
+                processWidgetData(
+                    resPiket.status === 'success' ? resPiket.data : [],
+                    resIzin.status === 'success' ? resIzin.data : []
+                );
 
                 renderCharts(
                     resTasks.status === 'success' ? resTasks.data : [],
@@ -104,17 +116,14 @@
         }
 
         // ================== LOGIC TAB 1: OVERVIEW ==================
-        function processWidgetData(izinData) {
+        function processWidgetData(piketData, izinData) {
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const dayIndex = new Date().getDay();
-            const todayName = days[dayIndex];
-            
-            // Ambil dari variabel jadwalPiket yang fix
-            const piketToday = jadwalPiket[dayIndex] || [];
+            const todayName = days[new Date().getDay()];
+            const piketToday = piketData.filter(p => p.hari === todayName);
             
             let piketHTML = '';
             if (piketToday.length > 0) {
-                piketHTML = piketToday.map(nama => `<span class="bg-white text-orange-600 px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-sm"><i class="ph-fill ph-user text-sm"></i> ${nama}</span>`).join(' ');
+                piketHTML = piketToday.map(p => `<span class="bg-white text-orange-600 px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-sm"><i class="ph-fill ph-user text-sm"></i> ${p.name}</span>`).join(' ');
             } else {
                 piketHTML = `<span class="text-xs font-bold text-orange-200 border border-dashed border-orange-300 px-3 py-1.5 rounded-xl">Libur / Tidak ada tim</span>`;
             }
@@ -213,6 +222,7 @@
             desainerOnly.forEach((u, index) => {
                 select.innerHTML += `<option value="${u.name}">${u.name}</option>`;
                 let color = colors[index % colors.length];
+                // Papan responsif: flex item & snap untuk mobile
                 boardContainer.innerHTML += `
                     <div class="min-w-[280px] md:min-w-0 snap-center bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm flex flex-col">
                         <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-4 flex items-center gap-2"><i class="ph-fill ph-user-circle ${color} text-2xl"></i> ${u.name}</h3>
@@ -233,7 +243,7 @@
                 id: Date.now().toString(), joCode: document.getElementById('taskJO').value.toUpperCase(),
                 title: document.getElementById('taskTitle').value, sender: document.getElementById('taskSender').value,
                 priority: document.getElementById('taskPriority').value, assignee: document.getElementById('assignee').value,
-                dateStr: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+                dateStr: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }), // Format Update
                 timeAssigned: new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0'),
                 status: 'Lagi Dikerjain', isPrintilan: false, isApproved: true
             };
@@ -242,20 +252,21 @@
             document.getElementById('taskForm').reset(); document.getElementById('taskJO').focus();
             btn.innerHTML = '<i class="ph-bold ph-paper-plane-right text-lg"></i> KIRIM TUGAS'; btn.disabled = false;
             
+            // Re-load semua agar grafik update
             loadAllData();
         }
 
         async function approveTask(id) { 
             document.getElementById('loadingOverlay').classList.remove('hidden');
             await dbCall({ action: 'update', sheetName: 'tasks', idValue: id, updateData: { isApproved: true } });
-            loadAllData(); 
+            loadAllData(); // Re-load agar grafik update
         }
         
         async function deleteTask(id) { 
             if(confirm("Yakin hapus tugas ini permanen?")) {
                 document.getElementById('loadingOverlay').classList.remove('hidden');
                 await dbCall({ action: 'delete', sheetName: 'tasks', idValue: id });
-                loadAllData(); 
+                loadAllData(); // Re-load agar grafik update
             }
         }
 
@@ -303,3 +314,128 @@
 
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
     </script>
+
+    <!-- HEADER NAVIGATION -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 md:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <!-- Brand -->
+            <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex items-center gap-2">
+                    <i class="ph-fill ph-hexagon text-3xl text-blue-600"></i>
+                    <h1 class="text-xl font-extrabold tracking-tight text-slate-900">Molusca<span class="text-blue-600">.</span></h1>
+                </div>
+                <!-- Logout Mobile Only -->
+                <button onclick="logout()" class="md:hidden text-slate-400 hover:text-red-500"><i class="ph-bold ph-sign-out text-xl"></i></button>
+            </div>
+            
+            <!-- Nav Links (Scrollable on Mobile) -->
+            <div class="flex items-center gap-2 md:gap-3 overflow-x-auto hide-scrollbar w-full md:w-auto pb-2 md:pb-0">
+                <a href="izin.html" class="shrink-0 text-[10px] md:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-4 py-2.5 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 hover:text-red-500 transition"><i class="ph-fill ph-first-aid text-base"></i> IZIN</a>
+                <a href="library.html" class="shrink-0 text-[10px] md:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-4 py-2.5 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition"><i class="ph-fill ph-folder-open text-base"></i> LIBRARY</a>
+                <a href="dashboard-piket.html" class="shrink-0 text-[10px] md:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-4 py-2.5 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 hover:text-amber-500 transition"><i class="ph-fill ph-broom text-base"></i> PIKET</a>
+                <a href="peminjaman.html" class="shrink-0 text-[10px] md:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-4 py-2.5 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 hover:text-indigo-500 transition"><i class="ph-fill ph-package text-base"></i> INVENTARIS</a>
+                <a href="konten.html" class="shrink-0 text-[10px] md:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-4 py-2.5 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 hover:text-pink-500 transition"><i class="ph-fill ph-video-camera text-base"></i> KONTEN</a>
+                <a href="user.html" class="shrink-0 text-[10px] md:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-4 py-2.5 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 hover:text-blue-500 transition"><i class="ph-fill ph-users text-base"></i> TIM</a>
+                <!-- Logout Desktop Only -->
+                <button onclick="logout()" class="hidden md:flex shrink-0 text-[10px] md:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-4 py-2.5 rounded-xl items-center gap-1.5 hover:bg-red-50 hover:text-red-500 transition"><i class="ph-bold ph-sign-out text-base"></i> KELUAR</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex justify-center items-center">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4">
+            <i class="ph ph-spinner animate-spin text-5xl text-blue-600"></i>
+            <span class="text-xs font-black text-slate-800 uppercase tracking-[0.2em]">Memuat Data...</span>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="p-4 md:p-8 max-w-7xl mx-auto">
+        
+        <!-- TABS BUTTON -->
+        <div class="flex bg-slate-100 p-1.5 rounded-[20px] mb-8 max-w-md mx-auto shadow-inner">
+            <button onclick="switchTab('overview')" id="btn-overview" class="flex-1 py-3.5 px-6 rounded-2xl font-bold text-xs md:text-sm uppercase tracking-widest transition flex justify-center items-center gap-2 bg-slate-900 text-white shadow-lg shadow-slate-900/20"><i class="ph-fill ph-chart-pie-slice"></i> Overview</button>
+            <button onclick="switchTab('desain')" id="btn-desain" class="flex-1 py-3.5 px-6 rounded-2xl font-bold text-xs md:text-sm uppercase tracking-widest transition flex justify-center items-center gap-2 bg-white text-slate-500 hover:bg-slate-50 border border-slate-200"><i class="ph-fill ph-paint-brush"></i> Task Desain</button>
+        </div>
+
+        <!-- TAB 1: OVERVIEW -->
+        <div id="tab-overview" class="space-y-8">
+            <!-- Widgets -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Widget Piket -->
+                <div class="bg-gradient-to-br from-orange-400 to-red-500 p-8 rounded-[32px] shadow-xl shadow-orange-500/20 text-white relative overflow-hidden flex flex-col justify-center">
+                    <i class="ph-fill ph-broom absolute -right-4 -bottom-4 text-9xl opacity-20 transform -rotate-12 pointer-events-none"></i>
+                    <div class="relative z-10">
+                        <h3 class="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-orange-100 mb-2">Piket Hari Ini</h3>
+                        <div class="text-3xl md:text-4xl font-black mb-4 tracking-tighter" id="widgetPiketHari">-</div>
+                        <div id="widgetPiketNama" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+
+                <!-- Widget Sakit -->
+                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden flex flex-col justify-center">
+                    <div class="bg-red-50 w-14 h-14 rounded-2xl flex items-center justify-center text-red-500 text-3xl absolute top-8 right-8"><i class="ph-fill ph-thermometer"></i></div>
+                    <h3 class="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Tim Sakit Bulan Ini</h3>
+                    <div class="text-4xl font-black text-slate-800 tracking-tighter mt-4" id="widgetSakit">0 <span class="text-xl text-slate-400">Orang</span></div>
+                </div>
+
+                <!-- Widget Total -->
+                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden flex flex-col justify-center">
+                    <div class="bg-blue-50 w-14 h-14 rounded-2xl flex items-center justify-center text-blue-600 text-3xl absolute top-8 right-8"><i class="ph-fill ph-users"></i></div>
+                    <h3 class="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Total Karyawan Aktif</h3>
+                    <div class="text-4xl font-black text-slate-800 tracking-tighter mt-4" id="widgetTotalTim">0 <span class="text-xl text-slate-400">Orang</span></div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-6 md:p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col">
+                    <h3 class="text-xs md:text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-trend-up text-blue-600 text-xl"></i> Kurva Desain Selesai (Tahun Ini)</h3>
+                    <div class="flex-1 w-full relative min-h-[250px]"><canvas id="chartDesain"></canvas></div>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col">
+                    <h3 class="text-xs md:text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-video-camera text-pink-500 text-xl"></i> Kurva Konten Di-Take (Tahun Ini)</h3>
+                    <div class="flex-1 w-full relative min-h-[250px]"><canvas id="chartKonten"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Team List -->
+            <section class="pt-6">
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-6 flex items-center gap-2 ml-2"><i class="ph-fill ph-address-book text-xl"></i> Susunan Tim Molusca</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6" id="teamListContainer"></div>
+            </section>
+        </div>
+
+        <!-- TAB 2: TASK DESAIN -->
+        <div id="tab-desain" class="hidden space-y-8">
+            <!-- Form Card -->
+            <section class="bg-white p-6 md:p-8 rounded-[32px] border border-slate-100 shadow-sm">
+                <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-plus-circle text-blue-600 text-xl"></i> Create New Task</h2>
+                <form id="taskForm" onsubmit="sendTask(event)" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="relative"><i class="ph-bold ph-hash absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="taskJO" required placeholder="JO CODE" autocomplete="off" class="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 md:py-5 pl-11 pr-4 text-xs font-bold uppercase focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-colors outline-none"></div>
+                    <div class="relative sm:col-span-2 md:col-span-1"><i class="ph-bold ph-folder absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="taskTitle" required placeholder="PROJECT NAME" autocomplete="off" class="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 md:py-5 pl-11 pr-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-colors outline-none"></div>
+                    <div class="relative"><i class="ph-bold ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="taskSender" required placeholder="SENDER" autocomplete="off" class="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 md:py-5 pl-11 pr-4 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-colors outline-none"></div>
+                    <div class="relative"><i class="ph-bold ph-warning-circle absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><select id="taskPriority" class="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 md:py-5 pl-11 pr-4 text-xs font-bold outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-colors"><option value="Normal" class="text-slate-800">🟢 NORMAL</option><option value="Urgent" class="text-slate-800">🔴 URGENT</option></select></div>
+                    <div class="relative"><i class="ph-bold ph-users absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><select id="assignee" class="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 md:py-5 pl-11 pr-4 text-xs font-bold outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-colors"></select></div>
+                    <button type="submit" class="sm:col-span-2 md:col-span-5 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 md:py-5 rounded-2xl shadow-lg shadow-blue-500/30 transition flex justify-center items-center gap-2 mt-2 tracking-widest text-xs"><i class="ph-bold ph-paper-plane-right text-base"></i> KIRIM TUGAS</button>
+                </form>
+            </section>
+
+            <!-- Kanban Boards (Scrollable horizontally on mobile) -->
+            <div class="w-full overflow-x-auto hide-scrollbar pb-4 -mx-4 px-4 md:mx-0 md:px-0">
+                <div id="dynamic-boards" class="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 w-max md:w-full snap-x">
+                    <!-- Board Desainer masuk sini -->
+                </div>
+            </div>
+
+            <!-- Final Archive -->
+            <section class="pt-8 border-t border-slate-200">
+                <h2 class="text-xs font-black text-green-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2 ml-2"><i class="ph-fill ph-archive-box text-xl"></i> Final Archive</h2>
+                <div id="board-final" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"></div>
+            </section>
+        </div>
+
+    </main>
+</body>
+</html>
