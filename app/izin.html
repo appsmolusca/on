@@ -16,14 +16,13 @@
 </head>
 <body class="bg-[#FBFBFE] pb-24 text-slate-800" onload="initApp()" oncontextmenu="return false;">
 
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center">
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex justify-center items-center">
         <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4 text-center max-w-[250px]">
             <i class="ph ph-spinner animate-spin text-5xl text-red-500"></i>
             <div>
                 <span class="text-xs font-black text-slate-700 uppercase tracking-widest block mb-1">Sinkronisasi Data</span>
                 <span class="text-[10px] font-bold text-slate-400">Menghubungkan ke Sheets...</span>
             </div>
-            <button onclick="document.getElementById('loadingOverlay').classList.add('hidden')" class="mt-2 text-[9px] font-black uppercase text-red-400 hover:text-red-600 tracking-widest border-b border-red-200 pb-0.5">Tutup Paksa</button>
         </div>
     </div>
 
@@ -36,7 +35,6 @@
             <a href="izin.html" class="text-[10px] md:text-xs font-black bg-red-100 text-red-700 px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex items-center gap-1 uppercase tracking-widest cursor-default shadow-sm border border-red-200"><i class="ph-fill ph-first-aid text-sm md:text-base"></i> <span class="hidden sm:inline">Izin</span></a>
             <a href="piket.html" id="navPiket" class="text-[10px] md:text-xs font-black bg-orange-50 hover:bg-orange-100 text-orange-500 px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex items-center gap-1 transition uppercase tracking-widest"><i class="ph-fill ph-broom text-sm md:text-base"></i> <span class="hidden sm:inline">Piket</span></a>
             <a href="peminjaman.html" id="navAsset" class="text-[10px] md:text-xs font-black bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex items-center gap-1 transition uppercase tracking-widest"><i class="ph-fill ph-package text-sm md:text-base"></i> <span class="hidden sm:inline">Inventaris</span></a>
-            
             <button onclick="goBack()" class="text-[10px] md:text-xs font-black bg-slate-900 hover:bg-slate-800 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex items-center gap-1 transition uppercase tracking-widest shadow-md"><i class="ph-bold ph-kanban text-sm md:text-base"></i> <span class="hidden sm:inline">Dashboard</span></button>
         </div>
     </header>
@@ -94,7 +92,7 @@
                         <label for="proofImage" class="flex flex-col items-center justify-center w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl py-6 cursor-pointer hover:bg-slate-100 hover:border-red-400 transition-all group">
                             <i id="uploadIcon" class="ph-fill ph-image text-3xl text-slate-300 mb-2 group-hover:text-red-400 transition-colors"></i>
                             <span id="uploadText" class="text-[11px] font-bold text-slate-500 text-center px-4">Upload Bukti Foto / Surat Dokter</span>
-                            <span class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest">(Opsional / Wajib jika sakit)</span>
+                            <span class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest">(Tersimpan ke Google Drive)</span>
                         </label>
                     </div>
 
@@ -137,20 +135,17 @@
         </section>
     </main>
 
-    <div id="imageModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex justify-center items-center p-4" onclick="closeModal()">
-        <img id="modalImg" src="" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain">
-        <button class="absolute top-4 right-4 md:top-6 md:right-6 text-white bg-white/20 p-2.5 rounded-full hover:bg-white/40 transition"><i class="ph ph-x text-xl"></i></button>
-    </div>
-
     <script>
-        // === KONFIGURASI GOOGLE SHEETS & CLOUDINARY ===
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
-        let CLOUD_NAME = localStorage.getItem('molusca_cloud_name') || "";
-        const CLOUDINARY_UPLOAD_PRESET = "molusca_izin"; // PERBAIKAN: Menambahkan 'izin' pada preset sesuai konfigurasi awal Anda
-
+        
         async function dbCall(payload) {
             try {
-                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const res = await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    redirect: 'follow', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload) 
+                });
                 return await res.json();
             } catch (error) {
                 console.error("Fetch Error:", error);
@@ -161,9 +156,8 @@
         let globalRequestsData = [];
         let globalEmployees = [];
         let myChart = null; 
-
-        const userRole = localStorage.getItem('moluscaRole');
-        const userName = localStorage.getItem('moluscaUser');
+        const userRole = localStorage.getItem('moluscaRole') || 'user';
+        const userName = localStorage.getItem('moluscaUser') || 'Guest';
 
         function goBack() {
             if(userRole === 'admin') window.location.href = 'dashboard.html';
@@ -172,13 +166,10 @@
         }
 
         async function initApp() {
-            if(!userName) window.location.href = 'index.html';
+            if(!localStorage.getItem('moluscaUser')) window.location.href = 'index.html';
             
             document.getElementById('headerName').textContent = userName;
-
-            if(userRole === 'admin') {
-                document.getElementById('navPiket').href = 'dashboard-piket.html';
-            }
+            if(userRole === 'admin') document.getElementById('navPiket').href = 'dashboard-piket.html';
 
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('startDate').value = today;
@@ -213,14 +204,15 @@
                 }
                 
                 if(userRole !== 'admin') {
+                    if(!select.querySelector(`option[value="${userName}"]`)) {
+                        select.innerHTML += `<option value="${userName}" selected>${userName}</option>`;
+                    }
                     select.value = userName;
                     select.disabled = true;
                     select.classList.add('opacity-50', 'cursor-not-allowed');
                     document.getElementById('btnExport').style.display = 'none';
                 }
-            } catch(e) {
-                console.error("Gagal load karyawan");
-            }
+            } catch(e) { console.error("Gagal load karyawan"); }
         }
 
         function previewFile() {
@@ -232,18 +224,51 @@
             }
         }
 
+        // =======================================================
+        // ENGINE KOMPRESOR FOTO (Bikin 5MB jadi cuma ~100kb)
+        // =======================================================
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        // Maksimal lebar foto 800px (Sangat cukup untuk baca surat dokter)
+                        const maxWidth = 800; 
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Kalkulasi rasio foto jika aslinya kebesaran
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+
+                        // Gambar ulang di Canvas
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Ubah ke JPEG dan kompres 50% kualitasnya
+                        // Ini akan bikin foto 5MB jadi kurang dari 150KB!
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5).split(',')[1];
+                        resolve(compressedBase64);
+                    };
+                    img.onerror = error => reject(error);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+
         async function submitLeave(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             const file = document.getElementById('proofImage').files[0];
             
-            if (file && !CLOUD_NAME) {
-                CLOUD_NAME = prompt("⚠️ MASUKKAN CLOUD NAME akun Cloudinary Anda (Kosongkan jika batal):");
-                if (!CLOUD_NAME) return alert("Sistem butuh Cloud Name untuk menyimpan foto.");
-                localStorage.setItem('molusca_cloud_name', CLOUD_NAME.trim());
-            }
-
-            // PERBAIKAN: sheetName sekarang berisi 'izin' (Sebelumnya kosong)
             const reqData = {
                 id: Date.now().toString(),
                 name: document.getElementById('employeeName').value,
@@ -251,36 +276,42 @@
                 startDate: document.getElementById('startDate').value,
                 endDate: document.getElementById('endDate').value,
                 reason: document.getElementById('leaveReason').value,
-                proofUrl: "",
+                proofUrl: "", 
                 timestamp: new Date().toISOString()
             };
 
             btn.disabled = true;
-            document.getElementById('loadingOverlay').classList.remove('hidden');
 
             try {
+                let fileObj = null;
                 if (file) {
-                    btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> UPLOAD FOTO...`;
-                    const formData = new FormData();
-                    formData.append("file", file);
-                    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-                    const resCloud = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
-                    const cloudData = await resCloud.json();
-                    if(!resCloud.ok) throw new Error("Gagal upload Cloudinary. Cek Cloud Name.");
-                    reqData.proofUrl = cloudData.secure_url;
+                    btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> MENGKOMPRES FOTO...`;
+                    
+                    // FOTO DIKOMPRES DULU SEBELUM DIKIRIM (Bikin proses upload kilat)
+                    const base64Data = await compressImage(file);
+                    
+                    fileObj = {
+                        base64: base64Data,
+                        filename: reqData.name.replace(/\s+/g, '_') + '_' + Date.now() + '.jpg',
+                        mimeType: 'image/jpeg'
+                    };
                 }
 
-                btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> MENYIMPAN KE SHEETS...`;
+                btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> UPLOAD KE DRIVE...`;
                 
-                // PERBAIKAN: Menambahkan nama sheet 'izin'
-                const resInsert = await dbCall({ action: 'insert', sheetName: 'izin', data: reqData });
-                
-                if (resInsert.status !== 'success') throw new Error("Gagal menyimpan ke Google Sheets");
+                const payload = {
+                    action: 'insert',
+                    sheetName: 'izin',
+                    data: reqData,
+                    fileData: fileObj 
+                };
+
+                const resInsert = await dbCall(payload);
+                if (resInsert.status !== 'success') throw new Error("Gagal menyimpan ke Server");
 
                 document.getElementById('leaveForm').reset();
                 if(userRole !== 'admin') document.getElementById('employeeName').value = userName;
                 
-                // Reset UI File
                 document.getElementById('uploadText').innerText = "Upload Bukti Foto / Surat Dokter";
                 document.getElementById('uploadText').className = "text-[11px] font-bold text-slate-500 text-center px-4";
                 document.getElementById('uploadIcon').className = "ph-fill ph-image text-3xl text-slate-300 mb-2 group-hover:text-red-400 transition-colors";
@@ -292,14 +323,12 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i class="ph-fill ph-paper-plane-right text-base"></i> KIRIM PENGAJUAN`;
-                document.getElementById('loadingOverlay').classList.add('hidden');
             }
         }
 
         async function loadData() {
             document.getElementById('loadingOverlay').classList.remove('hidden');
             try {
-                // PERBAIKAN: Menambahkan nama sheet 'izin'
                 const response = await dbCall({ action: 'read', sheetName: 'izin' });
                 if(response.status === 'success') {
                     globalRequestsData = response.data || [];
@@ -313,7 +342,6 @@
             }
         }
 
-        // PERBAIKAN: Nama fungsi delete() menjadi deleteIzin() (karena delete adalah kata terlarang)
         async function deleteIzin(id) {
             if(confirm('Yakin ingin hapus riwayat izin ini permanen?')) {
                 document.getElementById('loadingOverlay').classList.remove('hidden');
@@ -325,17 +353,13 @@
         function renderChart() {
             const ctx = document.getElementById('statsChart').getContext('2d');
             const selectedMonth = parseInt(document.getElementById('chartMonth').value);
-            
             let stats = {};
-            // PERBAIKAN: Memasukkan kembali kata "Izin" yang hilang
             globalEmployees.forEach(emp => stats[emp] = { Sakit: 0, Izin: 0, Cuti: 0 });
 
             globalRequestsData.forEach(req => {
                 let reqDate = new Date(req.startDate);
                 if(!isNaN(reqDate.getTime()) && reqDate.getMonth() === selectedMonth) {
                     if (!stats[req.name]) stats[req.name] = { Sakit: 0, Izin: 0, Cuti: 0 };
-                    
-                    // Normalisasi huruf besar/kecil dari input (contoh: "Izin Keperluan" disederhanakan jadi "Izin")
                     let typeKey = req.type.includes('Sakit') ? 'Sakit' : (req.type.includes('Cuti') ? 'Cuti' : 'Izin');
                     stats[req.name][typeKey] += 1; 
                 }
@@ -375,7 +399,7 @@
                 let delBtn = userRole === 'admin' ? `<button onclick="deleteIzin('${req.id}')" class="text-slate-300 hover:text-red-500 transition bg-white shadow-sm border border-slate-100 p-1.5 rounded-lg"><i class="ph-fill ph-trash text-lg"></i></button>` : '';
 
                 let proofBtn = req.proofUrl ? 
-                    `<button onclick="openModal('${req.proofUrl}')" class="mt-4 w-full bg-slate-50 hover:bg-slate-100 text-blue-600 text-[10px] font-extrabold p-3.5 rounded-xl uppercase tracking-widest flex justify-center items-center gap-2 transition-colors border border-slate-200 shadow-sm"><i class="ph-bold ph-image text-base"></i> Lihat Bukti Foto</button>` : '';
+                    `<button onclick="window.open('${req.proofUrl}', '_blank')" class="mt-4 w-full bg-slate-50 hover:bg-slate-100 text-blue-600 text-[10px] font-extrabold p-3.5 rounded-xl uppercase tracking-widest flex justify-center items-center gap-2 transition-colors border border-slate-200 shadow-sm"><i class="ph-bold ph-link text-base"></i> Buka Bukti di Drive</button>` : '';
 
                 board.innerHTML += `
                     <div class="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm relative hover:shadow-md transition flex flex-col justify-between">
@@ -404,9 +428,6 @@
             });
         }
 
-        function openModal(url) { document.getElementById('modalImg').src = url; document.getElementById('imageModal').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('imageModal').classList.add('hidden'); }
-
         function downloadExcel() {
             if(globalRequestsData.length === 0) return alert("Belum ada data.");
             const workbook = XLSX.utils.book_new();
@@ -420,7 +441,6 @@
             wsDetail['!cols'] = [ {wch: 5}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 40}, {wch: 50} ];
             XLSX.utils.book_append_sheet(workbook, wsDetail, "Data Detail");
 
-            // PERBAIKAN EXCEL: Mengembalikan kata "Izin" yang terhapus
             let rekapStats = {};
             globalEmployees.forEach(emp => rekapStats[emp] = { Sakit: 0, Izin: 0, Cuti: 0, Total: 0 });
             
