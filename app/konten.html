@@ -81,13 +81,29 @@
 
         // === GOOGLE SHEETS API ===
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
+        
+        // PERBAIKAN: Menambahkan header text/plain dan redirect follow untuk menghindari error CORS Google Script
         async function dbCall(payload) {
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            return await res.json();
+            try {
+                const res = await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    redirect: 'follow', // Penting untuk Google Apps Script
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8', // Menghindari block CORS
+                    },
+                    body: JSON.stringify(payload) 
+                });
+                return await res.json();
+            } catch (error) {
+                console.error("Database Error:", error);
+                alert("Gagal menghubungi server. Pastikan URL Script benar dan terhubung ke internet.");
+                return { status: 'error' };
+            }
         }
 
-        const userRole = localStorage.getItem('moluscaRole');
-        const userName = localStorage.getItem('moluscaUser');
+        // PERBAIKAN: Memberikan nilai fallback sementara jika dites tanpa login agar kode tidak crash
+        const userRole = localStorage.getItem('moluscaRole') || 'user';
+        const userName = localStorage.getItem('moluscaUser') || 'Tamu / Belum Login';
 
         function logout() {
             if(confirm('Yakin ingin keluar dari workspace?')) {
@@ -111,14 +127,21 @@
             }
         }
 
-        async function initApp() {
-            if(!userName) window.location.href = 'index.html';
-            
-            // Set Nama di Header
-            document.getElementById('headerName').textContent = userName;
+        // Fungsi Helper Date (Mencegah bug waktu mundur 1 hari)
+        function getTodayString() {
+            const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+            return (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
+        }
 
-            document.getElementById('taskDate').valueAsDate = new Date();
-            document.getElementById('reportDate').valueAsDate = new Date();
+        async function initApp() {
+            if(!localStorage.getItem('moluscaUser')) {
+                // Jika ingin otomatis balik ke login jika belum login, hapus komentar di bawah:
+                // window.location.href = 'index.html'; 
+            }
+            
+            document.getElementById('headerName').textContent = userName;
+            document.getElementById('taskDate').value = getTodayString();
+            document.getElementById('reportDate').value = getTodayString();
             await loadEmployees();
             await loadData();
         }
@@ -135,8 +158,15 @@
                     }
                 });
             }
+            // Jika user tidak admin, paksa isi namanya sendiri
             if(userRole !== 'admin') {
-                select.value = userName; select.disabled = true; select.classList.add('opacity-50', 'cursor-not-allowed');
+                // Pastikan userName ada di opsi, jika belum ada tambahkan
+                if(!select.querySelector(`option[value="${userName}"]`)) {
+                    select.innerHTML += `<option value="${userName}" selected>${userName}</option>`;
+                }
+                select.value = userName; 
+                select.disabled = true; 
+                select.classList.add('opacity-50', 'cursor-not-allowed');
             }
         }
 
@@ -154,29 +184,48 @@
         // --- PLANNER LOGIC ---
         async function saveTask(e) {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn'); btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>'; btn.disabled = true;
+            const btn = document.getElementById('submitBtn'); 
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>'; 
+            btn.disabled = true;
             const editId = document.getElementById('editTaskId').value;
             
-            if (editId) {
-                await dbCall({
-                    action: 'update', sheetName: 'creator_tasks', idValue: editId,
-                    updateData: { title: document.getElementById('taskTitle').value, client: document.getElementById('taskClient').value, targetDate: document.getElementById('taskDate').value }
-                });
-                cancelEdit();
-            } else {
-                const taskData = {
-                    id: Date.now().toString(), title: document.getElementById('taskTitle').value, client: document.getElementById('taskClient').value,
-                    targetDate: document.getElementById('taskDate').value, isCompleted: false, createdAt: new Date().toISOString()
-                };
-                await dbCall({ action: 'insert', sheetName: 'creator_tasks', data: taskData });
-                document.getElementById('taskForm').reset(); document.getElementById('taskDate').valueAsDate = new Date();
+            try {
+                if (editId) {
+                    await dbCall({
+                        action: 'update', sheetName: 'creator_tasks', idValue: editId,
+                        updateData: { 
+                            title: document.getElementById('taskTitle').value, 
+                            client: document.getElementById('taskClient').value, 
+                            targetDate: document.getElementById('taskDate').value 
+                        }
+                    });
+                    cancelEdit();
+                } else {
+                    const taskData = {
+                        id: Date.now().toString(), 
+                        title: document.getElementById('taskTitle').value, 
+                        client: document.getElementById('taskClient').value,
+                        targetDate: document.getElementById('taskDate').value, 
+                        isCompleted: "false", // PERBAIKAN: Gunakan string "false" bukan boolean false
+                        createdAt: new Date().toISOString()
+                    };
+                    await dbCall({ action: 'insert', sheetName: 'creator_tasks', data: taskData });
+                    document.getElementById('taskForm').reset(); 
+                    document.getElementById('taskDate').value = getTodayString();
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                btn.innerHTML = '<i class="ph-fill ph-paper-plane-right"></i> SIMPAN RENCANA'; 
+                btn.disabled = false;
+                loadData();
             }
-            btn.innerHTML = '<i class="ph-fill ph-paper-plane-right"></i> SIMPAN RENCANA'; btn.disabled = false;
-            loadData();
         }
 
         async function toggleComplete(id, currentStatus) { 
-            await dbCall({ action: 'update', sheetName: 'creator_tasks', idValue: id, updateData: { isCompleted: !currentStatus } });
+            // PERBAIKAN: Konversi balik menjadi string boolean
+            const newStatus = currentStatus ? "false" : "true";
+            await dbCall({ action: 'update', sheetName: 'creator_tasks', idValue: id, updateData: { isCompleted: newStatus } });
             loadData();
         }
         
@@ -190,8 +239,10 @@
 
         function editTask(id, title, client, targetDate) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            document.getElementById('editTaskId').value = id; document.getElementById('taskTitle').value = title;
-            document.getElementById('taskClient').value = client; document.getElementById('taskDate').value = targetDate;
+            document.getElementById('editTaskId').value = id; 
+            document.getElementById('taskTitle').value = title;
+            document.getElementById('taskClient').value = client; 
+            document.getElementById('taskDate').value = targetDate;
             document.getElementById('formTitle').innerHTML = `<i class="ph-fill ph-pencil-simple text-orange-500 text-lg"></i> Edit Konten`;
             document.getElementById('submitBtn').innerHTML = `<i class="ph-fill ph-floppy-disk"></i> UPDATE RENCANA`;
             document.getElementById('submitBtn').className = "flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-2xl shadow-lg transition flex justify-center items-center gap-2";
@@ -199,7 +250,9 @@
         }
 
         function cancelEdit() {
-            document.getElementById('editTaskId').value = ""; document.getElementById('taskForm').reset(); document.getElementById('taskDate').valueAsDate = new Date();
+            document.getElementById('editTaskId').value = ""; 
+            document.getElementById('taskForm').reset(); 
+            document.getElementById('taskDate').value = getTodayString();
             document.getElementById('formTitle').innerHTML = `<i class="ph-fill ph-plus-circle text-blue-600 text-lg"></i> Tambah Rencana`;
             document.getElementById('submitBtn').innerHTML = `<i class="ph-fill ph-paper-plane-right"></i> SIMPAN RENCANA`;
             document.getElementById('submitBtn').className = "flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg transition flex justify-center items-center gap-2";
@@ -207,9 +260,11 @@
         }
 
         function getDeadlineInfo(dateStr) {
-            const today = new Date(); today.setHours(0,0,0,0); const target = new Date(dateStr); target.setHours(0,0,0,0);
+            const today = new Date(); today.setHours(0,0,0,0); 
+            const target = new Date(dateStr); target.setHours(0,0,0,0);
             const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
             const formattedDate = target.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            
             if (diffDays < 0) return { text: `Lewat (${formattedDate})`, bg: 'bg-red-50 text-red-600 border-red-200', icon: 'ph-warning-circle' };
             if (diffDays === 0) return { text: 'Take Hari Ini!', bg: 'bg-red-500 text-white shadow-md border-red-500 animate-pulse', icon: 'ph-fire' };
             if (diffDays === 1) return { text: 'Besok', bg: 'bg-orange-100 text-orange-600 border-orange-200', icon: 'ph-clock-countdown' };
@@ -248,19 +303,34 @@
         // --- REPORT LOGIC ---
         async function saveReport(e) {
             e.preventDefault();
-            const btn = e.target.querySelector('button'); btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>'; btn.disabled = true;
+            const btn = e.target.querySelector('button'); 
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>'; 
+            btn.disabled = true;
 
             const dateVal = document.getElementById('reportDate').value;
             const dateStr = new Date(dateVal).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
             const finalName = userRole === 'admin' ? document.getElementById('reportName').value : userName;
 
-            const data = { id: Date.now().toString(), name: finalName, dateVal: dateVal, dateStr: dateStr, task: document.getElementById('reportTask').value, timestamp: new Date().toISOString() };
+            const data = { 
+                id: Date.now().toString(), 
+                name: finalName, 
+                dateVal: dateVal, 
+                dateStr: dateStr, 
+                task: document.getElementById('reportTask').value, 
+                timestamp: new Date().toISOString() 
+            };
             
-            await dbCall({ action: 'insert', sheetName: 'creator_reports', data: data });
-            document.getElementById('reportTask').value = '';
-            btn.innerHTML = '<i class="ph-fill ph-paper-plane-right"></i> Kirim Laporan Ke Bos'; btn.disabled = false;
-            alert("Laporan berhasil dikirim ke Google Sheets!");
-            loadData();
+            try {
+                await dbCall({ action: 'insert', sheetName: 'creator_reports', data: data });
+                document.getElementById('reportTask').value = '';
+                alert("Laporan berhasil dikirim ke Google Sheets!");
+            } catch(err) {
+                console.error(err);
+            } finally {
+                btn.innerHTML = '<i class="ph-fill ph-paper-plane-right"></i> Kirim Laporan Ke Bos'; 
+                btn.disabled = false;
+                loadData();
+            }
         }
 
         async function deleteReportCustom(id, repName) {
