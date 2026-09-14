@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard Molusca | Executive View</title>
+    <title>Dashboard Molusca | Live Sheets</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -13,7 +13,7 @@
     
     <script>
         tailwind.config = {
-            darkMode: 'class', 
+            darkMode: 'class', // Toggle dark/light mode
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
@@ -85,6 +85,18 @@
             flex: 1;
             height: 1px;
         }
+        
+        /* Shimmer Loading Skeleton */
+        .skeleton {
+            background: linear-gradient(110deg, #f1f5f9 8%, #e2e8f0 18%, #f1f5f9 33%);
+            border-radius: 8px;
+            background-size: 200% 100%;
+            animation: 1.5s shine linear infinite;
+        }
+        .dark .skeleton {
+            background: linear-gradient(110deg, #27272a 8%, #3f3f46 18%, #27272a 33%);
+        }
+        @keyframes shine { to { background-position-x: -200%; } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-zinc-950 dark:text-zinc-100 pb-16 text-[13px]" onload="initApp()" oncontextmenu="return false;"> 
@@ -150,7 +162,7 @@
                 <span class="text-[10px] bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 font-bold px-2 py-0.5 rounded border border-blue-200 dark:border-blue-500/20" id="creatorTaskCount">0</span>
             </div>
             <div class="space-y-2.5 overflow-y-auto pr-1" id="creatorTasksContainer">
-                <p class="text-xs text-slate-400 text-center mt-10">Memuat data...</p>
+                <div class="skeleton h-16 w-full"></div><div class="skeleton h-16 w-full"></div>
             </div>
         </div>
 
@@ -160,7 +172,7 @@
                 <h3 class="text-[13px] font-bold flex items-center gap-1.5 text-slate-800 dark:text-zinc-100"><i class="ph-bold ph-files text-emerald-500"></i> Laporan (2 Hari)</h3>
             </div>
             <div class="space-y-2.5 overflow-y-auto pr-1" id="creatorReportsContainer">
-                <p class="text-xs text-slate-400 text-center mt-10">Memuat data...</p>
+                <div class="skeleton h-16 w-full"></div><div class="skeleton h-16 w-full"></div>
             </div>
         </div>
     </div>
@@ -178,12 +190,45 @@
     <div>
         <div class="flex items-center justify-between mb-4">
             <p class="text-[11px] md:text-xs text-slate-500 dark:text-zinc-400 font-medium bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-lg inline-flex items-center gap-2">
-                <i class="ph-fill ph-info text-blue-500"></i> Menampilkan task yang belum beres (Live Sync)
+                <i class="ph-fill ph-info text-blue-500"></i> Menampilkan task berjalan yang belum selesai
             </p>
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6" id="teamTasksContainer">
-            <p class="text-xs text-slate-400 col-span-full">Memuat data tim desain...</p>
+            <div class="bg-white dark:bg-zinc-900 p-5 rounded-[24px] border border-slate-200 dark:border-zinc-800"><div class="skeleton h-6 w-1/2 mb-4"></div><div class="skeleton h-20 w-full mb-3"></div><div class="skeleton h-20 w-full"></div></div>
+            <div class="bg-white dark:bg-zinc-900 p-5 rounded-[24px] border border-slate-200 dark:border-zinc-800"><div class="skeleton h-6 w-1/2 mb-4"></div><div class="skeleton h-20 w-full mb-3"></div></div>
+            <div class="bg-white dark:bg-zinc-900 p-5 rounded-[24px] border border-slate-200 dark:border-zinc-800 hidden sm:block"><div class="skeleton h-6 w-1/2 mb-4"></div><div class="skeleton h-20 w-full mb-3"></div><div class="skeleton h-20 w-full"></div></div>
+            <div class="bg-white dark:bg-zinc-900 p-5 rounded-[24px] border border-slate-200 dark:border-zinc-800 hidden lg:block"><div class="skeleton h-6 w-1/2 mb-4"></div><div class="skeleton h-20 w-full mb-3"></div></div>
+        </div>
+    </div>
+    
+    <!-- ============================================== -->
+    <!-- BAGIAN 3: ASSET LIBRARY -->
+    <!-- ============================================== -->
+    <div class="section-header after:bg-slate-200 dark:after:bg-zinc-800 mt-16">
+        <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white tracking-wide uppercase flex items-center gap-2">
+            <i class="ph-fill ph-folder-open text-blue-600"></i> Library & Aset Studio
+        </h2>
+    </div>
+
+    <div>
+        <div class="flex items-center justify-between mb-4">
+            <p class="text-[11px] md:text-xs text-slate-500 dark:text-zinc-400 font-medium bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-lg inline-flex items-center gap-2">
+                <i class="ph-fill ph-link text-blue-500"></i> Akses cepat link referensi & aset tim
+            </p>
+        </div>
+        
+        <!-- Wadah Kategori Asset (Grid 1/2/3) -->
+        <div id="libraryContainer" class="space-y-6 md:space-y-8">
+            <!-- Skeleton Library -->
+            <section>
+                <div class="skeleton h-4 w-48 mb-4"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="bg-white dark:bg-zinc-900 p-5 rounded-[24px] border border-slate-200 dark:border-zinc-800"><div class="skeleton h-5 w-3/4 mb-4"></div><div class="skeleton h-8 w-full rounded-xl"></div></div>
+                    <div class="bg-white dark:bg-zinc-900 p-5 rounded-[24px] border border-slate-200 dark:border-zinc-800"><div class="skeleton h-5 w-3/4 mb-4"></div><div class="skeleton h-8 w-full rounded-xl"></div></div>
+                    <div class="bg-white dark:bg-zinc-900 p-5 rounded-[24px] border border-slate-200 dark:border-zinc-800 hidden lg:block"><div class="skeleton h-5 w-3/4 mb-4"></div><div class="skeleton h-8 w-full rounded-xl"></div></div>
+                </div>
+            </section>
         </div>
     </div>
 
@@ -203,7 +248,7 @@
     function logout() {
         if(confirm("Yakin ingin keluar dari workspace?")) {
             localStorage.clear();
-            // Ganti 'login.html' dengan nama file login kamu jika berbeda
+            // Ganti 'login.html' atau 'index.html' sesuai sistem kamu
             window.location.href = 'index.html'; 
         }
     }
@@ -274,7 +319,7 @@
     // FUNGSI UTAMA LOAD DATA
     // ==========================================
     async function initApp() {
-        // Cek Login (Jika belum login, tendang ke halaman login/index)
+        // Cek Login
         if (!userName) {
             // window.location.href = 'index.html'; // Hilangkan komentar ini di versi produksi
         } else {
@@ -284,17 +329,18 @@
         loadingIndicator.classList.remove('hidden');
         statusDot.classList.replace('bg-emerald-500', 'bg-amber-500');
 
-        // Tarik data bersamaan (paralel)
-        const [rawTasks, rawCreatorTasks, rawCreatorReports] = await Promise.all([
+        // Tarik data bersamaan (paralel) dari semua tabel penting
+        const [rawTasks, rawCreatorTasks, rawCreatorReports, rawCategories, rawAssets] = await Promise.all([
             fetchSheetData('tasks'),
             fetchSheetData('creator_tasks'),
-            fetchSheetData('creator_reports')
+            fetchSheetData('creator_reports'),
+            fetchSheetData('asset_categories'), // Tabel kategori library
+            fetchSheetData('assets')            // Tabel link library
         ]);
 
         // ==================================
         // Proses Divisi Konten
         // ==================================
-        // Filter out completed tasks from creator tasks
         const activeCreatorTasks = rawCreatorTasks.filter(t => {
             const status = String(t.isCompleted).trim().toUpperCase();
             return status !== "TRUE" && status !== "SELESAI";
@@ -317,7 +363,6 @@
             document.getElementById('creatorTasksContainer').innerHTML = cTaskHtml;
         }
 
-        // Laporan Kreator (Filter 2 tanggal terakhir)
         if(rawCreatorReports.length === 0) {
              document.getElementById('creatorReportsContainer').innerHTML = `<p class="text-xs text-slate-400 text-center mt-10">Belum ada laporan</p>`;
         } else {
@@ -417,6 +462,53 @@
             `;
         }
         teamContainer.innerHTML = teamHtml;
+
+        // ==================================
+        // Proses Asset Library
+        // ==================================
+        const libContainer = document.getElementById('libraryContainer');
+        libContainer.innerHTML = '';
+        
+        if (!rawCategories || rawCategories.length === 0) {
+            libContainer.innerHTML = `<div class="text-center py-10 text-slate-400 font-bold text-[12px] border-2 border-dashed border-slate-200 dark:border-zinc-800 rounded-[32px] bg-white dark:bg-zinc-900"><i class="ph-fill ph-folder-open text-3xl mb-2 opacity-50 block"></i> Belum ada kategori library.</div>`;
+        } else {
+            rawCategories.forEach(catObj => {
+                if(!catObj.name) return; // Skip baris kosong
+
+                const catName = catObj.name;
+                const catAssets = rawAssets.filter(a => a.category === catName);
+
+                let section = `
+                <section>
+                    <div class="flex justify-between items-center mb-4 ml-1">
+                        <h2 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2"><i class="ph-fill ph-folder text-blue-500 text-lg"></i> ${catName}</h2>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">`;
+                
+                if (catAssets.length === 0) {
+                    section += `<div class="col-span-full p-4 text-[12px] font-bold text-slate-400 border-2 border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl text-center bg-white dark:bg-zinc-900 shadow-sm">Folder ini kosong.</div>`;
+                } else {
+                    // Balik urutan agar terbaru di atas
+                    [...catAssets].reverse().forEach(item => {
+                        let parsedLinks = [];
+                        try { parsedLinks = JSON.parse(item.links); } catch(e) {}
+
+                        section += `
+                        <div class="bg-white dark:bg-zinc-900 p-5 rounded-[24px] border border-slate-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between hover:border-blue-300 transition-colors group">
+                            <div>
+                                <h3 class="font-extrabold text-[14px] text-slate-800 dark:text-zinc-100 leading-snug pr-4 mb-4 group-hover:text-blue-600 transition-colors">${item.name}</h3>
+                                <div class="flex flex-wrap gap-2 mt-auto">
+                                    ${parsedLinks.map(l => `<a href="${l.url}" target="_blank" class="text-[9px] font-extrabold bg-slate-50 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-3 py-2 rounded-xl uppercase tracking-widest hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all shadow-sm border border-slate-200 dark:border-zinc-700 flex items-center gap-1"><i class="ph-bold ph-link text-[12px]"></i> ${l.label}</a>`).join('')}
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                }
+                
+                section += `</div></section>`;
+                libContainer.innerHTML += section;
+            });
+        }
 
         loadingIndicator.classList.add('hidden');
         statusDot.classList.replace('bg-amber-500', 'bg-emerald-500');
