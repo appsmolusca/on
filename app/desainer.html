@@ -2,130 +2,342 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Workspace - Molusca Project</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    <style> body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } </style>
-</head>
-<body class="bg-[#FBFBFE] pb-20" onload="initApp()" oncontextmenu="return false;">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        bgApp: '#F8FAFC',    
+                        surface: '#FFFFFF',  
+                        borderLight: '#E2E8F0', 
+                        textMain: '#0F172A', 
+                        textMuted: '#64748B' 
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            background-color: #F8FAFC; 
+            color: #0F172A; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            -webkit-user-select: none; user-select: none; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Hide Scrollbar for horizontal nav on mobile */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Custom Scrollbar Minimalis */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+
+        /* Shimmer Skeleton Loading */
+        .skeleton {
+            background: linear-gradient(110deg, #f1f5f9 8%, #e2e8f0 18%, #f1f5f9 33%);
+            border-radius: 8px;
+            background-size: 200% 100%;
+            animation: 1.5s shine linear infinite;
+        }
+        @keyframes shine { to { background-position-x: -200%; } }
+
+        /* Select Dropdown Reset */
+        select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+    </style>
+</head>
+<body class="pb-24" onload="initApp()" oncontextmenu="return false;">
+
+    <!-- ============================================== -->
+    <!-- HEADER & NAVIGATION -->
+    <!-- ============================================== -->
+    <header class="bg-surface/80 backdrop-blur-xl border-b border-borderLight sticky top-0 z-50">
+        <div class="max-w-[1000px] mx-auto px-4 md:px-6 py-3 md:py-4">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+                
+                <!-- Brand & User -->
+                <div class="flex items-center justify-between">
+                    <h1 class="text-[11px] md:text-[13px] font-extrabold text-textMain uppercase tracking-widest flex items-center gap-1.5">
+                        <i class="ph-fill ph-hexagon text-blue-600 text-lg"></i> 
+                        Molusca <span class="text-borderLight mx-1">|</span> <span id="userName" class="text-blue-600">...</span>
+                    </h1>
+                </div>
+
+                <!-- Navigation Buttons (Scrollable on Mobile) -->
+                <nav class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 md:pb-0">
+                    <a href="library.html" class="shrink-0 text-[10px] md:text-[11px] font-bold text-slate-600 bg-white border border-slate-200 px-3 py-2 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-colors shadow-sm">
+                        <i class="ph-bold ph-folder-open text-[14px]"></i> Library
+                    </a>
+                    <a href="izin.html" class="shrink-0 text-[10px] md:text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-100 px-3 py-2 rounded-xl flex items-center gap-1.5 hover:bg-rose-100 transition-colors shadow-sm">
+                        <i class="ph-bold ph-first-aid text-[14px]"></i> Izin
+                    </a>
+                    <a href="piket.html" class="shrink-0 text-[10px] md:text-[11px] font-bold text-amber-600 bg-amber-50 border border-amber-100 px-3 py-2 rounded-xl flex items-center gap-1.5 hover:bg-amber-100 transition-colors shadow-sm">
+                        <i class="ph-bold ph-broom text-[14px]"></i> Piket
+                    </a>
+                    <a href="peminjaman.html" class="shrink-0 text-[10px] md:text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-xl flex items-center gap-1.5 hover:bg-indigo-100 transition-colors shadow-sm">
+                        <i class="ph-bold ph-package text-[14px]"></i> Inventaris
+                    </a>
+                    <button onclick="goBack()" class="shrink-0 text-[10px] md:text-[11px] font-bold text-slate-600 bg-slate-100 px-3 py-2 rounded-xl hover:bg-slate-200 transition-colors flex items-center gap-1.5">
+                        <i class="ph-bold ph-arrow-left text-[14px]"></i>
+                    </button>
+                    <button onclick="logout()" class="shrink-0 text-[10px] md:text-[11px] font-bold text-rose-500 bg-white border border-rose-100 px-3 py-2 rounded-xl hover:bg-rose-50 transition-colors flex items-center gap-1.5">
+                        <i class="ph-bold ph-sign-out text-[14px]"></i>
+                    </button>
+                </nav>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================== -->
+    <!-- MAIN CONTENT -->
+    <!-- ============================================== -->
+    <main class="p-4 max-w-[800px] mx-auto mt-4 md:mt-8 space-y-8">
+        
+        <!-- Form Input Extra Task -->
+        <section class="bg-surface border border-borderLight p-5 md:p-6 rounded-[24px] shadow-sm">
+            <h3 class="text-[11px] font-extrabold text-textMuted uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                <i class="ph-fill ph-lightning text-amber-500 text-sm"></i> Lapor Tugas Manual
+            </h3>
+            <form onsubmit="sendPrintilan(event)" class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="pTitle" required placeholder="Deskripsi tugas extra / dadakan..." autocomplete="off" 
+                    class="flex-grow bg-slate-50 border border-slate-200 px-4 py-3 text-textMain text-[13px] font-medium rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all">
+                <button id="btnSubmit" class="bg-blue-600 text-white px-6 py-3 rounded-xl text-[12px] font-extrabold uppercase flex justify-center items-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm">
+                    Kirim <i class="ph-bold ph-paper-plane-right"></i>
+                </button>
+            </form>
+        </section>
+
+        <!-- Active Projects -->
+        <div>
+            <div class="flex items-center justify-between mb-4 ml-1">
+                <h3 class="text-[12px] font-extrabold text-textMuted uppercase tracking-[0.2em] flex items-center gap-2">
+                    <i class="ph-fill ph-kanban text-lg text-blue-500"></i> Active Projects
+                </h3>
+                <span id="syncStatus" class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1">
+                    <i class="ph-bold ph-arrows-clockwise animate-spin"></i> Syncing...
+                </span>
+            </div>
+            
+            <div id="active-list" class="space-y-4">
+                <!-- Skeleton Loader -->
+                <div class="bg-surface p-5 rounded-2xl border border-borderLight"><div class="skeleton h-4 w-1/4 mb-3"></div><div class="skeleton h-6 w-3/4 mb-4"></div><div class="skeleton h-10 w-full rounded-xl"></div></div>
+                <div class="bg-surface p-5 rounded-2xl border border-borderLight"><div class="skeleton h-4 w-1/4 mb-3"></div><div class="skeleton h-6 w-3/4 mb-4"></div><div class="skeleton h-10 w-full rounded-xl"></div></div>
+            </div>
+        </div>
+        
+        <!-- Completed Projects -->
+        <div class="pt-6 opacity-60 hover:opacity-100 transition-opacity duration-300">
+            <h3 class="text-[12px] font-extrabold text-slate-400 uppercase tracking-[0.2em] mb-4 ml-1 flex items-center gap-2">
+                <i class="ph-fill ph-check-circle text-lg text-emerald-500"></i> Completed
+            </h3>
+            <div id="final-list" class="space-y-3">
+                <!-- Data Final Di Sini -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Mencegah Inspect Element dll
         document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
 
-        // === GOOGLE SHEETS API ===
+        // ==========================================
+        // KONFIGURASI API
+        // ==========================================
+        // URL Apps Script (HANYA UNTUK WRITE / POST)
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
-        async function dbCall(payload) {
-            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            return await res.json();
-        }
+        // Spreadsheet ID (UNTUK BACA DATA SUPER CEPAT VIA GVIZ)
+        const SPREADSHEET_ID = '1d3njy330ifMnm-uBD8daaey5AqYO3rQxaI-tLZQdeyI';
 
         let currentUser = localStorage.getItem('moluscaUser');
         
         function initApp() {
             if(!currentUser || localStorage.getItem('moluscaRole') === 'admin') window.location.href = 'index.html';
             document.getElementById('userName').innerText = currentUser;
-            loadMyTasks();
+            loadMyTasksFast(); // Panggil fungsi baca cepat
         }
 
-        async function loadMyTasks() {
-            const res = await dbCall({ action: 'read', sheetName: 'tasks' });
-            if(res.status === 'success') {
-                const tasks = res.data.filter(t => t.assignee === currentUser);
-                renderTasks(tasks);
+        // FUNGSI WRITE (Update/Insert) - Pakai Apps Script
+        async function dbCall(payload) {
+            try {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+                return await res.json();
+            } catch(e) {
+                console.error("Error DB Call:", e);
+                return { status: 'error' };
             }
         }
 
-        async function updateStatus(id, status) { 
-            await dbCall({ action: 'update', sheetName: 'tasks', idValue: id, updateData: { status: status } });
-            loadMyTasks(); 
+        // FUNGSI READ (Super Cepat) - Pakai Google Sheets GViz
+        async function loadMyTasksFast() {
+            document.getElementById('syncStatus').innerHTML = '<i class="ph-bold ph-arrows-clockwise animate-spin"></i> Syncing...';
+            
+            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=tasks`;
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+                const data = JSON.parse(jsonStr);
+                
+                const cols = data.table.cols.map(c => c ? c.label : '').map(l => l.trim());
+                let tasks = data.table.rows.map(r => {
+                    let row = {};
+                    r.c.forEach((c, i) => { if(cols[i]) row[cols[i]] = c ? (c.f !== undefined ? c.f : c.v) : ''; });
+                    // Konversi string id ke tipe data yang sesuai jika perlu
+                    row.id = row.id || Date.now().toString(); 
+                    return row;
+                });
+
+                // Filter task milik user yang sedang login
+                const myTasks = tasks.filter(t => t.assignee && t.assignee.toLowerCase() === currentUser.toLowerCase());
+                renderTasks(myTasks);
+
+                document.getElementById('syncStatus').innerHTML = '<i class="ph-bold ph-check text-emerald-500"></i> Synced';
+            } catch(e) {
+                console.error("Gagal load GViz:", e);
+                document.getElementById('syncStatus').innerHTML = '<i class="ph-bold ph-warning text-rose-500"></i> Failed';
+            }
         }
 
+        // Fungsi Update Status
+        async function updateStatus(id, status, selectElement) { 
+            // 1. Optimistic UI (Ubah warna background dropdown langsung biar kerasa cepet)
+            let colorClass = "text-blue-600 bg-blue-50 border-blue-200";
+            if(status === 'Nunggu Revisi') colorClass = "text-rose-600 bg-rose-50 border-rose-200";
+            if(status === 'Tinggal Layout') colorClass = "text-amber-600 bg-amber-50 border-amber-200";
+            if(status === 'Final') colorClass = "text-emerald-600 bg-emerald-50 border-emerald-200";
+            
+            selectElement.className = `w-full border px-4 py-3 rounded-[12px] font-bold text-[13px] outline-none cursor-pointer transition-all appearance-none pl-10 ${colorClass}`;
+            
+            // 2. Kirim update ke database di *background*
+            await dbCall({ action: 'update', sheetName: 'tasks', idValue: id, updateData: { status: status } });
+            
+            // 3. Refresh list agar pindah ke tab Final jika selesai
+            if(status === 'Final') loadMyTasksFast(); 
+        }
+
+        // Fungsi Kirim Task Dadakan
         async function sendPrintilan(e) {
             e.preventDefault();
-            const btn = e.target.querySelector('button'); btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i>'; btn.disabled = true;
+            const btn = document.getElementById('btnSubmit'); 
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>'; 
+            btn.disabled = true;
 
+            const now = new Date();
             const data = {
-                id: Date.now().toString(), joCode: 'EXTRA', title: document.getElementById('pTitle').value,
-                sender: currentUser, priority: 'Normal', assignee: currentUser,
-                dateStr: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
-                timeAssigned: new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0'),
-                status: 'Lagi Dikerjain', isPrintilan: true, isApproved: false
+                id: Date.now().toString(), 
+                joCode: 'EXTRA', 
+                title: document.getElementById('pTitle').value,
+                sender: currentUser, 
+                priority: 'Normal', 
+                assignee: currentUser,
+                dateStr: now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+                timeAssigned: now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0'),
+                status: 'Lagi Dikerjain', 
+                isPrintilan: true, 
+                isApproved: false
             };
             
             await dbCall({ action: 'insert', sheetName: 'tasks', data: data });
+            
             document.getElementById('pTitle').value = '';
-            btn.innerHTML = '<i class="ph-fill ph-paper-plane-right"></i>'; btn.disabled = false;
-            loadMyTasks();
+            btn.innerHTML = originalContent; 
+            btn.disabled = false;
+            
+            // Re-fetch data cepat
+            loadMyTasksFast();
         }
 
+        function goBack() { window.history.back(); }
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 
+        // Render UI
         function renderTasks(myTasks) {
-            const active = document.getElementById('active-list'); const final = document.getElementById('final-list');
+            const active = document.getElementById('active-list'); 
+            const final = document.getElementById('final-list');
             active.innerHTML = ''; final.innerHTML = '';
 
-            myTasks.sort((a,b) => a.id - b.id).reverse().forEach(task => {
+            // Sort: yang terbaru di atas (asumsi ID berupa timestamp/angka)
+            myTasks.sort((a,b) => parseInt(a.id) - parseInt(b.id)).reverse().forEach(task => {
                 const card = document.createElement('div');
-                let badge = (task.isPrintilan === "true" && task.isApproved === "false") ? `<div class="text-[9px] bg-yellow-400 font-black px-2 py-1 rounded-md mb-3 inline-flex items-center gap-1 tracking-tighter uppercase"><i class="ph-fill ph-hourglass-high"></i> Waiting Approval</div>` : '';
-                let jo = `<span class="bg-blue-50 text-blue-600 px-2 py-1 rounded-lg font-black mr-2 uppercase text-[11px] tracking-tighter"><i class="ph ph-hash"></i>${task.joCode}</span>`;
+                
+                let badge = (task.isPrintilan === "true" && task.isApproved === "false") 
+                    ? `<div class="text-[9px] bg-amber-100 text-amber-700 font-extrabold px-2 py-0.5 rounded mb-3 inline-flex items-center gap-1 uppercase tracking-wider"><i class="ph-bold ph-hourglass-high"></i> Menunggu Approval</div>` 
+                    : '';
+                
+                let jo = `<span class="bg-slate-100 text-slate-500 border border-slate-200 px-1.5 py-0.5 rounded font-bold mr-2 uppercase text-[10px] tracking-wide"><i class="ph-bold ph-hash"></i>${task.joCode || 'TASK'}</span>`;
 
-                if(task.status === 'Final') {
-                    card.className = "bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center text-xs font-bold opacity-70 hover:opacity-100 transition-opacity";
-                    card.innerHTML = `<span class="text-slate-400 truncate mr-2">${jo} ${task.title}</span> 
-                        <div class="relative shrink-0"><select onchange="updateStatus('${task.id}', this.value)" class="text-[10px] bg-green-50 text-green-600 border border-green-100 py-1 pl-2 pr-6 rounded-md font-black outline-none cursor-pointer appearance-none transition hover:bg-green-100"><option value="Final" selected>✅ FINAL</option><option value="Lagi Dikerjain">⏳ Lagi Dikerjain</option><option value="Nunggu Revisi">✍️ Nunggu Revisi</option><option value="Tinggal Layout">🧩 Tinggal Layout</option></select><i class="ph-fill ph-caret-down absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-green-600 text-[10px]"></i></div>`;
+                if(task.status === 'Final' || task.status === 'Final ') {
+                    // Tampilan Card Final (Lebih Tipis & Redup)
+                    card.className = "bg-white p-3.5 md:p-4 rounded-2xl border border-borderLight flex justify-between items-center text-xs font-bold transition-all hover:border-emerald-200";
+                    card.innerHTML = `
+                        <span class="text-slate-600 truncate mr-3 font-semibold text-[12px]">${jo} ${task.title}</span> 
+                        <div class="relative shrink-0">
+                            <select onchange="updateStatus('${task.id}', this.value, this)" class="text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-100 py-1.5 pl-2.5 pr-6 rounded-lg font-bold outline-none cursor-pointer appearance-none hover:bg-emerald-100 transition-colors">
+                                <option value="Final" selected>✅ FINAL</option>
+                                <option value="Lagi Dikerjain">⏳ Lagi Dikerjain</option>
+                                <option value="Nunggu Revisi">✍️ Nunggu Revisi</option>
+                                <option value="Tinggal Layout">🧩 Tinggal Layout</option>
+                            </select>
+                            <i class="ph-bold ph-caret-down absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-600 text-[10px]"></i>
+                        </div>`;
                     final.appendChild(card);
                 } else {
-                    let statusColor = "text-blue-600 bg-blue-50/50 border-blue-100";
-                    if(task.status === 'Nunggu Revisi') statusColor = "text-red-500 bg-red-50 border-red-100";
-                    if(task.status === 'Tinggal Layout') statusColor = "text-orange-500 bg-orange-50 border-orange-100";
+                    // Set Status Color Dropdown
+                    let statusColor = "text-blue-600 bg-blue-50 border-blue-200";
+                    if(task.status === 'Nunggu Revisi') statusColor = "text-rose-600 bg-rose-50 border-rose-200";
+                    if(task.status === 'Tinggal Layout') statusColor = "text-amber-600 bg-amber-50 border-amber-200";
 
-                    let isUrgent = task.priority === 'Urgent';
-                    let urgentUI = isUrgent ? `<span class="text-[10px] font-black text-red-500 uppercase flex items-center gap-1 bg-red-50 px-2 py-1 rounded-md animate-pulse border border-red-200 shadow-[0_0_10px_rgba(239,68,68,0.5)]"><i class="ph-fill ph-warning-circle"></i> URGENT</span>` : '';
+                    // Urgent Animasi
+                    let isUrgent = (task.priority || '').toLowerCase() === 'urgent';
+                    let urgentUI = isUrgent ? `<span class="text-[9px] font-extrabold text-rose-600 uppercase flex items-center gap-1 bg-rose-50 px-2 py-1 rounded border border-rose-200 animate-pulse"><i class="ph-bold ph-warning-circle"></i> URGENT</span>` : '';
 
-                    card.className = `bg-white p-6 rounded-[32px] border shadow-sm flex flex-col gap-4 transition-all ${isUrgent ? 'border-red-300 shadow-red-100 ring-2 ring-red-50' : 'border-slate-100'}`;
-                    card.innerHTML = `${badge}<div class="flex justify-between items-center"><div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1"><i class="ph ph-calendar-blank"></i> ${task.dateStr} | ${task.timeAssigned} WIB</div>${urgentUI}</div>
-                        <h4 class="font-black text-xl leading-tight text-slate-900 tracking-tighter mt-1">${jo} ${task.title}</h4>
-                        <div class="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest flex items-center gap-1"><i class="ph-fill ph-paper-plane-tilt"></i> From: ${task.sender}</div>
-                        <div class="relative"><select onchange="updateStatus('${task.id}', this.value)" class="w-full border p-4 rounded-[20px] font-black text-sm outline-none cursor-pointer transition appearance-none pl-10 ${statusColor}"><option value="Lagi Dikerjain" ${task.status === 'Lagi Dikerjain' ? 'selected' : ''}>⏳ Lagi Dikerjain</option><option value="Nunggu Revisi" ${task.status === 'Nunggu Revisi' ? 'selected' : ''}>✍️ Nunggu Revisi</option><option value="Tinggal Layout" ${task.status === 'Tinggal Layout' ? 'selected' : ''}>🧩 Tinggal Layout</option><option value="Final" ${task.status === 'Final' ? 'selected' : ''}>✅ Final</option></select><i class="ph-fill ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"></i></div>`;
+                    card.className = `bg-surface p-5 rounded-[20px] shadow-sm border flex flex-col gap-3 transition-all ${isUrgent ? 'border-rose-300 ring-4 ring-rose-50' : 'border-borderLight hover:border-slate-300'}`;
+                    card.innerHTML = `
+                        ${badge}
+                        <div class="flex justify-between items-center">
+                            <div class="text-[10px] font-bold text-textMuted flex items-center gap-1.5"><i class="ph-bold ph-calendar-blank text-slate-400"></i> ${task.dateStr} <span class="text-slate-300">|</span> ${task.timeAssigned || ''}</div>
+                            ${urgentUI}
+                        </div>
+                        <h4 class="font-extrabold text-[15px] leading-snug text-textMain mt-1">${jo} ${task.title}</h4>
+                        <div class="text-[11px] font-semibold text-slate-500 mb-2 flex items-center gap-1.5"><i class="ph-fill ph-paper-plane-tilt text-slate-400"></i> By: ${task.sender || 'Admin'}</div>
+                        
+                        <div class="relative mt-1">
+                            <i class="ph-bold ph-circle-notch absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-lg opacity-50"></i>
+                            <select onchange="updateStatus('${task.id}', this.value, this)" class="w-full border px-4 py-3 rounded-[12px] font-bold text-[13px] outline-none cursor-pointer transition-all appearance-none pl-10 ${statusColor}">
+                                <option value="Lagi Dikerjain" ${task.status === 'Lagi Dikerjain' ? 'selected' : ''}>⏳ Lagi Dikerjain</option>
+                                <option value="Nunggu Revisi" ${task.status === 'Nunggu Revisi' ? 'selected' : ''}>✍️ Nunggu Revisi</option>
+                                <option value="Tinggal Layout" ${task.status === 'Tinggal Layout' ? 'selected' : ''}>🧩 Tinggal Layout</option>
+                                <option value="Final" ${task.status === 'Final' ? 'selected' : ''}>✅ Final</option>
+                            </select>
+                            <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50"></i>
+                        </div>`;
                     active.appendChild(card);
                 }
             });
+            
+            // Jika kosong
+            if(active.innerHTML === '') active.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-8 bg-slate-50 border border-slate-100 rounded-[20px] text-center">
+                    <i class="ph-fill ph-check-circle text-5xl text-emerald-400 mb-3"></i>
+                    <p class="text-[13px] font-extrabold text-slate-700">Mantap, kerjaan kosong!</p>
+                    <p class="text-[11px] font-medium text-slate-500 mt-1">Semua task active sudah selesai.</p>
+                </div>
+            `;
         }
     </script>
-
-    <header class="bg-white/80 backdrop-blur-md px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 z-50">
-        <h1 class="text-xs font-black text-slate-900 uppercase tracking-[0.3em] flex items-center gap-2"><i class="ph-fill ph-hexagon text-blue-600 text-lg"></i> Molusca | <span id="userName" class="text-blue-600">...</span></h1>
-        <div class="flex items-center gap-2 flex-wrap justify-end">
-            <a href="library.html" class="text-[10px] md:text-xs font-bold text-slate-600 bg-slate-100 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-slate-200"><i class="ph-fill ph-folder-open text-sm md:text-base"></i> <span class="hidden md:inline">LIBRARY</span></a>
-            <a href="izin.html" class="text-[10px] md:text-xs font-bold text-red-500 bg-red-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-red-100"><i class="ph-fill ph-first-aid text-sm md:text-base"></i> <span class="hidden md:inline">IZIN</span></a>
-            <a href="piket.html" class="text-[10px] md:text-xs font-bold text-amber-500 bg-amber-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-amber-100"><i class="ph-fill ph-broom text-sm md:text-base"></i> <span class="hidden md:inline">PIKET</span></a>
-            <a href="peminjaman.html" class="text-[10px] md:text-xs font-bold text-indigo-600 bg-indigo-50 px-3 md:px-4 py-2 rounded-xl flex items-center gap-1 hover:bg-indigo-100"><i class="ph-fill ph-package text-sm md:text-base"></i> <span class="hidden md:inline">INVENTARIS</span></a>
-           <button onclick="goBack()" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl flex items-center gap-1 transition shadow-sm">
-                    <i class="ph-fill ph-arrow-left text-lg"></i> Kembali
-                </button>
-            <button onclick="logout()" class="text-[10px] md:text-xs font-bold text-slate-500 bg-slate-100 px-3 md:px-4 py-2 rounded-xl hover:bg-slate-200 flex items-center gap-1"><i class="ph-fill ph-sign-out text-sm md:text-base"></i></button>
-        </div>
-    </header>
-
-    <main class="p-4 max-w-2xl mx-auto space-y-10">
-        <section class="bg-slate-900 p-6 rounded-[32px] shadow-xl shadow-slate-200">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-1"><i class="ph-fill ph-lightning text-yellow-500 text-sm"></i> Lapor Tugas Manual</h3>
-            <form onsubmit="sendPrintilan(event)" class="flex gap-2">
-                <input type="text" id="pTitle" required placeholder="Deskripsi tugas extra..." autocomplete="off" class="flex-grow bg-white/10 border-none px-4 py-3 text-white text-sm rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
-                <button class="bg-blue-600 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase flex items-center gap-1 hover:bg-blue-500 transition"><i class="ph-fill ph-paper-plane-right"></i></button>
-            </form>
-        </section>
-
-        <div>
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6 ml-1 flex items-center gap-2"><i class="ph-fill ph-kanban text-lg"></i> Active Projects</h3>
-            <div id="active-list" class="space-y-6"></div>
-        </div>
-        
-        <div class="pt-8 opacity-50 hover:opacity-100 transition">
-            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6 ml-1 flex items-center gap-2"><i class="ph-fill ph-check-circle text-lg"></i> Completed</h3>
-            <div id="final-list" class="space-y-4"></div>
-        </div>
-    </main>
 </body>
 </html>
