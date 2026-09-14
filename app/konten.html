@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Creator Workspace - Molusca</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- Plus Jakarta Sans -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
@@ -71,7 +68,6 @@
                     <a href="peminjaman.html" class="shrink-0 text-[10px] md:text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-xl flex items-center gap-1.5 hover:bg-indigo-100 transition-colors shadow-sm">
                         <i class="ph-bold ph-package text-[14px]"></i> Inventaris
                     </a>
-                    <!-- Active State for current page -->
                     <button class="shrink-0 text-[10px] md:text-[11px] font-bold text-blue-700 bg-blue-100 border border-blue-200 px-3 py-2 rounded-xl flex items-center gap-1.5 cursor-default shadow-sm">
                         <i class="ph-fill ph-video-camera text-[14px]"></i> Konten
                     </button>
@@ -105,7 +101,6 @@
         
         <!-- SECTION 1: RENCANA KONTEN (PLANNER) -->
         <div id="sectionPlanner" class="block space-y-8 animate-fade">
-            <!-- Form Tambah Rencana -->
             <section class="bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm">
                 <h2 id="formTitle" class="text-[12px] font-extrabold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-fill ph-plus-circle text-blue-600 text-lg"></i> Tambah Rencana
@@ -137,7 +132,6 @@
                 </form>
             </section>
 
-            <!-- Status Indikator -->
             <div id="syncIndicatorPlanner" class="text-[10px] font-bold text-slate-400 flex items-center justify-end gap-1 -mb-4">
                 <i class="ph-bold ph-arrows-clockwise animate-spin text-blue-500"></i> Live Sync...
             </div>
@@ -148,7 +142,6 @@
                     <i class="ph-fill ph-list-dashes text-[18px] text-blue-500"></i> Antrean Konten
                 </h2>
                 <div id="activeBoard" class="space-y-4">
-                    <!-- Skeleton Loader -->
                     <div class="bg-white p-5 rounded-2xl border border-slate-200"><div class="skeleton h-4 w-1/3 mb-3"></div><div class="skeleton h-5 w-3/4 mb-4"></div><div class="skeleton h-10 w-full rounded-xl"></div></div>
                 </div>
             </section>
@@ -201,7 +194,6 @@
                     </span>
                 </div>
                 <div id="historyContainer" class="space-y-3">
-                    <!-- Skeleton Loader -->
                     <div class="bg-white p-4 rounded-2xl border border-slate-200 flex gap-3"><div class="skeleton h-10 w-10 rounded-xl shrink-0"></div><div class="w-full"><div class="skeleton h-4 w-1/3 mb-2"></div><div class="skeleton h-3 w-3/4"></div></div></div>
                 </div>
             </section>
@@ -209,21 +201,17 @@
     </main>
 
     <script>
-        // Mencegah Inspect Element dll
         document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
 
         // ==========================================
         // KONFIGURASI API
         // ==========================================
-        // SCRIPT_URL: HANYA untuk operasi Tulis (Insert/Update/Delete)
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
-        // SPREADSHEET_ID: UNTUK BACA DATA CEPAT (GViz)
         const SPREADSHEET_ID = '1d3njy330ifMnm-uBD8daaey5AqYO3rQxaI-tLZQdeyI';
 
         const userRole = localStorage.getItem('moluscaRole') || 'user';
         const userName = localStorage.getItem('moluscaUser') || 'Tamu';
 
-        // --- FUNGSI TULIS DATA (SLOW BACKGROUND) ---
         async function dbCall(payload) {
             try {
                 const res = await fetch(SCRIPT_URL, { 
@@ -239,7 +227,6 @@
             }
         }
 
-        // --- FUNGSI BACA DATA CEPAT (GVIZ API) ---
         async function fetchSheetFast(sheetName) {
             const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
             try {
@@ -260,24 +247,16 @@
             }
         }
 
-        // ==========================================
-        // INIT & UI LOGIC
-        // ==========================================
         function getTodayString() {
             const tzoffset = (new Date()).getTimezoneOffset() * 60000;
             return (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
         }
 
         async function initApp() {
-            if(!localStorage.getItem('moluscaUser')) {
-                // window.location.href = 'index.html'; // Aktifkan ini untuk proteksi
-            }
-            
             document.getElementById('headerName').textContent = userName;
             document.getElementById('taskDate').value = getTodayString();
             document.getElementById('reportDate').value = getTodayString();
             
-            // Load Semua Data Paralel agar instan
             loadAllDataFast();
         }
 
@@ -307,9 +286,6 @@
             }
         }
 
-        // ==========================================
-        // CORE RENDER LOGIC
-        // ==========================================
         async function loadAllDataFast() {
             const syncPlanner = document.getElementById('syncIndicatorPlanner');
             const syncReport = document.getElementById('syncIndicatorReport');
@@ -322,7 +298,7 @@
                 fetchSheetFast('creator_reports')
             ]);
 
-            // 1. Render Users (Dropdown)
+            // Render Users Dropdown
             const select = document.getElementById('reportName');
             select.innerHTML = '';
             usersData.forEach(u => {
@@ -340,13 +316,9 @@
                 select.classList.add('opacity-70', 'cursor-not-allowed', 'bg-slate-100');
             }
 
-            // 2. Render Board Konten
             renderBoard(tasksData);
-
-            // 3. Render History Report
             renderHistory(reportsData.slice(-30));
 
-            // Selesai Loading
             syncPlanner.innerHTML = '<i class="ph-bold ph-check text-emerald-500"></i> Synced';
             syncReport.innerHTML = '<i class="ph-bold ph-check text-emerald-500"></i> Synced';
             setTimeout(() => { syncPlanner.innerHTML=''; syncReport.innerHTML=''; }, 2000);
@@ -371,29 +343,38 @@
             const completedBoard = document.getElementById('completedBoard');
             activeBoard.innerHTML = ''; completedBoard.innerHTML = '';
 
-            const activeTasks = tasks.filter(t => t.isCompleted === "false" || t.isCompleted === false || t.isCompleted === '').sort((a, b) => new Date(a.targetDate) - new Date(b.targetDate));
-            const completedTasks = tasks.filter(t => t.isCompleted === "true" || t.isCompleted === true).reverse();
+            // PERBAIKAN PENTING DI SINI: Filter status selesai 
+            const activeTasks = tasks.filter(t => {
+                const s = String(t.isCompleted).trim().toUpperCase();
+                return s !== "TRUE" && s !== "SELESAI";
+            }).sort((a, b) => new Date(a.targetDate) - new Date(b.targetDate));
+
+            const completedTasks = tasks.filter(t => {
+                const s = String(t.isCompleted).trim().toUpperCase();
+                return s === "TRUE" || s === "SELESAI";
+            }).reverse();
 
             if(activeTasks.length === 0) activeBoard.innerHTML = `<div class="text-center text-[12px] font-bold text-slate-400 py-8 border-2 border-dashed border-slate-200 rounded-3xl bg-white"><i class="ph-fill ph-coffee text-3xl mb-2 block opacity-50"></i> Antrean kosong.</div>`;
             if(completedTasks.length === 0) completedBoard.innerHTML = `<div class="text-center text-[12px] font-bold text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-3xl bg-white/50">Belum ada yang selesai.</div>`;
 
             activeTasks.forEach(task => {
                 const d = getDeadlineInfo(task.targetDate);
-                const delIcon = userRole === 'admin' ? `<button onclick="deleteTask('${task.id}')" class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-100"><i class="ph-bold ph-trash"></i></button>` : '';
+                // PERBAIKAN: Tombol hapus dimunculkan untuk semua user
+                const delIcon = `<button onclick="deleteTask('${task.id}')" class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-100"><i class="ph-bold ph-trash"></i></button>`;
                 
                 activeBoard.innerHTML += `
                     <div class="bg-white p-4 md:p-5 rounded-[24px] border border-slate-200 shadow-sm relative transition-all hover:border-blue-300">
                         <div class="flex justify-between items-start mb-3">
                             <div class="flex flex-wrap gap-2">
                                 <span class="text-[10px] font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-lg border flex items-center gap-1 ${d.bg}"><i class="ph-bold ${d.icon}"></i> ${d.text}</span>
-                                <span class="text-[10px] font-extrabold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 uppercase tracking-widest"><i class="ph-bold ph-user-circle"></i> ${task.client}</span>
+                                <span class="text-[10px] font-extrabold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 uppercase tracking-widest"><i class="ph-bold ph-user-circle"></i> ${task.client || '-'}</span>
                             </div>
                             <div class="flex gap-1.5 shrink-0">
-                                <button onclick="editTask('${task.id}', '${task.title.replace(/'/g, "\\'")}', '${task.client.replace(/'/g, "\\'")}', '${task.targetDate}')" class="w-8 h-8 rounded-full bg-orange-50 text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-100 transition-colors flex items-center justify-center"><i class="ph-bold ph-pencil-simple"></i></button>
+                                <button onclick="editTask('${task.id}', '${(task.title||'').replace(/'/g, "\\'")}', '${(task.client||'').replace(/'/g, "\\'")}', '${task.targetDate}')" class="w-8 h-8 rounded-full bg-orange-50 text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-100 transition-colors flex items-center justify-center"><i class="ph-bold ph-pencil-simple"></i></button>
                                 ${delIcon}
                             </div>
                         </div>
-                        <h3 class="font-bold text-slate-900 text-[14px] md:text-base leading-snug mb-4 pr-2">${task.title}</h3>
+                        <h3 class="font-bold text-slate-900 text-[14px] md:text-base leading-snug mb-4 pr-2">${task.title || '-'}</h3>
                         <button onclick="toggleComplete('${task.id}', false, this)" class="w-full bg-slate-50 hover:bg-emerald-500 hover:text-white text-slate-600 text-[11px] font-extrabold p-3.5 rounded-xl uppercase tracking-widest flex justify-center items-center gap-2 transition-all border border-slate-200 shadow-sm active:scale-[0.98]">
                             <i class="ph-bold ph-check-circle text-[16px]"></i> Tandai Selesai
                         </button>
@@ -401,12 +382,14 @@
             });
 
             completedTasks.forEach(task => {
-                const delIcon = userRole === 'admin' ? `<button onclick="deleteTask('${task.id}')" class="w-8 h-8 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors"><i class="ph-bold ph-trash text-lg"></i></button>` : '';
+                // PERBAIKAN: Tombol hapus dimunculkan untuk semua user
+                const delIcon = `<button onclick="deleteTask('${task.id}')" class="w-8 h-8 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors"><i class="ph-bold ph-trash text-lg"></i></button>`;
+                
                 completedBoard.innerHTML += `
-                    <div class="bg-white/80 p-4 rounded-[20px] border border-slate-200 flex justify-between items-center gap-4 transition-all">
+                    <div class="bg-white/80 p-4 rounded-[20px] border border-slate-200 flex justify-between items-center gap-4 transition-all hover:border-slate-300">
                         <div class="flex-1 min-w-0">
-                            <h4 class="font-bold text-slate-500 text-[13px] truncate line-through mb-1">${task.title}</h4>
-                            <div class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1"><i class="ph-bold ph-user-circle"></i> ${task.client}</div>
+                            <h4 class="font-bold text-slate-500 text-[13px] truncate line-through mb-1">${task.title || '-'}</h4>
+                            <div class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1"><i class="ph-bold ph-user-circle"></i> ${task.client || '-'}</div>
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
                             <button onclick="toggleComplete('${task.id}', true, this)" class="text-[11px] font-extrabold text-slate-500 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors border border-slate-200"> Batal</button>
@@ -416,7 +399,7 @@
             });
         }
 
-        // CRUD Logic (Dengan Optimistic UI Update)
+        // CRUD Logic (Optimistic UI)
         async function saveTask(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn'); 
@@ -438,7 +421,7 @@
                         title: document.getElementById('taskTitle').value, 
                         client: document.getElementById('taskClient').value,
                         targetDate: document.getElementById('taskDate').value, 
-                        isCompleted: "false", 
+                        isCompleted: "FALSE", 
                         createdAt: new Date().toISOString()
                     };
                     await dbCall({ action: 'insert', sheetName: 'creator_tasks', data: taskData });
@@ -449,22 +432,21 @@
             finally {
                 btn.innerHTML = originalHtml; 
                 btn.disabled = false;
-                loadAllDataFast(); // Refresh UI
+                loadAllDataFast(); 
             }
         }
 
         async function toggleComplete(id, currentStatus, btnElement) { 
-            // Optimistic UI (Loading Spinner)
             const origHTML = btnElement.innerHTML;
-            btnElement.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-[16px]"></i> Menyimpan...';
+            btnElement.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-[16px]"></i> Mengubah...';
+            btnElement.classList.add('opacity-50', 'cursor-not-allowed');
             
-            const newStatus = currentStatus ? "false" : "true";
+            const newStatus = currentStatus ? "FALSE" : "TRUE";
             await dbCall({ action: 'update', sheetName: 'creator_tasks', idValue: id, updateData: { isCompleted: newStatus } });
-            loadAllDataFast(); // Refresh Data Cepat
+            loadAllDataFast(); 
         }
         
         async function deleteTask(id) { 
-            if(userRole !== 'admin') return alert("Hanya Admin yang bisa menghapus rencana konten.");
             if(confirm("Hapus konten ini permanen?")) {
                 await dbCall({ action: 'delete', sheetName: 'creator_tasks', idValue: id });
                 loadAllDataFast();
@@ -476,7 +458,20 @@
             document.getElementById('editTaskId').value = id; 
             document.getElementById('taskTitle').value = title;
             document.getElementById('taskClient').value = client; 
-            document.getElementById('taskDate').value = targetDate;
+            
+            // Format date for input date
+            if(targetDate) {
+                const parts = targetDate.toString().split('-');
+                if(parts.length === 3) {
+                    const cleanYear = parts[0].length === 4 ? parts[0] : parts[2];
+                    const cleanMonth = parts[1].padStart(2, '0');
+                    const cleanDay = (parts[0].length === 4 ? parts[2] : parts[0]).substring(0,2).padStart(2, '0');
+                    document.getElementById('taskDate').value = `${cleanYear}-${cleanMonth}-${cleanDay}`;
+                } else {
+                    document.getElementById('taskDate').value = targetDate;
+                }
+            }
+
             document.getElementById('formTitle').innerHTML = `<i class="ph-fill ph-pencil-simple text-orange-500 text-lg"></i> Edit Rencana`;
             
             const btn = document.getElementById('submitBtn');
