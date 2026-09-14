@@ -2,109 +2,204 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - AppsMlsc</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Workspace - AppsMlsc</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2 family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons (Lebih minimalis dari FontAwesome) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        bgApp: '#F8FAFC',    // Latar belakang app (Slightly grey)
+                        surface: '#FFFFFF',  // Latar kartu (White)
+                        borderLight: '#E2E8F0', // Border tipis
+                        textMain: '#0F172A', // Hitam pekat modern
+                        textMuted: '#64748B' // Abu-abu sekunder
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .tab-content { display: none; }
+        body { 
+            background-color: #F8FAFC; 
+            color: #0F172A; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Custom Scrollbar Minimalis */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        
+        /* Shimmer Loading Skeleton */
+        .skeleton {
+            background: #e2e8f0;
+            background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+            border-radius: 6px;
+            background-size: 200% 100%;
+            animation: 1.5s shine linear infinite;
+        }
+        @keyframes shine { to { background-position-x: -200%; } }
+
+        /* Form styling */
+        input, select, textarea {
+            transition: all 0.2s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Responsive Bottom Nav for Mobile */
+        @media (max-width: 768px) {
+            #sidebar { display: none; }
+            #bottomNav { display: flex; }
+            body { padding-bottom: 70px; } /* Space for bottom nav */
+        }
+        @media (min-width: 769px) {
+            #bottomNav { display: none; }
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row">
+<body class="min-h-screen flex text-[13px]">
 
-    <aside class="w-full md:w-64 bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800 flex flex-col justify-between shrink-0">
+    <!-- ============================================== -->
+    <!-- SIDEBAR (DESKTOP ONLY) -->
+    <!-- ============================================== -->
+    <aside id="sidebar" class="w-64 bg-surface border-r border-borderLight flex flex-col justify-between shrink-0 h-screen sticky top-0">
         <div class="p-6">
-            <div class="flex items-center justify-between md:block md:space-y-1 mb-8">
-                <h1 class="text-xl font-bold tracking-tight text-emerald-400">AppsMlsc</h1>
-                <span class="text-xs text-slate-500 block font-medium">Toolkit Panel v1.0</span>
+            <div class="mb-10 mt-2">
+                <h1 class="text-xl font-extrabold tracking-tight text-textMain flex items-center gap-2">
+                    <i class="ph-fill ph-leaf text-emerald-500"></i> AppsMlsc
+                </h1>
+                <span class="text-[11px] text-textMuted font-medium tracking-wide">Toolkit Panel v1.0</span>
             </div>
             
-            <nav class="flex md:flex-col overflow-x-auto md:overflow-x-visible gap-2 pb-4 md:pb-0" id="mainNav">
-                <button onclick="switchTab('report')" class="nav-btn active flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-emerald-400 bg-slate-950 md:w-full transition">
-                    <i class="fa-solid fa-chart-pie w-5"></i> <span class="whitespace-nowrap">Report</span>
+            <nav class="flex flex-col gap-1.5" id="mainNav">
+                <button onclick="switchTab('report', this)" class="nav-btn-desktop w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-bold rounded-xl bg-emerald-50 text-emerald-600 transition-all">
+                    <i class="ph-bold ph-chart-pie-slice text-[18px]"></i> Laporan
                 </button>
-                <button onclick="switchTab('pinjam')" class="nav-btn flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-slate-200 md:w-full transition">
-                    <i class="fa-solid fa-box w-5"></i> <span class="whitespace-nowrap">Pinjam Barang</span>
+                <button onclick="switchTab('pinjam', this)" class="nav-btn-desktop w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold rounded-xl text-textMuted hover:bg-slate-50 hover:text-textMain transition-all">
+                    <i class="ph-bold ph-box-box text-[18px]"></i> Pinjam Barang
                 </button>
-                <button onclick="switchTab('piket')" class="nav-btn flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-slate-200 md:w-full transition">
-                    <i class="fa-solid fa-calendar-days w-5"></i> <span class="whitespace-nowrap">Jadwal Piket</span>
+                <button onclick="switchTab('piket', this)" class="nav-btn-desktop w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold rounded-xl text-textMuted hover:bg-slate-50 hover:text-textMain transition-all">
+                    <i class="ph-bold ph-calendar-check text-[18px]"></i> Jadwal Piket
                 </button>
-                <button onclick="switchTab('izin')" class="nav-btn flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:text-slate-200 md:w-full transition">
-                    <i class="fa-solid fa-user-check w-5"></i> <span class="whitespace-nowrap">Izin Sakit</span>
+                <button onclick="switchTab('izin', this)" class="nav-btn-desktop w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold rounded-xl text-textMuted hover:bg-slate-50 hover:text-textMain transition-all">
+                    <i class="ph-bold ph-first-aid text-[18px]"></i> Izin Sakit
                 </button>
             </nav>
         </div>
 
-        <div class="p-6 border-t border-slate-800 hidden md:flex items-center justify-between">
+        <div class="p-5 border-t border-borderLight flex items-center justify-between bg-slate-50/50">
             <div class="truncate mr-2">
-                <p class="text-xs text-slate-500">Masuk sebagai:</p>
-                <p class="text-sm font-medium text-slate-300 truncate" id="userDisplay">Designer</p>
+                <p class="text-[10px] text-textMuted font-semibold uppercase tracking-wider">Masuk sebagai</p>
+                <p class="text-[13px] font-bold text-textMain truncate" id="userDisplay">Designer</p>
             </div>
-            <button onclick="logout()" class="text-slate-500 hover:text-rose-400 transition">
-                <i class="fa-solid fa-right-from-bracket"></i>
+            <button onclick="logout()" class="h-8 w-8 rounded-full bg-white border border-borderLight flex items-center justify-center text-textMuted hover:text-rose-500 hover:border-rose-200 transition-colors shadow-sm">
+                <i class="ph-bold ph-sign-out"></i>
             </button>
         </div>
     </aside>
 
-    <main class="flex-grow p-6 md:p-10 lg:p-12 overflow-y-auto max-w-7xl mx-auto w-full">
+    <!-- ============================================== -->
+    <!-- BOTTOM NAVIGATION (MOBILE ONLY) -->
+    <!-- ============================================== -->
+    <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 bg-surface border-t border-borderLight flex justify-around items-center h-[65px] px-2 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.03)] pb-2 pt-1">
+        <button onclick="switchTab('report', this)" class="nav-btn-mobile flex flex-col items-center gap-1 w-full text-emerald-600">
+            <i class="ph-fill ph-chart-pie-slice text-[22px]"></i>
+            <span class="text-[9px] font-bold">Laporan</span>
+        </button>
+        <button onclick="switchTab('pinjam', this)" class="nav-btn-mobile flex flex-col items-center gap-1 w-full text-textMuted">
+            <i class="ph-bold ph-box-box text-[22px]"></i>
+            <span class="text-[9px] font-semibold">Barang</span>
+        </button>
+        <button onclick="switchTab('piket', this)" class="nav-btn-mobile flex flex-col items-center gap-1 w-full text-textMuted">
+            <i class="ph-bold ph-calendar-check text-[22px]"></i>
+            <span class="text-[9px] font-semibold">Piket</span>
+        </button>
+        <button onclick="switchTab('izin', this)" class="nav-btn-mobile flex flex-col items-center gap-1 w-full text-textMuted">
+            <i class="ph-bold ph-first-aid text-[22px]"></i>
+            <span class="text-[9px] font-semibold">Izin</span>
+        </button>
+    </nav>
+
+    <!-- ============================================== -->
+    <!-- MAIN CONTENT -->
+    <!-- ============================================== -->
+    <main class="flex-grow p-5 md:p-10 max-w-[1000px] w-full mx-auto relative">
         
-        <section id="tab-report" class="tab-content active space-y-8">
-            <div class="space-y-1">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-100">Report Designer</h2>
-                <p class="text-sm text-slate-400">Laporkan progres kerjaan harian Anda langsung ke sheet.</p>
+        <!-- Indikator Loading Global -->
+        <div id="syncIndicator" class="absolute top-5 right-5 md:top-8 md:right-10 flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-200 text-[10px] font-bold text-slate-500 opacity-0 transition-opacity">
+            <i class="ph-bold ph-arrows-clockwise animate-spin text-blue-500"></i> Sync Data...
+        </div>
+
+        <!-- TAB 1: REPORT -->
+        <section id="tab-report" class="tab-content active mt-4 md:mt-8">
+            <div class="mb-8">
+                <h2 class="text-xl md:text-2xl font-extrabold tracking-tight text-textMain">Report Harian</h2>
+                <p class="text-[12px] md:text-[13px] text-textMuted mt-1 font-medium">Laporkan progres kerjaan Anda hari ini ke sistem.</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <form id="formReport" class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-5 lg:col-span-1">
-                    <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Input Progress</h3>
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-slate-400">Nama Project</label>
-                        <input type="text" name="project" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <!-- Form Input -->
+                <form id="formReport" class="bg-surface border border-borderLight p-5 rounded-2xl lg:col-span-1 shadow-sm">
+                    <h3 class="text-[11px] font-extrabold text-textMuted uppercase tracking-wider mb-4 flex items-center gap-1.5"><i class="ph-bold ph-pencil-simple"></i> Input Progress</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-600 block mb-1.5">Nama Project</label>
+                            <input type="text" name="project" placeholder="Cth: Desain Feed IG" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] font-medium text-textMain outline-none">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-600 block mb-1.5">Detail Task</label>
+                            <textarea name="task" rows="3" placeholder="Apa yang dikerjakan hari ini?" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] font-medium text-textMain outline-none resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-600 block mb-1.5">Status</label>
+                            <select name="status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] font-bold text-textMain outline-none appearance-none">
+                                <option value="In Progress">In Progress</option>
+                                <option value="Done">Done</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl text-[13px] hover:bg-emerald-600 active:scale-[0.98] transition-all shadow-sm">Kirim Laporan</button>
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-slate-400">Detail Task</label>
-                        <textarea name="task" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"></textarea>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-slate-400">Status</label>
-                        <select name="status" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                            <option value="In Progress">In Progress</option>
-                            <option value="Done">Done</option>
-                            <option value="Pending">Pending</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="w-full bg-emerald-500 text-slate-950 font-semibold py-3 rounded-xl text-sm hover:bg-emerald-600 transition">Kirim Laporan</button>
                 </form>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden lg:col-span-2">
-                    <div class="p-6 border-b border-slate-800">
-                        <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Log Kerja Terbaru</h3>
+                <!-- Tabel Live Log -->
+                <div class="bg-surface border border-borderLight rounded-2xl lg:col-span-2 shadow-sm flex flex-col h-full min-h-[350px]">
+                    <div class="p-4 md:p-5 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="text-[11px] font-extrabold text-textMuted uppercase tracking-wider flex items-center gap-1.5"><i class="ph-bold ph-clock-counter-clockwise"></i> Log Kerja Terbaru</h3>
+                        <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded">Live Data</span>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-sm">
+                    <div class="overflow-x-auto flex-1 p-2">
+                        <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-slate-950 text-slate-400 font-medium border-b border-slate-800">
-                                    <th class="p-4">Project</th>
-                                    <th class="p-4">Task</th>
-                                    <th class="p-4">Status</th>
+                                <tr class="text-[11px] text-slate-400 font-bold border-b border-slate-100">
+                                    <th class="p-3">Project / Tugas</th>
+                                    <th class="p-3 text-right">Status</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-800/50 text-slate-300">
-                                <tr>
-                                    <td class="p-4 font-medium text-slate-200">Rebranding Dakreativ</td>
-                                    <td class="p-4">Selesai konsep logo pilar 3</td>
-                                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400">Done</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4 font-medium text-slate-200">WedPlan App UI</td>
-                                    <td class="p-4">Slicing halaman mockup checkout</td>
-                                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-500/10 text-amber-400">In Progress</span></td>
-                                </tr>
+                            <tbody id="table-report" class="text-[12px] text-textMain font-medium">
+                                <!-- Skelaton Loading -->
+                                <tr><td class="p-3"><div class="skeleton h-4 w-3/4 mb-1"></div><div class="skeleton h-3 w-1/2"></div></td><td class="p-3 text-right"><div class="skeleton h-5 w-16 ml-auto rounded-full"></div></td></tr>
+                                <tr><td class="p-3"><div class="skeleton h-4 w-3/4 mb-1"></div><div class="skeleton h-3 w-1/2"></div></td><td class="p-3 text-right"><div class="skeleton h-5 w-16 ml-auto rounded-full"></div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -112,45 +207,48 @@
             </div>
         </section>
 
-        <section id="tab-pinjam" class="tab-content space-y-8">
-            <div class="space-y-1">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-100">Peminjaman Aset</h2>
-                <p class="text-sm text-slate-400">Kelola peminjaman inventaris studio secara teratur.</p>
+        <!-- TAB 2: PINJAM BARANG -->
+        <section id="tab-pinjam" class="tab-content mt-4 md:mt-8">
+            <div class="mb-8">
+                <h2 class="text-xl md:text-2xl font-extrabold tracking-tight text-textMain">Peminjaman Aset</h2>
+                <p class="text-[12px] md:text-[13px] text-textMuted mt-1 font-medium">Kelola & pantau peminjaman inventaris studio.</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <form id="formPinjam" class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-5 lg:col-span-1">
-                    <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Form Pinjam Barang</h3>
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-slate-400">Nama Barang</label>
-                        <input type="text" name="nama_barang" placeholder="Contoh: Sony Alpha A7iii" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <!-- Form Input -->
+                <form id="formPinjam" class="bg-surface border border-borderLight p-5 rounded-2xl lg:col-span-1 shadow-sm">
+                    <h3 class="text-[11px] font-extrabold text-textMuted uppercase tracking-wider mb-4 flex items-center gap-1.5"><i class="ph-bold ph-hand-grabbing"></i> Form Pinjam</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-600 block mb-1.5">Nama Barang</label>
+                            <input type="text" name="nama_barang" placeholder="Cth: Sony A7iii / Lensa" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] font-medium text-textMain outline-none">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-600 block mb-1.5">Tanggal Kembali (Estimasi)</label>
+                            <input type="date" name="tgl_kembali" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] font-medium text-textMain outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl text-[13px] hover:bg-blue-600 active:scale-[0.98] transition-all shadow-sm">Ajukan Peminjaman</button>
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-slate-400">Tanggal Pinjam</label>
-                        <input type="date" name="tgl_pinjam" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <button type="submit" class="w-full bg-emerald-500 text-slate-950 font-semibold py-3 rounded-xl text-sm hover:bg-emerald-600 transition">Ajukan Peminjaman</button>
                 </form>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden lg:col-span-2">
-                    <div class="p-6 border-b border-slate-800">
-                        <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Status Logistik Aset</h3>
+                <!-- Tabel Live Log -->
+                <div class="bg-surface border border-borderLight rounded-2xl lg:col-span-2 shadow-sm flex flex-col h-full min-h-[350px]">
+                    <div class="p-4 md:p-5 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="text-[11px] font-extrabold text-textMuted uppercase tracking-wider flex items-center gap-1.5"><i class="ph-bold ph-list-magnifying-glass"></i> Status Logistik</h3>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-sm">
+                    <div class="overflow-x-auto flex-1 p-2">
+                        <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-slate-950 text-slate-400 font-medium border-b border-slate-800">
-                                    <th class="p-4">Barang</th>
-                                    <th class="p-4">Tgl Pinjam</th>
-                                    <th class="p-4">Status</th>
+                                <tr class="text-[11px] text-slate-400 font-bold border-b border-slate-100">
+                                    <th class="p-3">Nama Barang</th>
+                                    <th class="p-3">Peminjam</th>
+                                    <th class="p-3 text-right">Status</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-800/50 text-slate-300">
-                                <tr>
-                                    <td class="p-4 font-medium text-slate-200">Drawing Tablet Wacom</td>
-                                    <td class="p-4">20 Juni 2026</td>
-                                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-500/10 text-blue-400">Dipinjam</span></td>
-                                </tr>
+                            <tbody id="table-pinjam" class="text-[12px] text-textMain font-medium">
+                                <!-- Skeleton -->
+                                <tr><td class="p-3"><div class="skeleton h-4 w-full"></div></td><td class="p-3"><div class="skeleton h-4 w-20"></div></td><td class="p-3 text-right"><div class="skeleton h-5 w-16 ml-auto rounded-full"></div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -158,84 +256,67 @@
             </div>
         </section>
 
-        <section id="tab-piket" class="tab-content space-y-8">
-            <div class="space-y-1">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-100">Jadwal Piket & Shift Tim</h2>
-                <p class="text-sm text-slate-400">Rotasi jadwal harian divisi kreatif.</p>
+        <!-- TAB 3: JADWAL PIKET -->
+        <section id="tab-piket" class="tab-content mt-4 md:mt-8">
+            <div class="mb-8">
+                <h2 class="text-xl md:text-2xl font-extrabold tracking-tight text-textMain">Jadwal Piket</h2>
+                <p class="text-[12px] md:text-[13px] text-textMuted mt-1 font-medium">Rotasi kebersihan dan tanggung jawab harian studio.</p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
-                    <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Senin</span>
-                    <div class="text-sm font-medium text-slate-200">Dadan Furman</div>
-                    <p class="text-xs text-slate-500">Shift Pagi (09:00 - 17:00)</p>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Selasa</span>
-                    <div class="text-sm font-medium text-slate-200">Tim Kreatif B</div>
-                    <p class="text-xs text-slate-500">Shift Pagi</p>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rabu</span>
-                    <div class="text-sm font-medium text-slate-200">Tim Kreatif C</div>
-                    <p class="text-xs text-slate-500">Shift Pagi</p>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kamis</span>
-                    <div class="text-sm font-medium text-slate-200">Tim Kreatif D</div>
-                    <p class="text-xs text-slate-500">Shift Pagi</p>
-                </div>
-                <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Jumat</span>
-                    <div class="text-sm font-medium text-slate-200">Tim Kreatif E</div>
-                    <p class="text-xs text-slate-500">Shift Pagi</p>
-                </div>
+            <!-- Grid Kartu Hari -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" id="cards-piket">
+                <!-- Skeleton Loading Cards -->
+                <div class="bg-surface border border-borderLight p-5 rounded-2xl"><div class="skeleton h-3 w-10 mb-3"></div><div class="skeleton h-5 w-full"></div></div>
+                <div class="bg-surface border border-borderLight p-5 rounded-2xl"><div class="skeleton h-3 w-10 mb-3"></div><div class="skeleton h-5 w-full"></div></div>
+                <div class="bg-surface border border-borderLight p-5 rounded-2xl hidden lg:block"><div class="skeleton h-3 w-10 mb-3"></div><div class="skeleton h-5 w-full"></div></div>
             </div>
         </section>
 
-        <section id="tab-izin" class="tab-content space-y-8">
-            <div class="space-y-1">
-                <h2 class="text-2xl font-bold tracking-tight text-slate-100">Pemberitahuan Izin & Sakit</h2>
-                <p class="text-sm text-slate-400">Pengajuan absen darurat atau keterangan sakit medis.</p>
+        <!-- TAB 4: IZIN SAKIT -->
+        <section id="tab-izin" class="tab-content mt-4 md:mt-8">
+            <div class="mb-8">
+                <h2 class="text-xl md:text-2xl font-extrabold tracking-tight text-textMain">Pemberitahuan Izin</h2>
+                <p class="text-[12px] md:text-[13px] text-textMuted mt-1 font-medium">Pengajuan absen darurat atau cuti.</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                <form id="formIzin" class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-5 lg:col-span-1">
-                    <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-2">Form Pengajuan</h3>
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-slate-400">Jenis Izin</label>
-                        <select name="jenis_izin" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                            <option value="Sakit">Sakit (Dengan Surat Keterangan)</option>
-                            <option value="Izin Mendadak">Izin Keperluan Darurat</option>
-                            <option value="Cuti Tahunan">Cuti</option>
-                        </select>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <!-- Form Input -->
+                <form id="formIzin" class="bg-surface border border-borderLight p-5 rounded-2xl lg:col-span-1 shadow-sm">
+                    <h3 class="text-[11px] font-extrabold text-textMuted uppercase tracking-wider mb-4 flex items-center gap-1.5"><i class="ph-bold ph-envelope-simple"></i> Form Pengajuan</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-600 block mb-1.5">Jenis Izin</label>
+                            <select name="jenis_izin" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] font-bold text-textMain outline-none appearance-none">
+                                <option value="Sakit">Sakit</option>
+                                <option value="Izin Mendadak">Izin Keperluan Darurat</option>
+                                <option value="Cuti">Cuti Tahunan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-slate-600 block mb-1.5">Keterangan / Alasan</label>
+                            <input type="text" name="alasan" placeholder="Cth: Demam, harus istirahat" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[13px] font-medium text-textMain outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-rose-500 text-white font-bold py-3 rounded-xl text-[13px] hover:bg-rose-600 active:scale-[0.98] transition-all shadow-sm">Kirim Pengajuan</button>
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-slate-400">Alasan Singkat</label>
-                        <input type="text" name="alasan" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <button type="submit" class="w-full bg-emerald-500 text-slate-950 font-semibold py-3 rounded-xl text-sm hover:bg-emerald-600 transition">Kirim Pengajuan</button>
                 </form>
 
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden lg:col-span-2">
-                    <div class="p-6 border-b border-slate-800">
-                        <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Histori Status Kehadiran</h3>
+                <!-- Tabel Live Log -->
+                <div class="bg-surface border border-borderLight rounded-2xl lg:col-span-2 shadow-sm flex flex-col h-full min-h-[350px]">
+                    <div class="p-4 md:p-5 border-b border-slate-100 flex justify-between items-center">
+                        <h3 class="text-[11px] font-extrabold text-textMuted uppercase tracking-wider flex items-center gap-1.5"><i class="ph-bold ph-clock-counter-clockwise"></i> Histori Pengajuan</h3>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-sm">
+                    <div class="overflow-x-auto flex-1 p-2">
+                        <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-slate-950 text-slate-400 font-medium border-b border-slate-800">
-                                    <th class="p-4">Kategori</th>
-                                    <th class="p-4">Keterangan</th>
-                                    <th class="p-4">Status HR</th>
+                                <tr class="text-[11px] text-slate-400 font-bold border-b border-slate-100">
+                                    <th class="p-3">Nama & Alasan</th>
+                                    <th class="p-3">Kategori</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-800/50 text-slate-300">
-                                <tr>
-                                    <td class="p-4 font-medium text-slate-200">Sakit</td>
-                                    <td class="p-4">Demam tinggi, istirahat total</td>
-                                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-500/10 text-purple-400">Disetujui</span></td>
-                                </tr>
+                            <tbody id="table-izin" class="text-[12px] text-textMain font-medium">
+                                <!-- Skeleton -->
+                                <tr><td class="p-3"><div class="skeleton h-4 w-3/4 mb-1"></div><div class="skeleton h-3 w-1/2"></div></td><td class="p-3"><div class="skeleton h-5 w-16 rounded-full"></div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -246,73 +327,181 @@
     </main>
 
     <script>
-        // Cek Session Login saat halaman diakses
-        if (localStorage.getItem('appsmlsc_logged_in') !== 'true') {
-            window.location.href = 'login.html';
-        } else {
-            document.getElementById('userDisplay').innerText = localStorage.getItem('appsmlsc_user') || 'Designer';
-        }
+        // ID SPREADSHEET (Milik Kamu)
+        const SPREADSHEET_ID = '1d3njy330ifMnm-uBD8daaey5AqYO3rQxaI-tLZQdeyI';
 
-        // Fungsi Ganti Tab Menu (Single Page Application Logic)
-        function switchTab(tabName) {
-            // Sembunyikan semua konten tab
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => content.classList.remove('active'));
-            
-            // Tampilkan konten tab yang aktif
+        // Set User Display
+        document.getElementById('userDisplay').innerText = localStorage.getItem('appsmlsc_user') || 'Dadan Furman';
+
+        // ==========================================
+        // UI INTERACTIONS
+        // ==========================================
+        function switchTab(tabName, btnElement) {
+            // Sembunyikan semua tab content
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            // Tampilkan tab yang dipilih
             document.getElementById('tab-' + tabName).classList.add('active');
             
-            // Ubah style tombol navigasi
-            const buttons = document.querySelectorAll('.nav-btn');
-            buttons.forEach(btn => {
-                btn.classList.remove('text-emerald-400', 'bg-slate-950');
-                btn.classList.add('text-slate-400');
+            // Reset style Desktop Nav
+            document.querySelectorAll('.nav-btn-desktop').forEach(btn => {
+                btn.className = "nav-btn-desktop w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold rounded-xl text-textMuted hover:bg-slate-50 hover:text-textMain transition-all";
             });
-            
-            // Highlight tombol yang aktif
-            event.currentTarget.classList.add('text-emerald-400', 'bg-slate-950');
-            event.currentTarget.classList.remove('text-slate-400');
+            // Reset style Mobile Nav
+            document.querySelectorAll('.nav-btn-mobile').forEach(btn => {
+                btn.className = "nav-btn-mobile flex flex-col items-center gap-1 w-full text-textMuted transition-colors";
+                btn.querySelector('i').className = btn.querySelector('i').className.replace('ph-fill', 'ph-bold'); // Reset icon to outline
+            });
+
+            // Set Active Style based on viewport/button clicked
+            if(window.innerWidth >= 768) {
+                // Clicked from desktop
+                btnElement.className = "nav-btn-desktop w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-bold rounded-xl bg-emerald-50 text-emerald-600 transition-all";
+            } else {
+                // Clicked from mobile
+                btnElement.className = "nav-btn-mobile flex flex-col items-center gap-1 w-full text-emerald-600 transition-colors";
+                btnElement.querySelector('i').className = btnElement.querySelector('i').className.replace('ph-bold', 'ph-fill'); // Active icon solid
+            }
         }
 
-        // Fungsi Logout
         function logout() {
-            localStorage.clear();
-            window.location.href = 'login.html';
+            alert("Sistem logout sedang diproses...");
         }
 
-        // ================= INTEGRASI GOOGLE SHEETS API =================
-        // Taruh URL Google Apps Script Web App Anda di bawah ini nanti
-        const APPS_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL';
+        // Tangani Submit Form (UI Feedback saja, butuh AppScript untuk POST real)
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const btn = this.querySelector('button[type="submit"]');
+                const originalText = btn.innerText;
+                
+                btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i> Memproses...`;
+                btn.style.opacity = '0.7';
 
-        // Penanganan Pengiriman Form (Gunakan pola ini untuk semua form)
-        document.getElementById('formReport').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const data = {
-                action: 'addReport', // Aksi penanda di Apps Script
-                user: localStorage.getItem('appsmlsc_user'),
-                project: formData.get('project'),
-                task: formData.get('task'),
-                status: formData.get('status'),
-                timestamp: new Date().toISOString()
-            };
-
-            alert('Mengirim data laporan ke Google Sheets...');
-            
-            /* // Aktifkan kode ini setelah mempublikasikan Apps Script Anda:
-            fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Penting jika menghadapi masalah CORS lintas domain
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(res => {
-                alert('Laporan berhasil tersimpan di Google Sheets!');
-                this.reset();
-            })
-            .catch(err => console.error('Error:', err));
-            */
+                setTimeout(() => {
+                    alert('Berhasil diajukan! (Membutuhkan koneksi ke Google Apps Script untuk menyimpan data)');
+                    this.reset();
+                    btn.innerHTML = originalText;
+                    btn.style.opacity = '1';
+                }, 1000);
+            });
         });
+
+        // ==========================================
+        // FETCH DATA LIVE DARI GOOGLE SHEETS
+        // ==========================================
+        async function fetchSheet(sheetName) {
+            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+            try {
+                const res = await fetch(url);
+                const text = await res.text();
+                const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+                const data = JSON.parse(jsonStr);
+                
+                const cols = data.table.cols.map(c => c ? c.label : '').map(l => l.trim());
+                return data.table.rows.map(r => {
+                    let row = {};
+                    r.c.forEach((c, i) => { if(cols[i]) row[cols[i]] = c ? (c.f || c.v) : ''; });
+                    return row;
+                });
+            } catch (err) {
+                console.error(`Error loading ${sheetName}:`, err);
+                return [];
+            }
+        }
+
+        function getStatusBadge(status) {
+            const s = (status || '').toLowerCase();
+            if(s.includes('final') || s.includes('done') || s.includes('kembali')) 
+                return `<span class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-bold">Selesai</span>`;
+            if(s.includes('proses') || s.includes('dipinjam') || s.includes('kerja')) 
+                return `<span class="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold">${status}</span>`;
+            return `<span class="bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded text-[10px] font-bold">${status || 'Pending'}</span>`;
+        }
+
+        // Inisialisasi Tarik Data (PARALEL AGAR CEPAT)
+        async function initData() {
+            const syncInd = document.getElementById('syncIndicator');
+            syncInd.style.opacity = '1';
+
+            // Tarik 4 sheet sekaligus secara bersamaan (Concurrent)
+            const [tasks, logBarang, piket, izin] = await Promise.all([
+                fetchSheet('tasks'),
+                fetchSheet('log_barang'),
+                fetchSheet('piket'),
+                fetchSheet('izin')
+            ]);
+
+            // --- 1. RENDER REPORT (tasks) ---
+            const tbodyReport = document.getElementById('table-report');
+            if(tasks.length === 0) {
+                tbodyReport.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-slate-400">Belum ada data</td></tr>`;
+            } else {
+                // Ambil 5 data paling baru
+                tbodyReport.innerHTML = tasks.slice(0, 10).map(t => `
+                    <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition">
+                        <td class="p-3">
+                            <div class="font-bold text-slate-800 line-clamp-1 leading-snug">${t.title || '-'}</div>
+                            <div class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1"><i class="ph-bold ph-user"></i> ${t.assignee || 'Tim'}</div>
+                        </td>
+                        <td class="p-3 text-right whitespace-nowrap">${getStatusBadge(t.status)}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // --- 2. RENDER PINJAM (log_barang) ---
+            const tbodyPinjam = document.getElementById('table-pinjam');
+            if(logBarang.length === 0) {
+                tbodyPinjam.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">Belum ada data peminjaman</td></tr>`;
+            } else {
+                tbodyPinjam.innerHTML = logBarang.slice(0, 10).map(b => `
+                    <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition">
+                        <td class="p-3 font-bold text-slate-800">${b.barang || '-'}</td>
+                        <td class="p-3 text-[11px] text-slate-500 font-semibold">${b.peminjam || '-'}</td>
+                        <td class="p-3 text-right">${getStatusBadge(b.status || 'Dipinjam')}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // --- 3. RENDER PIKET (piket) ---
+            const piketContainer = document.getElementById('cards-piket');
+            if(piket.length === 0) {
+                piketContainer.innerHTML = `<div class="col-span-full text-center text-slate-400 p-5">Jadwal piket kosong di database</div>`;
+            } else {
+                const bgColors = ['bg-blue-500/10 text-blue-600', 'bg-emerald-500/10 text-emerald-600', 'bg-amber-500/10 text-amber-600', 'bg-purple-500/10 text-purple-600', 'bg-rose-500/10 text-rose-600'];
+                piketContainer.innerHTML = piket.map((p, index) => `
+                    <div class="bg-surface border border-borderLight p-4 rounded-2xl shadow-sm flex flex-col gap-1.5 hover:border-slate-300 transition-colors">
+                        <span class="text-[10px] font-extrabold uppercase tracking-wider w-fit px-2 py-0.5 rounded ${bgColors[index % bgColors.length]}">${p.hari || 'Hari'}</span>
+                        <div class="text-[13px] font-bold text-textMain mt-1">${p.name || 'Belum di-set'}</div>
+                        <p class="text-[10px] text-textMuted font-medium flex items-center gap-1"><i class="ph-fill ph-broom"></i> Shift Kebersihan</p>
+                    </div>
+                `).join('');
+            }
+
+            // --- 4. RENDER IZIN (izin) ---
+            const tbodyIzin = document.getElementById('table-izin');
+            if(izin.length === 0) {
+                tbodyIzin.innerHTML = `<tr><td colspan="2" class="p-4 text-center text-slate-400">Belum ada riwayat izin</td></tr>`;
+            } else {
+                tbodyIzin.innerHTML = izin.slice(0, 10).map(i => `
+                    <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition">
+                        <td class="p-3">
+                            <div class="font-bold text-slate-800">${i.nama || '-'}</div>
+                            <div class="text-[10px] text-slate-500 mt-0.5 line-clamp-1">${i.reason || '-'}</div>
+                        </td>
+                        <td class="p-3">
+                            <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold">${i.type || 'Sakit'}</span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Hilangkan status loading
+            setTimeout(() => { syncInd.style.opacity = '0'; }, 1000);
+        }
+
+        // Panggil fungsi saat web dibuka
+        initData();
+
     </script>
 </body>
 </html>
