@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard Molusca | Live Sheets</title>
+    <title>Dashboard Molusca | Executive View</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -13,7 +13,7 @@
     
     <script>
         tailwind.config = {
-            darkMode: 'class', // Toggle dark/light mode
+            darkMode: 'class', 
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
@@ -117,18 +117,15 @@
         </div>
         
         <div class="flex items-center gap-2">
-            <!-- Indikator Status & Waktu -->
             <div class="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-xl text-[11px] shadow-sm font-semibold transition-colors">
                 <span id="statusDot" class="flex h-2 w-2 rounded-full bg-emerald-500 shadow-sm animate-pulse"></span>
                 <span class="text-slate-700 dark:text-zinc-200" id="currentDate">--</span>
             </div>
             
-            <!-- Tombol Dark/Light Mode -->
             <button id="themeToggle" class="flex items-center justify-center h-8 w-8 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-sm text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">
                 <i id="themeIcon" class="ph-bold ph-moon text-lg"></i>
             </button>
 
-            <!-- Tombol Logout -->
             <button onclick="logout()" class="flex items-center justify-center h-8 w-8 bg-white dark:bg-zinc-900 border border-rose-200 dark:border-rose-900/50 rounded-xl shadow-sm text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors" title="Logout">
                 <i class="ph-bold ph-sign-out text-lg"></i>
             </button>
@@ -202,36 +199,6 @@
         </div>
     </div>
     
-    <!-- ============================================== -->
-    <!-- BAGIAN 3: ASSET LIBRARY -->
-    <!-- ============================================== -->
-    <div class="section-header after:bg-slate-200 dark:after:bg-zinc-800 mt-16">
-        <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white tracking-wide uppercase flex items-center gap-2">
-            <i class="ph-fill ph-folder-open text-blue-600"></i> Library & Aset Studio
-        </h2>
-    </div>
-
-    <div>
-        <div class="flex items-center justify-between mb-4">
-            <p class="text-[11px] md:text-xs text-slate-500 dark:text-zinc-400 font-medium bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-lg inline-flex items-center gap-2">
-                <i class="ph-fill ph-link text-blue-500"></i> Akses cepat link referensi & aset tim
-            </p>
-        </div>
-        
-        <!-- Wadah Kategori Asset (Grid 1/2/3) -->
-        <div id="libraryContainer" class="space-y-6 md:space-y-8">
-            <!-- Skeleton Library -->
-            <section>
-                <div class="skeleton h-4 w-48 mb-4"></div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div class="bg-white dark:bg-zinc-900 p-5 rounded-[24px] border border-slate-200 dark:border-zinc-800"><div class="skeleton h-5 w-3/4 mb-4"></div><div class="skeleton h-8 w-full rounded-xl"></div></div>
-                    <div class="bg-white dark:bg-zinc-900 p-5 rounded-[24px] border border-slate-200 dark:border-zinc-800"><div class="skeleton h-5 w-3/4 mb-4"></div><div class="skeleton h-8 w-full rounded-xl"></div></div>
-                    <div class="bg-white dark:bg-zinc-900 p-5 rounded-[24px] border border-slate-200 dark:border-zinc-800 hidden lg:block"><div class="skeleton h-5 w-3/4 mb-4"></div><div class="skeleton h-8 w-full rounded-xl"></div></div>
-                </div>
-            </section>
-        </div>
-    </div>
-
 </div>
 
 <script>
@@ -248,7 +215,6 @@
     function logout() {
         if(confirm("Yakin ingin keluar dari workspace?")) {
             localStorage.clear();
-            // Ganti 'login.html' atau 'index.html' sesuai sistem kamu
             window.location.href = 'index.html'; 
         }
     }
@@ -319,9 +285,8 @@
     // FUNGSI UTAMA LOAD DATA
     // ==========================================
     async function initApp() {
-        // Cek Login
         if (!userName) {
-            // window.location.href = 'index.html'; // Hilangkan komentar ini di versi produksi
+            // window.location.href = 'index.html'; 
         } else {
             document.getElementById('headerName').innerText = `| ${userName}`;
         }
@@ -329,13 +294,10 @@
         loadingIndicator.classList.remove('hidden');
         statusDot.classList.replace('bg-emerald-500', 'bg-amber-500');
 
-        // Tarik data bersamaan (paralel) dari semua tabel penting
-        const [rawTasks, rawCreatorTasks, rawCreatorReports, rawCategories, rawAssets] = await Promise.all([
+        const [rawTasks, rawCreatorTasks, rawCreatorReports] = await Promise.all([
             fetchSheetData('tasks'),
             fetchSheetData('creator_tasks'),
-            fetchSheetData('creator_reports'),
-            fetchSheetData('asset_categories'), // Tabel kategori library
-            fetchSheetData('assets')            // Tabel link library
+            fetchSheetData('creator_reports')
         ]);
 
         // ==================================
@@ -463,66 +425,82 @@
         }
         teamContainer.innerHTML = teamHtml;
 
-        // ==================================
-        // Proses Asset Library
-        // ==================================
-        const libContainer = document.getElementById('libraryContainer');
-        libContainer.innerHTML = '';
-        
-        if (!rawCategories || rawCategories.length === 0) {
-            libContainer.innerHTML = `<div class="text-center py-10 text-slate-400 font-bold text-[12px] border-2 border-dashed border-slate-200 dark:border-zinc-800 rounded-[32px] bg-white dark:bg-zinc-900"><i class="ph-fill ph-folder-open text-3xl mb-2 opacity-50 block"></i> Belum ada kategori library.</div>`;
-        } else {
-            rawCategories.forEach(catObj => {
-                if(!catObj.name) return; // Skip baris kosong
-
-                const catName = catObj.name;
-                const catAssets = rawAssets.filter(a => a.category === catName);
-
-                let section = `
-                <section>
-                    <div class="flex justify-between items-center mb-4 ml-1">
-                        <h2 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2"><i class="ph-fill ph-folder text-blue-500 text-lg"></i> ${catName}</h2>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">`;
-                
-                if (catAssets.length === 0) {
-                    section += `<div class="col-span-full p-4 text-[12px] font-bold text-slate-400 border-2 border-dashed border-slate-200 dark:border-zinc-800 rounded-2xl text-center bg-white dark:bg-zinc-900 shadow-sm">Folder ini kosong.</div>`;
-                } else {
-                    // Balik urutan agar terbaru di atas
-                    [...catAssets].reverse().forEach(item => {
-                        let parsedLinks = [];
-                        try { parsedLinks = JSON.parse(item.links); } catch(e) {}
-
-                        section += `
-                        <div class="bg-white dark:bg-zinc-900 p-5 rounded-[24px] border border-slate-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between hover:border-blue-300 transition-colors group">
-                            <div>
-                                <h3 class="font-extrabold text-[14px] text-slate-800 dark:text-zinc-100 leading-snug pr-4 mb-4 group-hover:text-blue-600 transition-colors">${item.name}</h3>
-                                <div class="flex flex-wrap gap-2 mt-auto">
-                                    ${parsedLinks.map(l => `<a href="${l.url}" target="_blank" class="text-[9px] font-extrabold bg-slate-50 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-3 py-2 rounded-xl uppercase tracking-widest hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all shadow-sm border border-slate-200 dark:border-zinc-700 flex items-center gap-1"><i class="ph-bold ph-link text-[12px]"></i> ${l.label}</a>`).join('')}
-                                </div>
-                            </div>
-                        </div>`;
-                    });
-                }
-                
-                section += `</div></section>`;
-                libContainer.innerHTML += section;
-            });
-        }
-
         loadingIndicator.classList.add('hidden');
         statusDot.classList.replace('bg-amber-500', 'bg-emerald-500');
 
-        renderChart();
+        // Render Grafik Secara Live dari Data
+        renderChartLive(rawTasks, rawCreatorTasks);
     }
 
     // ==========================================
-    // INIT CHART.JS 
+    // INIT CHART.JS DENGAN DATA LIVE
     // ==========================================
     let productivityChart;
-    function renderChart() {
+    
+    function parseDateToObj(dateStr) {
+        if(!dateStr) return null;
+        let d = new Date(dateStr);
+        if(!isNaN(d)) return d;
+        let parts = dateStr.split('-');
+        if(parts.length === 3) {
+            const cleanYear = parts[0].length === 4 ? parts[0] : parts[2];
+            const cleanMonth = parts[1] - 1;
+            const cleanDay = (parts[0].length === 4 ? parts[2] : parts[0]).substring(0,2);
+            return new Date(cleanYear, cleanMonth, cleanDay);
+        }
+        return null;
+    }
+
+    function renderChartLive(rawTasks, rawCreatorTasks) {
+        // 1. Kumpulkan semua tanggal dari Desain dan Konten
+        let dateCounts = {};
+
+        // Proses Desain
+        rawTasks.forEach(t => {
+            let d = parseDateToObj(t.dateStr);
+            if(d) {
+                d.setHours(0,0,0,0);
+                let key = d.getTime();
+                if(!dateCounts[key]) dateCounts[key] = { design: 0, content: 0 };
+                dateCounts[key].design++;
+            }
+        });
+
+        // Proses Konten
+        rawCreatorTasks.forEach(t => {
+            let d = parseDateToObj(t.targetDate || t.createdAt);
+            if(d) {
+                d.setHours(0,0,0,0);
+                let key = d.getTime();
+                if(!dateCounts[key]) dateCounts[key] = { design: 0, content: 0 };
+                dateCounts[key].content++;
+            }
+        });
+
+        // 2. Urutkan dan ambil 10 hari terakhir
+        let sortedKeys = Object.keys(dateCounts).map(Number).sort((a,b) => a - b);
+        let recentKeys = sortedKeys.slice(-10); // Ambil 10 titik terakhir
+
+        let chartLabels = [];
+        let designTrend = [];
+        let contentTrend = [];
+
+        recentKeys.forEach(k => {
+            let d = new Date(k);
+            chartLabels.push(d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
+            designTrend.push(dateCounts[k].design);
+            contentTrend.push(dateCounts[k].content);
+        });
+
+        // Jika data benar-benar kosong, buat dummy agar grafiknya tidak rusak
+        if(chartLabels.length === 0) {
+            chartLabels = ["Tidak Ada Data"];
+            designTrend = [0];
+            contentTrend = [0];
+        }
+
+        // 3. Render Chart
         const ctx = document.getElementById('productivityChart').getContext('2d');
-        const chartLabels = ["2 Sep", "3 Sep", "4 Sep", "7 Sep", "8 Sep", "9 Sep", "10 Sep", "11 Sep", "12 Sep"];
         
         Chart.defaults.font.family = 'Inter';
         Chart.defaults.font.size = 11;
@@ -536,7 +514,7 @@
                 datasets: [
                     {
                         label: 'Desain',
-                        data: [1, 5, 2, 6, 2, 5, 5, 2, 3],
+                        data: designTrend,
                         borderColor: '#3b82f6', 
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         borderWidth: 2.5,
@@ -549,7 +527,7 @@
                     },
                     {
                         label: 'Konten',
-                        data: [0, 0, 0, 0, 0, 0, 0, 0, 4],
+                        data: contentTrend,
                         borderColor: '#10b981',  
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
                         borderWidth: 2.5,
