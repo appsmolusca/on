@@ -62,7 +62,7 @@
             <section class="bg-surface border border-borderLight p-5 md:p-6 rounded-[24px] shadow-sm">
                 <h3 class="text-xs font-extrabold text-textMuted uppercase tracking-wider mb-4 flex items-center gap-1.5"><i class="ph-fill ph-lightning text-amber-500 text-lg"></i> Lapor Tugas Manual</h3>
                 <form onsubmit="sendPrintilan(event)" class="flex flex-col sm:flex-row gap-3">
-                    <input type="text" id="pTitle" required placeholder="Deskripsi tugas extra / dadakan..." autocomplete="off" class="flex-grow bg-slate-50 border border-slate-200 px-4 py-3 text-sm font-semibold rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all">
+                    <input type="text" id="pTitle" required placeholder="Deskripsi tugas extra / tambahan..." autocomplete="off" class="flex-grow bg-slate-50 border border-slate-200 px-4 py-3 text-sm font-semibold rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all">
                     <button id="btnSubmit" class="bg-blue-600 text-white px-6 py-3 rounded-xl text-xs font-extrabold uppercase flex justify-center items-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm">Kirim <i class="ph-bold ph-paper-plane-right"></i></button>
                 </form>
             </section>
@@ -410,7 +410,7 @@
             const status = document.getElementById('m3dStatus').value;
             const data = {
                 id: Date.now().toString(), assignee: currentUser,
-                projectName: document.getElementById('m3dProject').value, priority: 'Normal', catatanAdmin: 'TUGAS DADAKAN',
+                projectName: document.getElementById('m3dProject').value, priority: 'Normal', catatanAdmin: 'TUGAS EXTRA',
                 status: status, startTime: document.getElementById('m3dStart').value || '-', endTime: document.getElementById('m3dEnd').value || '-',
                 catatanTim: '-', gramasi: '-', jumlah: '-', mesin: status === 'Lagi Produksi' ? document.getElementById('m3dMesin').value || '-' : '-'
             };
