@@ -89,6 +89,20 @@
             return isNaN(d.getTime()) ? new Date() : d;
         }
 
+        // ==========================================
+        // FUNGSI BERSIHIN JAM ERROR DARI GOOGLE SHEETS
+        // ==========================================
+        function cleanTimeStr(val) {
+            if (!val || val === '-') return '-';
+            let s = String(val);
+            // Tangkep format error 1899-12-30T10:00:00.000Z
+            if (s.includes('T')) {
+                let t = s.split('T')[1];
+                if (t) return t.substring(0, 5); // Cuma ambil 5 karakter awal (contoh: 10:00)
+            }
+            return s;
+        }
+
         async function loadAllData() {
             document.getElementById('loadingOverlay').classList.remove('hidden');
 
@@ -305,7 +319,7 @@
         }
 
 
-        // ================== LOGIC TASK 3D (BARU) ==================
+        // ================== LOGIC TASK 3D (BARU DENGAN TEXT JELAS) ==================
         function renderUserBoards3d(usersList) {
             const select = document.getElementById('task3dAssigneeAdmin');
             const boardContainer = document.getElementById('dynamic-boards-3d');
@@ -322,7 +336,6 @@
             design3dOnly.forEach((u) => {
                 select.innerHTML += `<option value="${u.name}">${u.name}</option>`;
                 
-                // Bikin Kolom untuk tiap tim 3D
                 boardContainer.innerHTML += `
                     <div class="min-w-[300px] max-w-[340px] md:min-w-0 md:max-w-none snap-center bg-slate-50/50 p-4 md:p-5 rounded-[24px] border border-slate-200 flex flex-col">
                         <div class="flex items-center gap-3 mb-5 border-b border-slate-200 pb-4">
@@ -387,6 +400,10 @@
                 let isUrgent = task.priority === 'Urgent';
                 let urgentBadge = isUrgent ? `<span class="text-[10px] font-extrabold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-lg uppercase">Urgent</span>` : '';
 
+                // Bersihin format jam Google Sheets (kalau error)
+                let cStart = cleanTimeStr(task.startTime);
+                let cEnd = cleanTimeStr(task.endTime);
+
                 if (task.status === 'Selesai') {
                     card.className = "bg-white p-4 rounded-[20px] border border-slate-200 opacity-60 hover:opacity-100 transition-opacity relative group";
                     card.innerHTML = `
@@ -406,17 +423,17 @@
 
                     if (task.status === 'Menunggu Respon') {
                         statusUI = `<span class="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg flex items-center gap-1"><i class="ph-fill ph-clock-countdown"></i> Menunggu Respon</span>`;
-                        detailsHTML = `<div class="bg-slate-50 rounded-xl p-3 border border-slate-100 border-dashed text-center mt-3"><span class="text-[10px] font-semibold text-slate-400"><i class="ph-bold ph-info"></i> Detail teknis belum diisi tim.</span></div>`;
+                        detailsHTML = `<div class="bg-slate-50 rounded-xl p-3 border border-slate-100 border-dashed text-center mt-3"><span class="text-[11px] font-medium text-slate-400">Menunggu info dari tim...</span></div>`;
                     } 
                     else if (task.status === 'Lagi Dikerjain' || task.status === 'Nunggu Revisi') {
                         borderClass = 'border-purple-200 ring-2 ring-purple-50';
                         let icon = task.status === 'Lagi Dikerjain' ? 'ph-pen-nib' : 'ph-arrows-clockwise';
                         statusUI = `<span class="text-[10px] font-extrabold text-purple-700 bg-purple-100 border border-purple-200 px-2.5 py-1 rounded-lg flex items-center gap-1"><i class="ph-fill ${icon}"></i> ${task.status}</span>`;
                         
-                        if((task.startTime && task.startTime !== '-') || (task.catatanTim && task.catatanTim !== '-')) {
-                            detailsHTML = `<div class="bg-slate-50 rounded-xl p-3 border border-slate-100 mt-3 space-y-1.5">`;
-                            if(task.startTime && task.startTime !== '-') detailsHTML += `<div class="flex items-center gap-2 text-[11px] font-semibold text-slate-600"><i class="ph-fill ph-clock text-slate-400"></i> Estimasi: ${task.startTime} - ${task.endTime}</div>`;
-                            if(task.catatanTim && task.catatanTim !== '-') detailsHTML += `<p class="text-[11px] text-slate-500 italic border-l-2 border-slate-300 pl-2 mt-1">"${task.catatanTim}"</p>`;
+                        if((cStart && cStart !== '-') || (task.catatanTim && task.catatanTim !== '-')) {
+                            detailsHTML = `<div class="bg-slate-50 rounded-xl p-3.5 border border-slate-100 mt-3 space-y-1.5 text-[11px] font-medium text-slate-600">`;
+                            if(cStart && cStart !== '-') detailsHTML += `<div class="flex"><span class="font-bold text-slate-400 w-16">Waktu</span> <span class="mr-2">:</span> ${cStart} - ${cEnd}</div>`;
+                            if(task.catatanTim && task.catatanTim !== '-') detailsHTML += `<div class="pt-2 mt-2 border-t border-slate-200/60"><span class="font-bold text-slate-400 block mb-0.5">Catatan Tim:</span> "${task.catatanTim}"</div>`;
                             detailsHTML += `</div>`;
                         }
                     }
@@ -424,15 +441,14 @@
                         borderClass = 'border-amber-200 ring-2 ring-amber-50';
                         statusUI = `<span class="text-[10px] font-extrabold text-amber-700 bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-lg flex items-center gap-1"><i class="ph-fill ph-gear-six animate-spin-slow"></i> Lagi Produksi</span>`;
                         
+                        // TAMPILAN FULL TEKS YANG JELAS DIBACA
                         detailsHTML = `
-                        <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-100 mt-3 space-y-2">
-                            <div class="grid grid-cols-2 gap-y-2 text-[11px] font-semibold text-slate-600">
-                                <div class="flex items-center gap-1.5"><i class="ph-fill ph-clock text-slate-400"></i> ${task.startTime}-${task.endTime}</div>
-                                <div class="flex items-center gap-1.5"><i class="ph-fill ph-scales text-slate-400"></i> ${task.gramasi}</div>
-                                <div class="flex items-center gap-1.5"><i class="ph-fill ph-package text-slate-400"></i> ${task.jumlah}</div>
-                                <div class="flex items-center gap-1.5 text-emerald-600 font-bold"><i class="ph-fill ph-cpu"></i> ${task.mesin}</div>
-                            </div>
-                            ${task.catatanTim && task.catatanTim !== '-' ? `<p class="text-[11px] text-slate-500 italic border-l-2 border-slate-300 pl-2 mt-2 pt-2 border-t border-slate-200/50">"${task.catatanTim}"</p>` : ''}
+                        <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-100 mt-3 space-y-1.5 text-[11px] font-medium text-slate-600">
+                            <div class="flex"><span class="font-bold text-slate-400 w-16">Waktu</span> <span class="mr-2">:</span> ${cStart} - ${cEnd}</div>
+                            <div class="flex"><span class="font-bold text-slate-400 w-16">Gramasi</span> <span class="mr-2">:</span> ${task.gramasi}</div>
+                            <div class="flex"><span class="font-bold text-slate-400 w-16">Jumlah</span> <span class="mr-2">:</span> ${task.jumlah}</div>
+                            <div class="flex"><span class="font-bold text-slate-400 w-16">Mesin</span> <span class="mr-2">:</span> <span class="font-bold text-emerald-600">${task.mesin}</span></div>
+                            ${task.catatanTim && task.catatanTim !== '-' ? `<div class="pt-2 mt-2 border-t border-slate-200/60"><span class="font-bold text-slate-400 block mb-0.5">Catatan Tim:</span> "${task.catatanTim}"</div>` : ''}
                         </div>`;
                     }
 
