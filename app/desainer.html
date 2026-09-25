@@ -25,11 +25,15 @@
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        .skeleton { background: linear-gradient(110deg, #f1f5f9 8%, #e2e8f0 18%, #f1f5f9 33%); border-radius: 8px; background-size: 200% 100%; animation: 1.5s shine linear infinite; }
+        @keyframes shine { to { background-position-x: -200%; } }
     </style>
 </head>
 <body class="pb-24" onload="initApp()" oncontextmenu="return false;">
 
+    <!-- ============================================== -->
     <!-- HEADER -->
+    <!-- ============================================== -->
     <header class="bg-surface/90 backdrop-blur-md border-b border-borderLight sticky top-0 z-40 shadow-sm">
         <div class="max-w-4xl mx-auto px-4 md:px-6 py-3 md:py-4">
             <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
@@ -48,7 +52,9 @@
         </div>
     </header>
 
+    <!-- ============================================== -->
     <!-- MAIN CONTENT -->
+    <!-- ============================================== -->
     <main class="p-4 max-w-4xl mx-auto mt-2 md:mt-6 space-y-8">
         
         <!-- WRAPPER DESAIN REGULER (Dadan, Indah, dll) -->
@@ -57,26 +63,26 @@
                 <h3 class="text-xs font-extrabold text-textMuted uppercase tracking-wider mb-4 flex items-center gap-1.5"><i class="ph-fill ph-lightning text-amber-500 text-lg"></i> Lapor Tugas Manual</h3>
                 <form onsubmit="sendPrintilan(event)" class="flex flex-col sm:flex-row gap-3">
                     <input type="text" id="pTitle" required placeholder="Deskripsi tugas extra / tambahan..." autocomplete="off" class="flex-grow bg-slate-50 border border-slate-200 px-4 py-3 text-sm font-semibold rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all">
-                    <button id="btnSubmit" type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-xl text-xs font-extrabold uppercase flex justify-center items-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm">Kirim <i class="ph-bold ph-paper-plane-right"></i></button>
+                    <button id="btnSubmit" class="bg-blue-600 text-white px-6 py-3 rounded-xl text-xs font-extrabold uppercase flex justify-center items-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm">Kirim <i class="ph-bold ph-paper-plane-right"></i></button>
                 </form>
             </section>
-            
             <div>
                 <div class="flex items-center justify-between mb-4 ml-1">
                     <h3 class="text-sm font-extrabold text-textMuted uppercase tracking-widest flex items-center gap-2"><i class="ph-fill ph-kanban text-blue-500 text-xl"></i> Active Projects</h3>
-                    <span id="syncStatus" class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md flex items-center gap-1 border border-slate-200"><i class="ph-bold ph-arrows-clockwise animate-spin"></i> Sync...</span>
+                    <span id="syncStatus" class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md flex items-center gap-1"><i class="ph-bold ph-arrows-clockwise animate-spin"></i> Syncing...</span>
                 </div>
                 <div id="active-list" class="space-y-4"></div>
             </div>
-            
             <div class="pt-6 border-t border-slate-200 opacity-70 hover:opacity-100 transition-opacity">
                 <h3 class="text-sm font-extrabold text-slate-400 uppercase tracking-widest mb-4 ml-1 flex items-center gap-2"><i class="ph-fill ph-check-circle text-emerald-500 text-xl"></i> Completed</h3>
-                <div id="final-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                <div id="final-list" class="space-y-3 grid grid-cols-1 md:grid-cols-2 gap-3 md:space-y-0"></div>
             </div>
         </div>
 
+
         <!-- WRAPPER 3D DESIGN (Teguh & Zalfa) -->
         <div id="wrapper-desain-3d" class="space-y-8 hidden">
+            
             <!-- FORM INPUT DADAKAN 3D -->
             <section class="bg-emerald-600 p-1 rounded-[24px] shadow-lg shadow-emerald-500/20">
                 <div class="bg-surface p-5 md:p-6 rounded-[20px]">
@@ -133,6 +139,7 @@
                         <i class="ph-bold ph-arrows-clockwise animate-spin"></i> Sync...
                     </span>
                 </div>
+                
                 <div id="active-list-3d" class="space-y-4"></div>
             </div>
 
@@ -141,13 +148,46 @@
                 <h3 class="text-sm font-extrabold text-slate-400 uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
                     <i class="ph-fill ph-archive-box text-slate-400 text-xl"></i> Tugas Selesai
                 </h3>
-                <div id="final-list-3d" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                <div id="final-list-3d" class="space-y-3 grid grid-cols-1 md:grid-cols-2 gap-3 md:space-y-0"></div>
             </div>
         </div>
 
     </main>
 
+    <!-- ============================================== -->
+    <!-- MODAL UPDATE PROGRESS REGULER -->
+    <!-- ============================================== -->
+    <div id="modalUpdateReguler" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex justify-center items-end md:items-center">
+        <div class="bg-white w-full md:w-[400px] rounded-t-[32px] md:rounded-[32px] p-6 shadow-2xl transform transition-transform duration-300 translate-y-full md:translate-y-0" id="modalBoxReguler">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-extrabold text-slate-800">Update Status Tugas</h3>
+                    <p class="text-xs text-slate-500 mt-1 font-medium truncate w-64" id="modalRegTitle">Nama Project...</p>
+                </div>
+                <button onclick="closeModalReguler()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-red-100 hover:text-red-500 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+            </div>
+
+            <form id="formUpdateReguler" onsubmit="saveUpdateReguler(event)" class="space-y-4">
+                <input type="hidden" id="updRegId">
+                <div class="relative"><i class="ph-bold ph-info absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <select id="updRegStatus" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm font-semibold outline-none cursor-pointer focus:border-blue-400 focus:ring-2 focus:ring-blue-100 appearance-none text-blue-700">
+                        <option value="Lagi Dikerjain">✍️ Lagi Dikerjain</option>
+                        <option value="Nunggu Revisi">🔄 Nunggu Revisi</option>
+                        <option value="Final">✅ Selesai (Final)</option>
+                    </select>
+                    <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                </div>
+
+                <button type="submit" id="btnUpdateReguler" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl text-sm font-extrabold uppercase tracking-widest flex justify-center items-center gap-2 mt-4 transition-colors shadow-md shadow-blue-500/20">
+                    Update Status <i class="ph-bold ph-check-circle text-lg"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
     <!-- MODAL UPDATE PROGRESS 3D -->
+    <!-- ============================================== -->
     <div id="modalUpdate3d" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex justify-center items-end md:items-center">
         <div class="bg-white w-full md:w-[500px] rounded-t-[32px] md:rounded-[32px] p-6 shadow-2xl transform transition-transform duration-300 translate-y-full md:translate-y-0" id="modalBox3d">
             <div class="flex justify-between items-center mb-6">
@@ -206,13 +246,15 @@
         </div>
     </div>
 
-
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
         const SPREADSHEET_ID = '1d3njy330ifMnm-uBD8daaey5AqYO3rQxaI-tLZQdeyI';
 
         let currentUser = localStorage.getItem('moluscaUser');
         let currentRole = localStorage.getItem('moluscaRole');
+        
+        // Simpan data task buat dipanggil di modal
+        let myTasksGlobal = []; 
         let myTasks3dGlobal = []; 
         
         function initApp() {
@@ -250,7 +292,7 @@
         }
 
         // ==========================================
-        // LOGIC REGULER LAMA (Dadan, Indah, dll)
+        // LOGIC REGULER (Dadan, Indah, dll)
         // ==========================================
         async function loadMyTasksFast() {
             const syncStatus = document.getElementById('syncStatus');
@@ -268,7 +310,9 @@
                     row.id = row.id || Date.now().toString(); return row;
                 });
                 
-                renderTasks(tasks.filter(t => t.assignee && t.assignee.toLowerCase() === currentUser.toLowerCase()));
+                // Simpan ke variabel global buat Modal
+                myTasksGlobal = tasks.filter(t => t.assignee && t.assignee.toLowerCase() === currentUser.toLowerCase());
+                renderTasks(myTasksGlobal);
                 syncStatus.innerHTML = '<i class="ph-bold ph-check text-blue-500"></i> Updated';
             } catch(e) {
                 syncStatus.innerHTML = '<i class="ph-bold ph-warning text-red-500"></i> Fail';
@@ -297,10 +341,22 @@
                     `;
                     finalList.appendChild(card);
                 } else {
-                    card.className = "p-5 md:p-6 rounded-[24px] shadow-sm border border-slate-200 bg-white hover:border-blue-300 transition-colors";
+                    let borderUI = 'border-slate-200 hover:border-blue-300';
+                    let statusColor = 'text-blue-600 bg-blue-50 border-blue-200';
+                    
+                    if(statusLower === 'nunggu revisi' || statusLower === 'lagi dikerjain') {
+                        borderUI = 'border-purple-200 ring-2 ring-purple-50';
+                        statusColor = 'text-purple-700 bg-purple-100 border-purple-300';
+                    }
+
+                    let currentStatus = task.status || 'Lagi Dikerjain';
+
+                    card.className = `p-5 md:p-6 rounded-[24px] shadow-sm border bg-white transition-colors ${borderUI}`;
                     card.innerHTML = `
                         <div class="flex justify-between items-start mb-3">
-                            <span class="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg uppercase tracking-wide"><i class="ph-bold ph-hash"></i> ${task.joCode}</span>
+                            <span class="text-[10px] font-bold ${statusColor} border px-2.5 py-1 rounded-lg uppercase tracking-wide flex items-center gap-1">
+                                <i class="ph-bold ph-hash"></i> ${task.joCode} <span class="text-slate-300 ml-1 mr-1">|</span> ${currentStatus}
+                            </span>
                             ${urgentUI}
                         </div>
                         <h4 class="font-extrabold text-[15px] md:text-lg text-slate-800 leading-snug mb-3">${task.title}</h4>
@@ -308,8 +364,8 @@
                             <div class="flex items-center gap-1"><i class="ph-bold ph-user-circle"></i> Dari: ${task.sender}</div>
                             <div class="flex items-center gap-1"><i class="ph-bold ph-calendar-blank"></i> ${task.dateStr}</div>
                         </div>
-                        <button onclick="finishTaskReguler('${task.id}')" class="w-full bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 border border-slate-200 hover:border-blue-200 py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex justify-center items-center gap-2 shadow-sm">
-                            Tandai Selesai <i class="ph-bold ph-check-circle text-lg"></i>
+                        <button onclick="openModalReguler('${task.id}')" class="w-full bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 border border-slate-200 hover:border-blue-200 py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors flex justify-center items-center gap-2 shadow-sm">
+                            Update Progress <i class="ph-bold ph-pencil-simple text-lg"></i>
                         </button>
                     `;
                     activeList.appendChild(card);
@@ -347,11 +403,49 @@
             loadMyTasksFast();
         }
 
-        async function finishTaskReguler(id) {
-            document.getElementById('syncStatus').innerHTML = '<i class="ph-bold ph-arrows-clockwise animate-spin"></i> Updating...';
-            await dbCall({ action: 'update', sheetName: 'tasks', idValue: id, updateData: { status: 'Final' } });
+        // FUNGSI MODAL UPDATE REGULER
+        function openModalReguler(id) {
+            const task = myTasksGlobal.find(t => t.id === id);
+            if(!task) return;
+
+            document.getElementById('updRegId').value = task.id;
+            document.getElementById('modalRegTitle').innerText = task.title;
+            
+            let currentStatus = task.status || 'Lagi Dikerjain';
+            if(currentStatus.toLowerCase() === 'selesai' || currentStatus.toLowerCase() === 'final') {
+                currentStatus = 'Final';
+            }
+            document.getElementById('updRegStatus').value = currentStatus;
+
+            const modal = document.getElementById('modalUpdateReguler');
+            const box = document.getElementById('modalBoxReguler');
+            modal.classList.remove('hidden');
+            setTimeout(() => box.classList.remove('translate-y-full'), 10);
+        }
+
+        function closeModalReguler() {
+            const box = document.getElementById('modalBoxReguler');
+            box.classList.add('translate-y-full');
+            setTimeout(() => document.getElementById('modalUpdateReguler').classList.add('hidden'), 300);
+        }
+
+        async function saveUpdateReguler(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnUpdateReguler');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Menyimpan...';
+            btn.disabled = true;
+
+            const id = document.getElementById('updRegId').value;
+            const status = document.getElementById('updRegStatus').value;
+
+            await dbCall({ action: 'update', sheetName: 'tasks', idValue: id, updateData: { status: status } });
+            
+            btn.innerHTML = 'Update Status <i class="ph-bold ph-check-circle text-lg"></i>'; 
+            btn.disabled = false;
+            closeModalReguler();
             loadMyTasksFast();
         }
+
 
         // ==========================================
         // LOGIC KHUSUS 3D DESIGN
@@ -441,6 +535,7 @@
             if(final.innerHTML === '') final.innerHTML = `<p class="text-xs text-slate-400 italic ml-1">Belum ada tugas 3D yang selesai.</p>`;
         }
 
+        // FUNGSI MODAL UPDATE 3D
         function openModal3d(id) {
             const task = myTasks3dGlobal.find(t => t.id === id);
             if(!task) return;
