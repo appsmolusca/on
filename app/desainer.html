@@ -25,8 +25,6 @@
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-        .skeleton { background: linear-gradient(110deg, #f1f5f9 8%, #e2e8f0 18%, #f1f5f9 33%); border-radius: 8px; background-size: 200% 100%; animation: 1.5s shine linear infinite; }
-        @keyframes shine { to { background-position-x: -200%; } }
     </style>
 </head>
 <body class="pb-24" onload="initApp()" oncontextmenu="return false;">
@@ -63,13 +61,13 @@
                 <h3 class="text-xs font-extrabold text-textMuted uppercase tracking-wider mb-4 flex items-center gap-1.5"><i class="ph-fill ph-lightning text-amber-500 text-lg"></i> Lapor Tugas Manual</h3>
                 <form onsubmit="sendPrintilan(event)" class="flex flex-col sm:flex-row gap-3">
                     <input type="text" id="pTitle" required placeholder="Deskripsi tugas extra / tambahan..." autocomplete="off" class="flex-grow bg-slate-50 border border-slate-200 px-4 py-3 text-sm font-semibold rounded-xl outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all">
-                    <button id="btnSubmit" class="bg-blue-600 text-white px-6 py-3 rounded-xl text-xs font-extrabold uppercase flex justify-center items-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm">Kirim <i class="ph-bold ph-paper-plane-right"></i></button>
+                    <button type="submit" id="btnSubmit" class="bg-blue-600 text-white px-6 py-3 rounded-xl text-xs font-extrabold uppercase flex justify-center items-center gap-2 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm">Kirim <i class="ph-bold ph-paper-plane-right"></i></button>
                 </form>
             </section>
             <div>
                 <div class="flex items-center justify-between mb-4 ml-1">
                     <h3 class="text-sm font-extrabold text-textMuted uppercase tracking-widest flex items-center gap-2"><i class="ph-fill ph-kanban text-blue-500 text-xl"></i> Active Projects</h3>
-                    <span id="syncStatus" class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md flex items-center gap-1"><i class="ph-bold ph-arrows-clockwise animate-spin"></i> Syncing...</span>
+                    <span id="syncStatus" class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md flex items-center gap-1 border border-slate-200"><i class="ph-bold ph-arrows-clockwise animate-spin"></i> Sync...</span>
                 </div>
                 <div id="active-list" class="space-y-4"></div>
             </div>
@@ -79,10 +77,8 @@
             </div>
         </div>
 
-
         <!-- WRAPPER 3D DESIGN (Teguh & Zalfa) -->
         <div id="wrapper-desain-3d" class="space-y-8 hidden">
-            
             <!-- FORM INPUT DADAKAN 3D -->
             <section class="bg-emerald-600 p-1 rounded-[24px] shadow-lg shadow-emerald-500/20">
                 <div class="bg-surface p-5 md:p-6 rounded-[20px]">
@@ -172,6 +168,7 @@
                 <div class="relative"><i class="ph-bold ph-info absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <select id="updRegStatus" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm font-semibold outline-none cursor-pointer focus:border-blue-400 focus:ring-2 focus:ring-blue-100 appearance-none text-blue-700">
                         <option value="Lagi Dikerjain">✍️ Lagi Dikerjain</option>
+                        <option value="Lagi di Layout">📐 Lagi di Layout</option>
                         <option value="Nunggu Revisi">🔄 Nunggu Revisi</option>
                         <option value="Final">✅ Selesai (Final)</option>
                     </select>
@@ -298,9 +295,11 @@
             const syncStatus = document.getElementById('syncStatus');
             syncStatus.innerHTML = '<i class="ph-bold ph-arrows-clockwise animate-spin"></i> Sync...';
             
-            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=tasks`;
+            // Tambahin &t= biar Google selalu ngirim data paling baru (Buster Cache)
+            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=tasks&t=${Date.now()}`;
             try {
-                const response = await fetch(url); const text = await response.text();
+                const response = await fetch(url, { cache: "no-store" }); 
+                const text = await response.text();
                 const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
                 const data = JSON.parse(jsonStr);
                 const cols = data.table.cols.map(c => c ? c.label : '').map(l => l.trim());
@@ -347,6 +346,9 @@
                     if(statusLower === 'nunggu revisi' || statusLower === 'lagi dikerjain') {
                         borderUI = 'border-purple-200 ring-2 ring-purple-50';
                         statusColor = 'text-purple-700 bg-purple-100 border-purple-300';
+                    } else if (statusLower === 'lagi di layout') {
+                        borderUI = 'border-amber-200 ring-2 ring-amber-50';
+                        statusColor = 'text-amber-700 bg-amber-100 border-amber-300';
                     }
 
                     let currentStatus = task.status || 'Lagi Dikerjain';
@@ -392,15 +394,18 @@
                 dateStr: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
                 timeAssigned: new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0'),
                 status: 'Final', 
-                isPrintilan: true,
-                isApproved: false
+                // Format dijadikan string true/false biar aman nembus API ke Sheets
+                isPrintilan: "true",
+                isApproved: "false"
             };
 
             await dbCall({ action: 'insert', sheetName: 'tasks', data: data });
             document.getElementById('pTitle').value = '';
             btn.innerHTML = 'Kirim <i class="ph-bold ph-paper-plane-right"></i>'; 
             btn.disabled = false;
-            loadMyTasksFast();
+            
+            // Tunggu 500ms biar Google nyimpen dulu, trus fetch ulang
+            setTimeout(() => { loadMyTasksFast(); }, 500);
         }
 
         // FUNGSI MODAL UPDATE REGULER
@@ -443,7 +448,9 @@
             btn.innerHTML = 'Update Status <i class="ph-bold ph-check-circle text-lg"></i>'; 
             btn.disabled = false;
             closeModalReguler();
-            loadMyTasksFast();
+            
+            // Tunggu bentar lalu reload board
+            setTimeout(() => { loadMyTasksFast(); }, 500);
         }
 
 
@@ -452,9 +459,11 @@
         // ==========================================
         async function loadMyTasks3dFast() {
             document.getElementById('syncStatus3d').innerHTML = '<i class="ph-bold ph-arrows-clockwise animate-spin"></i> Sync...';
-            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=tasks_3d`;
+            
+            // Tambahin &t= biar ga kena cache google
+            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=tasks_3d&t=${Date.now()}`;
             try {
-                const response = await fetch(url);
+                const response = await fetch(url, { cache: "no-store" });
                 const text = await response.text();
                 const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
                 const data = JSON.parse(jsonStr);
@@ -535,7 +544,6 @@
             if(final.innerHTML === '') final.innerHTML = `<p class="text-xs text-slate-400 italic ml-1">Belum ada tugas 3D yang selesai.</p>`;
         }
 
-        // FUNGSI MODAL UPDATE 3D
         function openModal3d(id) {
             const task = myTasks3dGlobal.find(t => t.id === id);
             if(!task) return;
@@ -592,7 +600,9 @@
             
             btn.innerHTML = 'Update Data <i class="ph-bold ph-check-circle text-lg"></i>'; btn.disabled = false;
             closeModal3d();
-            loadMyTasks3dFast();
+            
+            // Tunggu 500ms biar Google nyimpen dulu, trus fetch ulang
+            setTimeout(() => { loadMyTasks3dFast(); }, 500);
         }
 
         async function sendManualTask3d(e) {
@@ -614,7 +624,9 @@
             toggleMesin('m3dStatus', 'm3dMesinContainer', 'm3dMesin');
             
             btn.innerHTML = 'Simpan Tugas <i class="ph-bold ph-paper-plane-right text-lg"></i>'; btn.disabled = false;
-            loadMyTasks3dFast();
+            
+            // Tunggu 500ms biar Google nyimpen dulu, trus fetch ulang
+            setTimeout(() => { loadMyTasks3dFast(); }, 500);
         }
 
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
