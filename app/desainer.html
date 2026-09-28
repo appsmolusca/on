@@ -281,10 +281,14 @@
             const container = document.getElementById(containerId);
             const mesinInput = document.getElementById(mesinId);
             
-            // LOGIC BARU: Mesin Jalan Project juga wajib isi mesin
-            if(status === 'Lagi Produksi' || status === 'Mesin Jalan Project') {
+            // JANGAN HIDE MESIN/GRAMASI SAAT "SELESAI" AGAR DATA TETAP BISA DI CEK/DIISI
+            if(status === 'Lagi Produksi' || status === 'Mesin Jalan Project' || status === 'Selesai') {
                 container.classList.remove('hidden');
-                mesinInput.setAttribute('required', 'true');
+                if(status !== 'Selesai') {
+                    mesinInput.setAttribute('required', 'true');
+                } else {
+                    mesinInput.removeAttribute('required');
+                }
             } else {
                 container.classList.add('hidden');
                 mesinInput.removeAttribute('required');
@@ -298,7 +302,6 @@
             const syncStatus = document.getElementById('syncStatus');
             syncStatus.innerHTML = '<i class="ph-bold ph-arrows-clockwise animate-spin"></i> Sync...';
             
-            // Tambahin &t= biar Google selalu ngirim data paling baru (Buster Cache)
             const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=tasks&t=${Date.now()}`;
             try {
                 const response = await fetch(url, { cache: "no-store" }); 
@@ -312,7 +315,6 @@
                     row.id = row.id || Date.now().toString(); return row;
                 });
                 
-                // Simpan ke variabel global buat Modal
                 myTasksGlobal = tasks.filter(t => t.assignee && t.assignee.toLowerCase() === currentUser.toLowerCase());
                 renderTasks(myTasksGlobal);
                 syncStatus.innerHTML = '<i class="ph-bold ph-check text-blue-500"></i> Updated';
@@ -396,11 +398,7 @@
                 assignee: currentUser,
                 dateStr: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
                 timeAssigned: new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0'),
-                
-                // STATUS AWAL DIUBAH KE LAGI DIKERJAIN (Bukan Final)
                 status: 'Lagi Dikerjain', 
-                
-                // Format dijadikan string true/false biar aman nembus API ke Sheets
                 isPrintilan: "true",
                 isApproved: "false"
             };
@@ -410,11 +408,9 @@
             btn.innerHTML = 'Kirim <i class="ph-bold ph-paper-plane-right"></i>'; 
             btn.disabled = false;
             
-            // Tunggu 500ms biar Google nyimpen dulu, trus fetch ulang
             setTimeout(() => { loadMyTasksFast(); }, 500);
         }
 
-        // FUNGSI MODAL UPDATE REGULER
         function openModalReguler(id) {
             const task = myTasksGlobal.find(t => t.id === id);
             if(!task) return;
@@ -455,7 +451,6 @@
             btn.disabled = false;
             closeModalReguler();
             
-            // Tunggu bentar lalu reload board
             setTimeout(() => { loadMyTasksFast(); }, 500);
         }
 
@@ -466,7 +461,6 @@
         async function loadMyTasks3dFast() {
             document.getElementById('syncStatus3d').innerHTML = '<i class="ph-bold ph-arrows-clockwise animate-spin"></i> Sync...';
             
-            // Tambahin &t= biar ga kena cache google
             const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=tasks_3d&t=${Date.now()}`;
             try {
                 const response = await fetch(url, { cache: "no-store" });
@@ -501,17 +495,27 @@
                 let urgentUI = isUrgent ? `<span class="text-[10px] font-extrabold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded uppercase flex items-center gap-1">Urgent</span>` : '';
 
                 if(task.status === 'Selesai') {
+                    // Tampilkan informasi lengkap (waktu, mesin, gramasi) di tab selesai
+                    let detailSelesai = '';
+                    if (task.startTime && task.startTime !== '-') detailSelesai += `<span class="text-blue-500 mr-2"><i class="ph-fill ph-clock"></i> ${task.startTime}-${task.endTime||''}</span>`;
+                    if (task.gramasi && task.gramasi !== '-') detailSelesai += `<span class="text-amber-500">${task.gramasi}gr</span>`;
+                    if (task.mesin && task.mesin !== '-') detailSelesai += `<span class="text-slate-300 mx-1">|</span><span class="text-emerald-500">${task.mesin}</span>`;
+
                     card.className = "bg-white p-4 rounded-xl border border-borderLight flex justify-between items-center text-xs font-bold transition-all opacity-70 hover:opacity-100";
-                    card.innerHTML = `<span class="text-slate-600 truncate font-extrabold line-through text-[13px]">${task.projectName}</span> <span class="text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1 rounded-md uppercase flex items-center gap-1 shrink-0"><i class="ph-bold ph-check-circle"></i> Done</span>`;
+                    card.innerHTML = `
+                        <div class="flex flex-col overflow-hidden">
+                            <span class="text-slate-600 truncate font-extrabold line-through text-[13px]">${task.projectName}</span>
+                            ${detailSelesai ? `<div class="text-[9px] font-bold flex items-center mt-1">${detailSelesai}</div>` : ''}
+                        </div> 
+                        <span class="text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1 rounded-md uppercase flex items-center gap-1 shrink-0"><i class="ph-bold ph-check-circle"></i> Done</span>
+                    `;
                     final.appendChild(card);
                 } else {
                     let statusUI = ''; let borderUI = 'border-slate-200'; let bgUI = 'bg-surface hover:border-emerald-300';
                     
-                    // LOGIC BARU: Cek waktuMesinJalan untuk dirender
                     let hasDetails = (task.startTime && task.startTime !== '-') || (task.mesin && task.mesin !== '-') || (task.waktuMesinJalan && task.waktuMesinJalan !== '-');
                     let detailsBlock = '';
 
-                    // LOGIC BARU: Styling tambahan untuk status Mesin Jalan Project
                     if(task.status === 'Menunggu Respon') {
                         statusUI = `<span class="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg flex items-center gap-1"><i class="ph-bold ph-clock-countdown"></i> Menunggu Respon</span>`;
                     } else if (task.status === 'Lagi Produksi') {
@@ -532,7 +536,6 @@
                         if(task.jumlah && task.jumlah !== '-') detailsBlock += `<div class="flex items-center gap-1.5"><i class="ph-fill ph-package"></i> Qty: ${task.jumlah}</div>`;
                         if(task.mesin && task.mesin !== '-') detailsBlock += `<div class="col-span-2 flex items-center gap-1.5 text-emerald-600 font-bold"><i class="ph-fill ph-cpu"></i> ${task.mesin}</div>`;
                         
-                        // LOGIC BARU: Tampilkan log timer mesin otomatis
                         if(task.waktuMesinJalan && task.waktuMesinJalan !== '-') {
                             detailsBlock += `<div class="col-span-2 flex items-center gap-1.5 text-rose-600 font-bold mt-1"><i class="ph-fill ph-timer"></i> Mulai Mesin: ${task.waktuMesinJalan}</div>`;
                         }
@@ -599,28 +602,29 @@
 
             const id = document.getElementById('updId').value;
             const status = document.getElementById('updStatus').value;
-            
-            // LOGIC BARU: Capture current time otomatis
             const currentTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            // Ambil data task lama sebagai backup jika input kosong
+            const oldTask = myTasks3dGlobal.find(t => t.id === id) || {};
+
+            // HELPER: Mencegah input kosong (saat modal) menimpa data lama yang sudah valid di database
+            const getValue = (inputId, oldKey) => {
+                const val = document.getElementById(inputId).value.trim();
+                if (val && val !== '') return val;
+                if (oldTask[oldKey] && oldTask[oldKey] !== '-') return oldTask[oldKey];
+                return '-';
+            };
 
             let updateData = {
                 status: status,
-                startTime: document.getElementById('updStart').value || '-',
-                endTime: document.getElementById('updEnd').value || '-',
-                catatanTim: document.getElementById('updCatatanTim').value || '-',
-                
-                // LOGIC BARU: Simpan waktu jika statusnya Mesin Jalan
-                waktuMesinJalan: status === 'Mesin Jalan Project' ? currentTime : '-'
+                startTime: getValue('updStart', 'startTime'),
+                endTime: getValue('updEnd', 'endTime'),
+                catatanTim: getValue('updCatatanTim', 'catatanTim'),
+                mesin: getValue('updMesin', 'mesin'),
+                gramasi: getValue('updGramasi', 'gramasi'),
+                jumlah: getValue('updJumlah', 'jumlah'),
+                waktuMesinJalan: status === 'Mesin Jalan Project' ? currentTime : (oldTask.waktuMesinJalan && oldTask.waktuMesinJalan !== '-' ? oldTask.waktuMesinJalan : '-')
             };
-
-            // LOGIC BARU: Update pengkondisian if untuk mesin
-            if(status === 'Lagi Produksi' || status === 'Mesin Jalan Project') {
-                updateData.mesin = document.getElementById('updMesin').value || '-';
-                updateData.gramasi = document.getElementById('updGramasi').value || '-';
-                updateData.jumlah = document.getElementById('updJumlah').value || '-';
-            } else {
-                updateData.mesin = '-'; updateData.gramasi = '-'; updateData.jumlah = '-';
-            }
 
             await dbCall({ action: 'update', sheetName: 'tasks_3d', idValue: id, updateData: updateData });
             
@@ -637,18 +641,21 @@
             btn.disabled = true;
 
             const status = document.getElementById('m3dStatus').value;
-            
-            // LOGIC BARU: Capture current time otomatis untuk manual task
             const currentTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            
+            const isMesinActive = (status === 'Lagi Produksi' || status === 'Mesin Jalan Project' || status === 'Selesai');
 
             const data = {
                 id: Date.now().toString(), assignee: currentUser,
                 projectName: document.getElementById('m3dProject').value, priority: 'Normal', catatanAdmin: 'TUGAS EXTRA',
-                status: status, startTime: document.getElementById('m3dStart').value || '-', endTime: document.getElementById('m3dEnd').value || '-',
-                catatanTim: '-', gramasi: '-', jumlah: '-', 
+                status: status, 
+                startTime: document.getElementById('m3dStart').value || '-', 
+                endTime: document.getElementById('m3dEnd').value || '-',
+                catatanTim: '-', 
+                gramasi: '-', 
+                jumlah: '-', 
                 
-                // LOGIC BARU: update data array mesin dan tambah kolom waktu
-                mesin: (status === 'Lagi Produksi' || status === 'Mesin Jalan Project') ? document.getElementById('m3dMesin').value || '-' : '-',
+                mesin: isMesinActive ? (document.getElementById('m3dMesin').value || '-') : '-',
                 waktuMesinJalan: status === 'Mesin Jalan Project' ? currentTime : '-'
             };
             
