@@ -281,9 +281,14 @@
             const container = document.getElementById(containerId);
             const mesinInput = document.getElementById(mesinId);
             
-            if(status === 'Lagi Produksi' || status === 'Mesin Jalan Project') {
+            // JANGAN HIDE MESIN/GRAMASI SAAT "SELESAI" AGAR DATA TETAP BISA DI CEK/DIISI
+            if(status === 'Lagi Produksi' || status === 'Mesin Jalan Project' || status === 'Selesai') {
                 container.classList.remove('hidden');
-                mesinInput.setAttribute('required', 'true');
+                if(status !== 'Selesai') {
+                    mesinInput.setAttribute('required', 'true');
+                } else {
+                    mesinInput.removeAttribute('required');
+                }
             } else {
                 container.classList.add('hidden');
                 mesinInput.removeAttribute('required');
@@ -490,8 +495,9 @@
                 let urgentUI = isUrgent ? `<span class="text-[10px] font-extrabold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded uppercase flex items-center gap-1">Urgent</span>` : '';
 
                 if(task.status === 'Selesai') {
-                    // Tampilkan informasi mesin dan gramasi di tab selesai
+                    // Tampilkan informasi lengkap (waktu, mesin, gramasi) di tab selesai
                     let detailSelesai = '';
+                    if (task.startTime && task.startTime !== '-') detailSelesai += `<span class="text-blue-500 mr-2"><i class="ph-fill ph-clock"></i> ${task.startTime}-${task.endTime||''}</span>`;
                     if (task.gramasi && task.gramasi !== '-') detailSelesai += `<span class="text-amber-500">${task.gramasi}gr</span>`;
                     if (task.mesin && task.mesin !== '-') detailSelesai += `<span class="text-slate-300 mx-1">|</span><span class="text-emerald-500">${task.mesin}</span>`;
 
@@ -499,7 +505,7 @@
                     card.innerHTML = `
                         <div class="flex flex-col overflow-hidden">
                             <span class="text-slate-600 truncate font-extrabold line-through text-[13px]">${task.projectName}</span>
-                            ${detailSelesai ? `<div class="text-[9px] font-bold flex items-center mt-0.5">${detailSelesai}</div>` : ''}
+                            ${detailSelesai ? `<div class="text-[9px] font-bold flex items-center mt-1">${detailSelesai}</div>` : ''}
                         </div> 
                         <span class="text-[10px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1 rounded-md uppercase flex items-center gap-1 shrink-0"><i class="ph-bold ph-check-circle"></i> Done</span>
                     `;
@@ -598,21 +604,26 @@
             const status = document.getElementById('updStatus').value;
             const currentTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-            // Pertahankan data mesin/timer sebelumnya kalau statusnya Selesai
+            // Ambil data task lama sebagai backup jika input kosong
             const oldTask = myTasks3dGlobal.find(t => t.id === id) || {};
+
+            // HELPER: Mencegah input kosong (saat modal) menimpa data lama yang sudah valid di database
+            const getValue = (inputId, oldKey) => {
+                const val = document.getElementById(inputId).value.trim();
+                if (val && val !== '') return val;
+                if (oldTask[oldKey] && oldTask[oldKey] !== '-') return oldTask[oldKey];
+                return '-';
+            };
 
             let updateData = {
                 status: status,
-                startTime: document.getElementById('updStart').value || '-',
-                endTime: document.getElementById('updEnd').value || '-',
-                catatanTim: document.getElementById('updCatatanTim').value || '-',
-                
-                // Ambil data dari input secara langsung, sehingga data tidak terhapus saat klik Selesai
-                mesin: document.getElementById('updMesin').value || '-',
-                gramasi: document.getElementById('updGramasi').value || '-',
-                jumlah: document.getElementById('updJumlah').value || '-',
-
-                waktuMesinJalan: status === 'Mesin Jalan Project' ? currentTime : (oldTask.waktuMesinJalan !== '-' ? oldTask.waktuMesinJalan : '-')
+                startTime: getValue('updStart', 'startTime'),
+                endTime: getValue('updEnd', 'endTime'),
+                catatanTim: getValue('updCatatanTim', 'catatanTim'),
+                mesin: getValue('updMesin', 'mesin'),
+                gramasi: getValue('updGramasi', 'gramasi'),
+                jumlah: getValue('updJumlah', 'jumlah'),
+                waktuMesinJalan: status === 'Mesin Jalan Project' ? currentTime : (oldTask.waktuMesinJalan && oldTask.waktuMesinJalan !== '-' ? oldTask.waktuMesinJalan : '-')
             };
 
             await dbCall({ action: 'update', sheetName: 'tasks_3d', idValue: id, updateData: updateData });
@@ -631,14 +642,20 @@
 
             const status = document.getElementById('m3dStatus').value;
             const currentTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            
+            const isMesinActive = (status === 'Lagi Produksi' || status === 'Mesin Jalan Project' || status === 'Selesai');
 
             const data = {
                 id: Date.now().toString(), assignee: currentUser,
                 projectName: document.getElementById('m3dProject').value, priority: 'Normal', catatanAdmin: 'TUGAS EXTRA',
-                status: status, startTime: document.getElementById('m3dStart').value || '-', endTime: document.getElementById('m3dEnd').value || '-',
-                catatanTim: '-', gramasi: '-', jumlah: '-', 
+                status: status, 
+                startTime: document.getElementById('m3dStart').value || '-', 
+                endTime: document.getElementById('m3dEnd').value || '-',
+                catatanTim: '-', 
+                gramasi: '-', 
+                jumlah: '-', 
                 
-                mesin: (status === 'Lagi Produksi' || status === 'Mesin Jalan Project') ? document.getElementById('m3dMesin').value || '-' : '-',
+                mesin: isMesinActive ? (document.getElementById('m3dMesin').value || '-') : '-',
                 waktuMesinJalan: status === 'Mesin Jalan Project' ? currentTime : '-'
             };
             
