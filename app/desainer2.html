@@ -101,6 +101,7 @@
                                 <option value="" disabled selected>Pilih Status Awal...</option>
                                 <option value="Lagi Dikerjain">✍️ Lagi Dikerjain (Desain)</option>
                                 <option value="Lagi Produksi">⚙️ Lagi Produksi (Cetak)</option>
+                                <option value="Mesin Jalan Project">🚀 Mesin Jalan Project</option>
                                 <option value="Selesai">✅ Selesai</option>
                             </select>
                             <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
@@ -204,6 +205,7 @@
                         <option value="Lagi Dikerjain">✍️ Lagi Dikerjain (Desain)</option>
                         <option value="Nunggu Revisi">🔄 Nunggu Revisi</option>
                         <option value="Lagi Produksi">⚙️ Lagi Produksi (Cetak)</option>
+                        <option value="Mesin Jalan Project">🚀 Mesin Jalan Project</option>
                         <option value="Selesai">✅ Selesai</option>
                     </select>
                     <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
@@ -279,7 +281,8 @@
             const container = document.getElementById(containerId);
             const mesinInput = document.getElementById(mesinId);
             
-            if(status === 'Lagi Produksi') {
+            // LOGIC BARU: Mesin Jalan Project juga wajib isi mesin
+            if(status === 'Lagi Produksi' || status === 'Mesin Jalan Project') {
                 container.classList.remove('hidden');
                 mesinInput.setAttribute('required', 'true');
             } else {
@@ -503,14 +506,20 @@
                     final.appendChild(card);
                 } else {
                     let statusUI = ''; let borderUI = 'border-slate-200'; let bgUI = 'bg-surface hover:border-emerald-300';
-                    let hasDetails = (task.startTime && task.startTime !== '-') || (task.mesin && task.mesin !== '-');
+                    
+                    // LOGIC BARU: Cek waktuMesinJalan untuk dirender
+                    let hasDetails = (task.startTime && task.startTime !== '-') || (task.mesin && task.mesin !== '-') || (task.waktuMesinJalan && task.waktuMesinJalan !== '-');
                     let detailsBlock = '';
 
+                    // LOGIC BARU: Styling tambahan untuk status Mesin Jalan Project
                     if(task.status === 'Menunggu Respon') {
                         statusUI = `<span class="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg flex items-center gap-1"><i class="ph-bold ph-clock-countdown"></i> Menunggu Respon</span>`;
                     } else if (task.status === 'Lagi Produksi') {
                         borderUI = 'border-amber-200 ring-2 ring-amber-50';
                         statusUI = `<span class="text-[10px] font-extrabold text-amber-700 bg-amber-100 border border-amber-300 px-2.5 py-1 rounded-lg flex items-center gap-1"><i class="ph-bold ph-gear-six animate-spin-slow"></i> Lagi Produksi</span>`;
+                    } else if (task.status === 'Mesin Jalan Project') {
+                        borderUI = 'border-rose-200 ring-2 ring-rose-50';
+                        statusUI = `<span class="text-[10px] font-extrabold text-rose-700 bg-rose-100 border border-rose-300 px-2.5 py-1 rounded-lg flex items-center gap-1"><i class="ph-bold ph-rocket"></i> Mesin Jalan</span>`;
                     } else {
                         borderUI = 'border-purple-200 ring-2 ring-purple-50';
                         let icon = task.status === 'Lagi Dikerjain' ? 'ph-pen-nib' : 'ph-arrows-clockwise';
@@ -522,6 +531,12 @@
                         if(task.startTime && task.startTime !== '-') detailsBlock += `<div class="flex items-center gap-1.5"><i class="ph-fill ph-clock"></i> ${task.startTime}-${task.endTime||''}</div>`;
                         if(task.jumlah && task.jumlah !== '-') detailsBlock += `<div class="flex items-center gap-1.5"><i class="ph-fill ph-package"></i> Qty: ${task.jumlah}</div>`;
                         if(task.mesin && task.mesin !== '-') detailsBlock += `<div class="col-span-2 flex items-center gap-1.5 text-emerald-600 font-bold"><i class="ph-fill ph-cpu"></i> ${task.mesin}</div>`;
+                        
+                        // LOGIC BARU: Tampilkan log timer mesin otomatis
+                        if(task.waktuMesinJalan && task.waktuMesinJalan !== '-') {
+                            detailsBlock += `<div class="col-span-2 flex items-center gap-1.5 text-rose-600 font-bold mt-1"><i class="ph-fill ph-timer"></i> Mulai Mesin: ${task.waktuMesinJalan}</div>`;
+                        }
+                        
                         detailsBlock += `</div>`;
                     }
 
@@ -584,14 +599,22 @@
 
             const id = document.getElementById('updId').value;
             const status = document.getElementById('updStatus').value;
+            
+            // LOGIC BARU: Capture current time otomatis
+            const currentTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
             let updateData = {
                 status: status,
                 startTime: document.getElementById('updStart').value || '-',
                 endTime: document.getElementById('updEnd').value || '-',
-                catatanTim: document.getElementById('updCatatanTim').value || '-'
+                catatanTim: document.getElementById('updCatatanTim').value || '-',
+                
+                // LOGIC BARU: Simpan waktu jika statusnya Mesin Jalan
+                waktuMesinJalan: status === 'Mesin Jalan Project' ? currentTime : '-'
             };
 
-            if(status === 'Lagi Produksi') {
+            // LOGIC BARU: Update pengkondisian if untuk mesin
+            if(status === 'Lagi Produksi' || status === 'Mesin Jalan Project') {
                 updateData.mesin = document.getElementById('updMesin').value || '-';
                 updateData.gramasi = document.getElementById('updGramasi').value || '-';
                 updateData.jumlah = document.getElementById('updJumlah').value || '-';
@@ -604,7 +627,6 @@
             btn.innerHTML = 'Update Data <i class="ph-bold ph-check-circle text-lg"></i>'; btn.disabled = false;
             closeModal3d();
             
-            // Tunggu 500ms biar Google nyimpen dulu, trus fetch ulang
             setTimeout(() => { loadMyTasks3dFast(); }, 500);
         }
 
@@ -615,11 +637,19 @@
             btn.disabled = true;
 
             const status = document.getElementById('m3dStatus').value;
+            
+            // LOGIC BARU: Capture current time otomatis untuk manual task
+            const currentTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
             const data = {
                 id: Date.now().toString(), assignee: currentUser,
                 projectName: document.getElementById('m3dProject').value, priority: 'Normal', catatanAdmin: 'TUGAS EXTRA',
                 status: status, startTime: document.getElementById('m3dStart').value || '-', endTime: document.getElementById('m3dEnd').value || '-',
-                catatanTim: '-', gramasi: '-', jumlah: '-', mesin: status === 'Lagi Produksi' ? document.getElementById('m3dMesin').value || '-' : '-'
+                catatanTim: '-', gramasi: '-', jumlah: '-', 
+                
+                // LOGIC BARU: update data array mesin dan tambah kolom waktu
+                mesin: (status === 'Lagi Produksi' || status === 'Mesin Jalan Project') ? document.getElementById('m3dMesin').value || '-' : '-',
+                waktuMesinJalan: status === 'Mesin Jalan Project' ? currentTime : '-'
             };
             
             await dbCall({ action: 'insert', sheetName: 'tasks_3d', data: data });
@@ -628,7 +658,6 @@
             
             btn.innerHTML = 'Simpan Tugas <i class="ph-bold ph-paper-plane-right text-lg"></i>'; btn.disabled = false;
             
-            // Tunggu 500ms biar Google nyimpen dulu, trus fetch ulang
             setTimeout(() => { loadMyTasks3dFast(); }, 500);
         }
 
