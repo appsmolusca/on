@@ -107,18 +107,15 @@
                             <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                         </div>
 
-                        <div id="m3dMesinContainer" class="relative hidden"><i class="ph-bold ph-cpu absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600"></i>
-                            <select id="m3dMesin" class="w-full bg-emerald-50 border border-emerald-300 text-emerald-700 rounded-xl py-3.5 pl-11 pr-4 text-sm font-bold outline-none cursor-pointer focus:ring-2 focus:ring-emerald-500/50 appearance-none">
-                                <option value="" disabled selected>Pilih Mesin Produksi...</option>
-                                <option value="Mesin A1.1">Mesin A1.1</option><option value="Mesin A1.2">Mesin A1.2</option>
-                                <option value="Mesin A1.3">Mesin A1.3</option><option value="Mesin A1.4">Mesin A1.4</option>
-                                <option value="Mesin A1.5">Mesin A1.5</option><option value="Mesin A1.6">Mesin A1.6</option>
-                                <option value="Mesin A1.7">Mesin A1.7</option><option value="Mesin A1.8">Mesin A1.8</option>
-                                <option value="Mesin A1.9">Mesin A1.9</option><option value="Mesin A1.10">Mesin A1.10</option>
-                                <option value="Mesin A1.11">Mesin A1.11</option><option value="Mesin A2.1">Mesin A2.1</option>
-                                <option value="Mesin A2.2">Mesin A2.2</option><option value="Mesin C1.1">Mesin C1.1</option>
-                            </select>
-                            <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-emerald-600 pointer-events-none"></i>
+                        <!-- PANEL MESIN MULTI-SELECT MANUAL -->
+                        <div id="m3dMesinContainer" class="hidden md:col-span-2 space-y-4 p-4 bg-emerald-50 rounded-[20px] border border-emerald-100">
+                            <div class="relative">
+                                <p class="text-[11px] font-bold text-emerald-700 mb-2 flex items-center gap-1"><i class="ph-bold ph-cpu"></i> Pilih Mesin (Bisa lebih dari 1):</p>
+                                <div id="m3dMesinGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                                    <!-- Rendered via JS -->
+                                </div>
+                                <input type="hidden" id="m3dMesin" value="">
+                            </div>
                         </div>
 
                         <div class="md:col-span-2 mt-2"><button type="submit" id="btnManual3d" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl text-xs md:text-sm font-extrabold uppercase tracking-widest flex justify-center items-center gap-2 active:scale-[0.98] transition-all shadow-md">Simpan Tugas <i class="ph-bold ph-paper-plane-right text-lg"></i></button></div>
@@ -187,7 +184,7 @@
     <!-- MODAL UPDATE PROGRESS 3D -->
     <!-- ============================================== -->
     <div id="modalUpdate3d" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex justify-center items-end md:items-center">
-        <div class="bg-white w-full md:w-[500px] rounded-t-[32px] md:rounded-[32px] p-6 shadow-2xl transform transition-transform duration-300 translate-y-full md:translate-y-0" id="modalBox3d">
+        <div class="bg-white w-full md:w-[500px] rounded-t-[32px] md:rounded-[32px] p-6 shadow-2xl transform transition-transform duration-300 translate-y-full md:translate-y-0 overflow-y-auto max-h-[90vh]" id="modalBox3d">
             <div class="flex justify-between items-center mb-6">
                 <div>
                     <h3 class="text-lg font-extrabold text-slate-800">Update Progress</h3>
@@ -217,19 +214,16 @@
                 </div>
 
                 <div id="updMesinContainer" class="hidden space-y-4 p-4 bg-emerald-50 rounded-[20px] border border-emerald-100">
-                    <div class="relative"><i class="ph-bold ph-cpu absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600"></i>
-                        <select id="updMesin" class="w-full bg-white border border-emerald-200 text-emerald-700 rounded-xl py-3.5 pl-11 pr-4 text-sm font-bold outline-none cursor-pointer appearance-none">
-                            <option value="" disabled selected>Pilih Mesin Produksi...</option>
-                            <option value="Mesin A1.1">Mesin A1.1</option><option value="Mesin A1.2">Mesin A1.2</option>
-                            <option value="Mesin A1.3">Mesin A1.3</option><option value="Mesin A1.4">Mesin A1.4</option>
-                            <option value="Mesin A1.5">Mesin A1.5</option><option value="Mesin A1.6">Mesin A1.6</option>
-                            <option value="Mesin A1.7">Mesin A1.7</option><option value="Mesin A1.8">Mesin A1.8</option>
-                            <option value="Mesin A1.9">Mesin A1.9</option><option value="Mesin A1.10">Mesin A1.10</option>
-                            <option value="Mesin A1.11">Mesin A1.11</option><option value="Mesin A2.1">Mesin A2.1</option>
-                            <option value="Mesin A2.2">Mesin A2.2</option><option value="Mesin C1.1">Mesin C1.1</option>
-                        </select>
-                        <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-emerald-600 pointer-events-none"></i>
+                    
+                    <!-- PANEL MESIN MULTI-SELECT MODAL -->
+                    <div class="relative">
+                        <p class="text-[11px] font-bold text-emerald-700 mb-2 flex items-center gap-1"><i class="ph-bold ph-cpu"></i> Pilih Mesin (Bisa lebih dari 1):</p>
+                        <div id="updMesinGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                            <!-- Rendered via JS -->
+                        </div>
+                        <input type="hidden" id="updMesin" value="">
                     </div>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div class="relative"><i class="ph-bold ph-scales absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="updGramasi" placeholder="Gramasi" class="w-full bg-white border border-emerald-200 rounded-xl py-3 pl-11 pr-3 text-sm font-semibold outline-none"></div>
                         <div class="relative"><i class="ph-bold ph-package absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="number" id="updJumlah" placeholder="Qty" class="w-full bg-white border border-emerald-200 rounded-xl py-3 pl-11 pr-3 text-sm font-semibold outline-none"></div>
@@ -252,9 +246,14 @@
         let currentUser = localStorage.getItem('moluscaUser');
         let currentRole = localStorage.getItem('moluscaRole');
         
-        // Simpan data task buat dipanggil di modal
         let myTasksGlobal = []; 
         let myTasks3dGlobal = []; 
+
+        const daftarMesin = [
+            "Mesin A1.1", "Mesin A1.2", "Mesin A1.3", "Mesin A1.4", "Mesin A1.5", 
+            "Mesin A1.6", "Mesin A1.7", "Mesin A1.8", "Mesin A1.9", "Mesin A1.10", 
+            "Mesin A1.11", "Mesin A2.1", "Mesin A2.2", "Mesin C1.1"
+        ];
         
         function initApp() {
             if(!currentUser || currentRole === 'admin') return window.location.href = 'index.html';
@@ -262,6 +261,8 @@
             
             if(currentRole === '3ddesign') {
                 document.getElementById('wrapper-desain-3d').classList.remove('hidden');
+                renderMesinChips('m3dMesinGrid', 'm3dMesin');
+                renderMesinChips('updMesinGrid', 'updMesin');
                 loadMyTasks3dFast();
             } else {
                 document.getElementById('wrapper-desain-reguler').classList.remove('hidden');
@@ -276,22 +277,60 @@
             } catch(e) { return { status: 'error' }; }
         }
 
+        // ==========================================
+        // MULTI-SELECT CHIPS LOGIC
+        // ==========================================
+        function renderMesinChips(containerId, inputId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = daftarMesin.map(m => `
+                <button type="button" onclick="toggleChip(this, '${inputId}', '${m}')" class="mesin-chip border border-emerald-200 text-emerald-700 bg-white rounded-lg py-2 px-1 text-[10px] font-bold transition-all hover:bg-emerald-100 active:scale-95 text-center truncate">
+                    ${m}
+                </button>
+            `).join('');
+        }
+
+        function toggleChip(btn, inputId, value) {
+            const input = document.getElementById(inputId);
+            let currentValues = input.value ? input.value.split(', ') : [];
+            
+            if (currentValues.includes(value)) {
+                currentValues = currentValues.filter(v => v !== value);
+                btn.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-600', 'shadow-md');
+                btn.classList.add('bg-white', 'text-emerald-700', 'border-emerald-200');
+            } else {
+                currentValues.push(value);
+                btn.classList.remove('bg-white', 'text-emerald-700', 'border-emerald-200');
+                btn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600', 'shadow-md');
+            }
+            input.value = currentValues.join(', ');
+        }
+
+        function setChipsFromValue(containerId, inputId, valueStr) {
+            const input = document.getElementById(inputId);
+            input.value = (valueStr === '-' || !valueStr) ? '' : valueStr;
+            const values = input.value ? input.value.split(', ') : [];
+            
+            const buttons = document.getElementById(containerId).querySelectorAll('.mesin-chip');
+            buttons.forEach(btn => {
+                const m = btn.innerText.trim();
+                if (values.includes(m)) {
+                    btn.classList.remove('bg-white', 'text-emerald-700', 'border-emerald-200');
+                    btn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600', 'shadow-md');
+                } else {
+                    btn.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-600', 'shadow-md');
+                    btn.classList.add('bg-white', 'text-emerald-700', 'border-emerald-200');
+                }
+            });
+        }
+
         function toggleMesin(statusId, containerId, mesinId) {
             const status = document.getElementById(statusId).value;
             const container = document.getElementById(containerId);
-            const mesinInput = document.getElementById(mesinId);
             
-            // JANGAN HIDE MESIN/GRAMASI SAAT "SELESAI" AGAR DATA TETAP BISA DI CEK/DIISI
             if(status === 'Lagi Produksi' || status === 'Mesin Jalan Project' || status === 'Selesai') {
                 container.classList.remove('hidden');
-                if(status !== 'Selesai') {
-                    mesinInput.setAttribute('required', 'true');
-                } else {
-                    mesinInput.removeAttribute('required');
-                }
             } else {
                 container.classList.add('hidden');
-                mesinInput.removeAttribute('required');
             }
         }
 
@@ -495,11 +534,10 @@
                 let urgentUI = isUrgent ? `<span class="text-[10px] font-extrabold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded uppercase flex items-center gap-1">Urgent</span>` : '';
 
                 if(task.status === 'Selesai') {
-                    // Tampilkan informasi lengkap (waktu, mesin, gramasi) di tab selesai
                     let detailSelesai = '';
                     if (task.startTime && task.startTime !== '-') detailSelesai += `<span class="text-blue-500 mr-2"><i class="ph-fill ph-clock"></i> ${task.startTime}-${task.endTime||''}</span>`;
                     if (task.gramasi && task.gramasi !== '-') detailSelesai += `<span class="text-amber-500">${task.gramasi}gr</span>`;
-                    if (task.mesin && task.mesin !== '-') detailSelesai += `<span class="text-slate-300 mx-1">|</span><span class="text-emerald-500">${task.mesin}</span>`;
+                    if (task.mesin && task.mesin !== '-') detailSelesai += `<span class="text-slate-300 mx-1">|</span><span class="text-emerald-500 truncate inline-block max-w-[100px]">${task.mesin}</span>`;
 
                     card.className = "bg-white p-4 rounded-xl border border-borderLight flex justify-between items-center text-xs font-bold transition-all opacity-70 hover:opacity-100";
                     card.innerHTML = `
@@ -534,7 +572,7 @@
                         detailsBlock = `<div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-y-2 text-[11px] font-semibold text-slate-500">`;
                         if(task.startTime && task.startTime !== '-') detailsBlock += `<div class="flex items-center gap-1.5"><i class="ph-fill ph-clock"></i> ${task.startTime}-${task.endTime||''}</div>`;
                         if(task.jumlah && task.jumlah !== '-') detailsBlock += `<div class="flex items-center gap-1.5"><i class="ph-fill ph-package"></i> Qty: ${task.jumlah}</div>`;
-                        if(task.mesin && task.mesin !== '-') detailsBlock += `<div class="col-span-2 flex items-center gap-1.5 text-emerald-600 font-bold"><i class="ph-fill ph-cpu"></i> ${task.mesin}</div>`;
+                        if(task.mesin && task.mesin !== '-') detailsBlock += `<div class="col-span-2 flex items-start gap-1.5 text-emerald-600 font-bold"><i class="ph-fill ph-cpu mt-0.5"></i> <span class="leading-snug">${task.mesin}</span></div>`;
                         
                         if(task.waktuMesinJalan && task.waktuMesinJalan !== '-') {
                             detailsBlock += `<div class="col-span-2 flex items-center gap-1.5 text-rose-600 font-bold mt-1"><i class="ph-fill ph-timer"></i> Mulai Mesin: ${task.waktuMesinJalan}</div>`;
@@ -575,11 +613,12 @@
             document.getElementById('updStatus').value = task.status || 'Menunggu Respon';
             document.getElementById('updStart').value = task.startTime !== '-' ? task.startTime : '';
             document.getElementById('updEnd').value = task.endTime !== '-' ? task.endTime : '';
-            document.getElementById('updMesin').value = task.mesin !== '-' ? task.mesin : '';
             document.getElementById('updGramasi').value = task.gramasi !== '-' ? task.gramasi : '';
             document.getElementById('updJumlah').value = task.jumlah !== '-' ? task.jumlah : '';
             document.getElementById('updCatatanTim').value = task.catatanTim !== '-' ? task.catatanTim : '';
 
+            // Handle Mesin Selection via Chips
+            setChipsFromValue('updMesinGrid', 'updMesin', task.mesin);
             toggleMesin('updStatus', 'updMesinContainer', 'updMesin');
 
             const modal = document.getElementById('modalUpdate3d');
@@ -597,17 +636,25 @@
         async function saveUpdate3d(e) {
             e.preventDefault();
             const btn = document.getElementById('btnUpdate3d');
+            
+            const status = document.getElementById('updStatus').value;
+            const mesinVal = document.getElementById('updMesin').value;
+
+            // VALIDASI: Wajib isi mesin jika status masuk proses Cetak/Jalan
+            if ((status === 'Lagi Produksi' || status === 'Mesin Jalan Project') && mesinVal === '') {
+                alert('Harap pilih minimal 1 mesin yang berjalan!');
+                return;
+            }
+
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Menyimpan...';
             btn.disabled = true;
 
             const id = document.getElementById('updId').value;
-            const status = document.getElementById('updStatus').value;
             const currentTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-            // Ambil data task lama sebagai backup jika input kosong
+            // Ambil data task lama sebagai backup (Supaya tidak hilang kalau form dikosongkan)
             const oldTask = myTasks3dGlobal.find(t => t.id === id) || {};
 
-            // HELPER: Mencegah input kosong (saat modal) menimpa data lama yang sudah valid di database
             const getValue = (inputId, oldKey) => {
                 const val = document.getElementById(inputId).value.trim();
                 if (val && val !== '') return val;
@@ -637,13 +684,21 @@
         async function sendManualTask3d(e) {
             e.preventDefault();
             const btn = document.getElementById('btnManual3d');
+            const status = document.getElementById('m3dStatus').value;
+            const mesinVal = document.getElementById('m3dMesin').value;
+
+            const isMesinActive = (status === 'Lagi Produksi' || status === 'Mesin Jalan Project' || status === 'Selesai');
+
+            // VALIDASI: Manual task yang statusnya mesin harus pilih mesin
+            if (isMesinActive && mesinVal === '') {
+                alert('Harap pilih minimal 1 mesin!');
+                return;
+            }
+
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i>';
             btn.disabled = true;
 
-            const status = document.getElementById('m3dStatus').value;
             const currentTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            
-            const isMesinActive = (status === 'Lagi Produksi' || status === 'Mesin Jalan Project' || status === 'Selesai');
 
             const data = {
                 id: Date.now().toString(), assignee: currentUser,
@@ -651,16 +706,14 @@
                 status: status, 
                 startTime: document.getElementById('m3dStart').value || '-', 
                 endTime: document.getElementById('m3dEnd').value || '-',
-                catatanTim: '-', 
-                gramasi: '-', 
-                jumlah: '-', 
-                
-                mesin: isMesinActive ? (document.getElementById('m3dMesin').value || '-') : '-',
+                catatanTim: '-', gramasi: '-', jumlah: '-', 
+                mesin: isMesinActive ? (mesinVal || '-') : '-',
                 waktuMesinJalan: status === 'Mesin Jalan Project' ? currentTime : '-'
             };
             
             await dbCall({ action: 'insert', sheetName: 'tasks_3d', data: data });
             document.getElementById('formManual3d').reset();
+            setChipsFromValue('m3dMesinGrid', 'm3dMesin', ''); // Reset chips
             toggleMesin('m3dStatus', 'm3dMesinContainer', 'm3dMesin');
             
             btn.innerHTML = 'Simpan Tugas <i class="ph-bold ph-paper-plane-right text-lg"></i>'; btn.disabled = false;
