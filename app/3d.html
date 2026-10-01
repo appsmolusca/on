@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Control - Molusca</title>
+    <title>Admin Control Center - Molusca 3D</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,256 +12,457 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
-                    colors: { 
-                        neutral: { 50: '#fafafa', 100: '#f5f5f5', 200: '#e5e5e5', 300: '#d4d4d4', 800: '#262626', 900: '#171717' }
-                    }
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #fafafa; color: #171717; }
-        /* Custom Scrollbar minimalis */
-        ::-webkit-scrollbar { width: 6px; }
+        body { background-color: #0F172A; color: #F8FAFC; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a3a3a3; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-12">
 
-    <!-- HEADER ADMIN -->
-    <header class="bg-white border-b border-neutral-200 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-black text-white flex items-center justify-center rounded-md">
-                    <i class="ph-bold ph-cube text-xl"></i>
+    <!-- OVERLAY LOGIN (SECURITY GATE) -->
+    <div id="loginGate" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full shadow-2xl text-center space-y-6">
+            <div class="w-16 h-16 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <i class="ph-bold ph-lock-key text-3xl text-slate-950"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-extrabold text-white">Akses Admin Bos</h2>
+                <p class="text-xs text-slate-400 mt-1">Masukkan password untuk membuka Menara Pengawas</p>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div class="relative">
+                    <input type="password" id="adminPassword" placeholder="Masukkan Password..." required class="w-full bg-slate-800 border border-slate-700 rounded-xl py-3.5 px-4 text-center text-sm font-bold text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all tracking-widest">
                 </div>
-                <h1 class="text-sm font-extrabold tracking-widest uppercase">Admin Workspace</h1>
-            </div>
-            <div class="text-[11px] font-bold text-neutral-500 border border-neutral-200 px-3 py-1.5 rounded-full flex items-center gap-2">
-                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                Sistem Aktif
-            </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">
+                    Buka Dashboard <i class="ph-bold ph-arrow-right ml-1"></i>
+                </button>
+            </form>
+            <p id="loginError" class="text-xs text-rose-400 font-bold hidden"><i class="ph-bold ph-warning-circle"></i> Password Salah! Coba lagi.</p>
         </div>
-    </header>
+    </div>
 
-    <main class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- MAIN APP CONTENT -->
+    <div id="appContent" class="hidden">
         
-        <!-- KOLOM KIRI: ASSIGN TUGAS & STATUS KARYAWAN -->
-        <div class="lg:col-span-4 space-y-8">
+        <!-- HEADER -->
+        <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-xl flex items-center justify-center text-slate-950 font-black shadow-lg shadow-emerald-500/20">
+                        <i class="ph-bold ph-cube text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-sm font-black tracking-widest uppercase text-white">ADMIN CONTROL CENTER</h1>
+                        <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Divisi 3D & Produksi</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="hidden sm:flex text-[11px] font-bold text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700/50 items-center gap-2">
+                        <span class="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span> Realtime Monitoring
+                    </span>
+                    <button onclick="logoutAdmin()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+                        <i class="ph-bold ph-sign-out text-base"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
             
-            <!-- FORM ASSIGN TUGAS (BOS) -->
-            <section class="bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm">
-                <h3 class="text-xs font-extrabold text-black uppercase tracking-widest mb-5 flex items-center gap-2 border-b border-neutral-100 pb-3">
-                    <i class="ph-bold ph-paper-plane-tilt text-lg"></i> Delegasi Tugas
-                </h3>
+            <!-- SECTION 1: METRICS STATS (GRADASI & INTERAKTIF) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
-                <form id="formAssign" onsubmit="handleAssignTask(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Nama Project</label>
-                        <input type="text" id="projectName" placeholder="Contoh: Bank BRI" required class="w-full bg-neutral-50 border border-neutral-200 rounded-lg py-2.5 px-3 text-sm font-semibold focus:border-black focus:ring-1 focus:ring-black outline-none transition-all">
+                <!-- Stat 1: Gramasi Hari Ini -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all"></div>
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Gramasi Hari Ini</span>
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center"><i class="ph-bold ph-scales text-lg"></i></div>
                     </div>
-                    
-                    <div>
-                        <label class="block text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Pilih Karyawan</label>
-                        <select id="assignee" required class="w-full bg-neutral-50 border border-neutral-200 rounded-lg py-2.5 px-3 text-sm font-semibold focus:border-black outline-none appearance-none cursor-pointer">
-                            <option value="" disabled selected>Pilih Tim...</option>
-                            <option value="Teguh">Teguh (3D)</option>
-                            <option value="Zalfa">Zalfa (3D)</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Tipe Pekerjaan</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="flex items-center justify-center gap-2 border border-neutral-200 bg-white py-2 rounded-lg cursor-pointer hover:bg-neutral-50 has-[:checked]:bg-black has-[:checked]:text-white has-[:checked]:border-black transition-all">
-                                <input type="radio" name="jobType" value="Mockup" required class="hidden">
-                                <span class="text-xs font-bold">Bikin Mockup</span>
-                            </label>
-                            <label class="flex items-center justify-center gap-2 border border-neutral-200 bg-white py-2 rounded-lg cursor-pointer hover:bg-neutral-50 has-[:checked]:bg-black has-[:checked]:text-white has-[:checked]:border-black transition-all">
-                                <input type="radio" name="jobType" value="Produksi" class="hidden">
-                                <span class="text-xs font-bold">Langsung Produksi</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="w-full bg-black hover:bg-neutral-800 text-white py-3 rounded-lg text-xs font-extrabold uppercase tracking-widest mt-2 active:scale-95 transition-all">
-                        Tugaskan Sekarang
-                    </button>
-                </form>
-            </section>
-
-            <!-- STATUS KARYAWAN -->
-            <section class="bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm">
-                <h3 class="text-xs font-extrabold text-black uppercase tracking-widest mb-5 flex items-center gap-2 border-b border-neutral-100 pb-3">
-                    <i class="ph-bold ph-users text-lg"></i> Pantauan Tim
-                </h3>
-                <div class="space-y-4">
-                    <!-- Karyawan 1 -->
-                    <div class="flex items-center justify-between p-3 border border-neutral-200 rounded-xl bg-neutral-50">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-white border border-neutral-300 flex items-center justify-center font-bold text-xs">TG</div>
-                            <div>
-                                <h4 class="text-xs font-extrabold">Teguh</h4>
-                                <p class="text-[10px] text-neutral-500 font-medium">Sedang Aktif</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[10px] font-bold text-neutral-500 uppercase">Login Hari Ini</p>
-                            <p class="text-xs font-extrabold text-black">08:12 WIB</p>
-                        </div>
-                    </div>
-                    <!-- Karyawan 2 -->
-                    <div class="flex items-center justify-between p-3 border border-neutral-200 rounded-xl bg-neutral-50">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-white border border-neutral-300 flex items-center justify-center font-bold text-xs">ZL</div>
-                            <div>
-                                <h4 class="text-xs font-extrabold">Zalfa</h4>
-                                <p class="text-[10px] text-neutral-500 font-medium">Offline</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[10px] font-bold text-neutral-500 uppercase">Login Terakhir</p>
-                            <p class="text-xs font-extrabold text-neutral-400">Kemarin, 17:00</p>
-                        </div>
-                    </div>
+                    <h3 class="text-2xl font-black text-white" id="statGramasiToday">1,250 <span class="text-xs font-semibold text-emerald-400">gr</span></h3>
+                    <p class="text-[10px] text-slate-400 mt-2 flex items-center gap-1"><i class="ph-bold ph-trend-up text-emerald-400"></i> Terpakai di 3 project</p>
                 </div>
-            </section>
-        </div>
 
-        <!-- KOLOM KANAN: LIVE ACTIVITY TRACKER -->
-        <div class="lg:col-span-8">
-            <section class="bg-white border border-neutral-200 p-6 md:p-8 rounded-2xl shadow-sm h-full min-h-[600px] flex flex-col">
-                <div class="flex justify-between items-center mb-6 border-b border-neutral-100 pb-4">
-                    <h3 class="text-sm font-extrabold text-black uppercase tracking-widest flex items-center gap-2">
-                        <i class="ph-bold ph-activity text-xl"></i> Log Aktivitas Karyawan
+                <!-- Stat 2: Gramasi Tahun Ini -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-teal-500/10 rounded-full blur-xl group-hover:bg-teal-500/20 transition-all"></div>
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Gramasi Tahun Ini (2026)</span>
+                        <div class="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center"><i class="ph-bold ph-database text-lg"></i></div>
+                    </div>
+                    <h3 class="text-2xl font-black text-white" id="statGramasiYear">48.6 <span class="text-xs font-semibold text-teal-400">kg</span></h3>
+                    <p class="text-[10px] text-slate-400 mt-2 flex items-center gap-1"><i class="ph-bold ph-calendar-check text-teal-400"></i> Akumulasi Januari - Sekarang</p>
+                </div>
+
+                <!-- Stat 3: Mesin Jalan Hari Ini -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl group-hover:bg-indigo-500/20 transition-all"></div>
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Mesin Jalan Hari Ini</span>
+                        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center"><i class="ph-bold ph-cpu text-lg"></i></div>
+                    </div>
+                    <h3 class="text-2xl font-black text-white" id="statMesinToday">4 <span class="text-xs font-semibold text-indigo-400">Mesin</span></h3>
+                    <p class="text-[10px] text-indigo-300 mt-2 font-bold truncate" id="statMesinListToday">A1.1, A1.3, A2.1, C1.1</p>
+                </div>
+
+                <!-- Stat 4: Riwayat Mesin Aktif -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-purple-500/10 rounded-full blur-xl group-hover:bg-purple-500/20 transition-all"></div>
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Mesin Pernah Jalan</span>
+                        <div class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center"><i class="ph-bold ph-circuit-board text-lg"></i></div>
+                    </div>
+                    <h3 class="text-2xl font-black text-white">12 <span class="text-xs font-semibold text-purple-400">/ 14 Mesin</span></h3>
+                    <p class="text-[10px] text-slate-400 mt-2 flex items-center gap-1"><i class="ph-bold ph-check-circle text-purple-400"></i> 85% Utilitas Mesin</p>
+                </div>
+
+            </div>
+
+            <!-- SECTION 2: DELEGASI TUGAS (BOS) & STATUS LOGIN -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Form Delegasi Tugas -->
+                <div class="lg:col-span-8 glass-card p-6 rounded-3xl relative">
+                    <div class="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
+                        <h3 class="text-xs font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
+                            <i class="ph-bold ph-paper-plane-tilt text-emerald-400 text-lg"></i> Kirim Tugas Baru
+                        </h3>
+                        <span class="text-[10px] font-bold text-slate-400 bg-slate-800 px-2.5 py-1 rounded-lg">Instant Assign</span>
+                    </div>
+
+                    <form id="formAssign" onsubmit="handleAssignTask(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="sm:col-span-1">
+                            <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">Nama Project</label>
+                            <input type="text" id="assignProject" placeholder="Contoh: Bank BRI" required class="w-full bg-slate-900 border border-slate-700/80 rounded-xl py-3 px-3.5 text-xs font-bold text-white focus:border-emerald-500 outline-none transition-all">
+                        </div>
+
+                        <div class="sm:col-span-1">
+                            <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">Pilih Karyawan</label>
+                            <select id="assignee" required class="w-full bg-slate-900 border border-slate-700/80 rounded-xl py-3 px-3.5 text-xs font-bold text-emerald-400 focus:border-emerald-500 outline-none cursor-pointer">
+                                <option value="" disabled selected>Pilih Tim...</option>
+                                <option value="Teguh">Teguh</option>
+                                <option value="Zalfa">Zalfa</option>
+                                <option value="Tester3D">Tester3D (Akun Test)</option>
+                            </select>
+                        </div>
+
+                        <div class="sm:col-span-1">
+                            <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">Instruksi / Tipe</label>
+                            <select id="assignType" required class="w-full bg-slate-900 border border-slate-700/80 rounded-xl py-3 px-3.5 text-xs font-bold text-white focus:border-emerald-500 outline-none cursor-pointer">
+                                <option value="Bikin Mockup 3D">🎨 Bikin Mockup 3D</option>
+                                <option value="Langsung Produksi">⚙️ Langsung Produksi</option>
+                            </select>
+                        </div>
+
+                        <div class="sm:col-span-3 pt-2">
+                            <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 font-black py-3.5 rounded-xl text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/10 active:scale-95 transition-all flex items-center justify-center gap-2">
+                                Launch Tugas Ke Dashboard Karyawan <i class="ph-bold ph-paper-plane-right text-base"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Status Login Karyawan -->
+                <div class="lg:col-span-4 glass-card p-6 rounded-3xl">
+                    <h3 class="text-xs font-extrabold text-white uppercase tracking-widest mb-4 border-b border-slate-800 pb-3 flex items-center gap-2">
+                        <i class="ph-bold ph-users-three text-indigo-400 text-lg"></i> Pantauan Sesi Login
                     </h3>
-                    <button onclick="refreshLog()" class="text-[10px] font-bold text-neutral-600 bg-neutral-100 px-3 py-1.5 rounded-md hover:bg-neutral-200 transition-colors flex items-center gap-1">
-                        <i class="ph-bold ph-arrows-clockwise"></i> Segarkan
-                    </button>
-                </div>
-                
-                <!-- TIMELINE CONTAINER -->
-                <div class="flex-1 overflow-y-auto pr-2 relative" id="timelineContainer">
-                    <!-- Garis vertikal timeline -->
-                    <div class="absolute left-[27px] top-2 bottom-0 w-[2px] bg-neutral-100"></div>
-                    
-                    <!-- DAFTAR AKTIVITAS (DI-RENDER DARI JAVASCRIPT) -->
-                    <div id="activityFeed" class="space-y-6 relative z-10">
-                        <!-- Konten akan dimasukkan lewat fungsi renderActivityFeed() -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">TG</div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white">Teguh</h4>
+                                    <span class="text-[9px] text-emerald-400 font-bold">● Online</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold text-slate-400">Login: 08:15 WIB</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-xs">ZL</div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white">Zalfa</h4>
+                                    <span class="text-[9px] text-emerald-400 font-bold">● Online</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold text-slate-400">Login: 08:40 WIB</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">TS</div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white">Tester3D</h4>
+                                    <span class="text-[9px] text-slate-500 font-bold">○ Offline</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold text-slate-500">Kemarin, 16:30</span>
+                        </div>
                     </div>
                 </div>
-            </section>
-        </div>
 
-    </main>
+            </div>
+
+            <!-- SECTION 3: DASHBOARD REAL-TIME "LAGI NGERJAIN APA" PER KARYAWAN -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
+                        <i class="ph-bold ph-kanban text-amber-400 text-lg"></i> Status Pekerjaan Saat Ini (Per Karyawan)
+                    </h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="activeTasksContainer">
+                    <!-- Dynamic Render via JS -->
+                </div>
+            </div>
+
+            <!-- SECTION 4: LOG AKTIVITAS DIPISAH PER KARYAWAN (TAB NAVIGATION) -->
+            <div class="glass-card p-6 rounded-3xl space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <h3 class="text-xs font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
+                            <i class="ph-bold ph-clock-counter-clockwise text-teal-400 text-lg"></i> Log Audit Aktivitas Karyawan
+                        </h3>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Semua aksi (Login, Mulai Produksi, Update, Revisi) terekam otomatis</p>
+                    </div>
+
+                    <!-- TAB NAVIGATION PER KARYAWAN -->
+                    <div class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800 self-start sm:self-auto overflow-x-auto max-w-full">
+                        <button onclick="switchTab('Semua')" id="tab-Semua" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-emerald-400 transition-all shrink-0">Semua</button>
+                        <button onclick="switchTab('Teguh')" id="tab-Teguh" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all shrink-0">Teguh</button>
+                        <button onclick="switchTab('Zalfa')" id="tab-Zalfa" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all shrink-0">Zalfa</button>
+                        <button onclick="switchTab('Tester3D')" id="tab-Tester3D" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all shrink-0">Tester3D</button>
+                    </div>
+                </div>
+
+                <!-- TIMELINE CONTAINER -->
+                <div class="space-y-4 max-h-[450px] overflow-y-auto pr-2" id="activityTimeline">
+                    <!-- Rendered via JS -->
+                </div>
+            </div>
+
+        </main>
+    </div>
 
     <script>
-        // Simulasi Database Jejak Aktivitas (Bisa diganti response dari Google Sheets/Apps Script)
-        let activityLogs = [
-            { id: 1, time: "11:10 WIB", user: "Teguh", action: "Update Progress", detail: "Mengubah status menjadi Nunggu Revisi", project: "Bank BRI", type: "revisi" },
-            { id: 2, time: "10:35 WIB", user: "Zalfa", action: "Mulai Produksi", detail: "Mesin jalan untuk project", project: "Chibi Boy", type: "produksi" },
-            { id: 3, time: "09:15 WIB", user: "Teguh", action: "Mulai Pekerjaan", detail: "Mulai membuat Mockup", project: "Bank BRI", type: "mulai" },
-            { id: 4, time: "09:00 WIB", user: "Admin", action: "Assign Tugas", detail: "Memberikan tugas pembuatan Mockup", project: "Bank BRI", type: "admin" },
-            { id: 5, time: "08:12 WIB", user: "Teguh", action: "Login Aplikasi", detail: "Berhasil masuk ke dashboard karyawan", project: "-", type: "login" },
+        // PASSCODE CONFIRMATION
+        const ADMIN_PASS = "mlsc123";
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const pass = document.getElementById('adminPassword').value;
+            if(pass === ADMIN_PASS) {
+                sessionStorage.setItem('adminAuthed', 'true');
+                showDashboard();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('loginGate').classList.add('hidden');
+            document.getElementById('appContent').classList.remove('hidden');
+            initDashboardData();
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('adminAuthed');
+            location.reload();
+        }
+
+        // DATABASE MOCKUP (AKTIVITAS & ACTIVE TASKS)
+        let activeTasks = [
+            {
+                employee: "Teguh",
+                project: "Bank BRI Booth",
+                status: "Lagi Produksi",
+                statusBg: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+                date: "01 Oct 2026",
+                startTime: "09:15 WIB",
+                lastRevision: "-",
+                mesin: "Mesin A1.1, A1.3",
+                gramasi: "450 gr"
+            },
+            {
+                employee: "Zalfa",
+                project: "Chibi Boy E-Money",
+                status: "Nunggu Revisi",
+                statusBg: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+                date: "01 Oct 2026",
+                startTime: "08:45 WIB",
+                lastRevision: "10:30 WIB (Acc Warna)",
+                mesin: "Mesin A2.1",
+                gramasi: "300 gr"
+            },
+            {
+                employee: "Tester3D",
+                project: "Testing Project 01",
+                status: "Lagi Dikerjain",
+                statusBg: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+                date: "01 Oct 2026",
+                startTime: "11:00 WIB",
+                lastRevision: "-",
+                mesin: "-",
+                gramasi: "500 gr"
+            }
         ];
 
-        function getIconForType(type) {
-            switch(type) {
-                case 'login': return '<i class="ph-bold ph-sign-in text-neutral-500"></i>';
-                case 'admin': return '<i class="ph-bold ph-paper-plane-tilt text-black"></i>';
-                case 'mulai': return '<i class="ph-bold ph-play text-black"></i>';
-                case 'produksi': return '<i class="ph-bold ph-gear text-black"></i>';
-                case 'revisi': return '<i class="ph-bold ph-arrows-clockwise text-black"></i>';
-                default: return '<i class="ph-bold ph-check text-neutral-500"></i>';
-            }
+        let logs = [
+            { id: 1, user: "Tester3D", time: "11:00 WIB", date: "01 Oct 2026", action: "Mulai Dikerjain", project: "Testing Project 01", detail: "Mulai membuat mockup 3D" },
+            { id: 2, user: "Zalfa", time: "10:30 WIB", date: "01 Oct 2026", action: "Nunggu Revisi", project: "Chibi Boy E-Money", detail: "Mengirim file ke admin untuk revisi warna" },
+            { id: 3, user: "Teguh", time: "09:15 WIB", date: "01 Oct 2026", action: "Mulai Produksi", project: "Bank BRI Booth", detail: "Menjalankan Mesin A1.1 dan A1.3 (Gramasi 450gr)" },
+            { id: 4, user: "Zalfa", time: "08:40 WIB", date: "01 Oct 2026", action: "Login Aplikasi", project: "-", detail: "Login dari browser HP Chrome" },
+            { id: 5, user: "Teguh", time: "08:15 WIB", date: "01 Oct 2026", action: "Login Aplikasi", project: "-", detail: "Login dari PC Studio" }
+        ];
+
+        let currentTab = "Semua";
+
+        function initDashboardData() {
+            renderActiveTasks();
+            renderTimeline();
         }
 
-        function getBadgeForType(type) {
-            switch(type) {
-                case 'login': return 'bg-neutral-100 text-neutral-600 border border-neutral-200';
-                case 'produksi': return 'bg-black text-white';
-                case 'revisi': return 'bg-white text-black border border-black';
-                default: return 'bg-neutral-100 text-neutral-800';
-            }
-        }
-
-        function renderActivityFeed() {
-            const feed = document.getElementById('activityFeed');
-            feed.innerHTML = '';
-
-            activityLogs.forEach(log => {
-                const icon = getIconForType(log.type);
-                const badgeClass = getBadgeForType(log.type);
-                
-                const html = `
-                    <div class="flex gap-4 items-start group">
-                        <!-- Waktu -->
-                        <div class="w-14 text-right pt-1 shrink-0">
-                            <span class="text-[10px] font-extrabold text-neutral-400 group-hover:text-black transition-colors">${log.time}</span>
-                        </div>
-                        
-                        <!-- Icon Node -->
-                        <div class="w-8 h-8 rounded-full bg-white border-2 border-neutral-200 flex items-center justify-center shrink-0 z-10 group-hover:border-black transition-colors">
-                            ${icon}
-                        </div>
-                        
-                        <!-- Content Box -->
-                        <div class="flex-1 bg-white border border-neutral-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-all">
-                            <div class="flex justify-between items-start mb-1">
-                                <h4 class="text-xs font-extrabold text-black">${log.user} <span class="text-neutral-400 font-medium">/ ${log.action}</span></h4>
-                                ${log.project !== '-' ? `<span class="text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${badgeClass}">${log.project}</span>` : ''}
+        // RENDER TASKS PER KARYAWAN
+        function renderActiveTasks() {
+            const container = document.getElementById('activeTasksContainer');
+            container.innerHTML = activeTasks.map(t => `
+                <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4 hover:border-slate-700 transition-all">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-slate-800 font-extrabold text-xs flex items-center justify-center text-white border border-slate-700">
+                                ${t.employee.substring(0, 2).toUpperCase()}
                             </div>
-                            <p class="text-[11px] text-neutral-500 font-medium">${log.detail}</p>
+                            <div>
+                                <h4 class="text-xs font-black text-white">${t.employee}</h4>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase">${t.date}</p>
+                            </div>
+                        </div>
+                        <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-md border ${t.statusBg}">
+                            ${t.status}
+                        </span>
+                    </div>
+
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Project Active</p>
+                        <h5 class="text-sm font-extrabold text-white mt-0.5">${t.project}</h5>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800/80 grid grid-cols-2 gap-2 text-[10px]">
+                        <div>
+                            <span class="text-slate-500 font-bold block">Jam Mulai:</span>
+                            <span class="text-emerald-400 font-bold">${t.startTime}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-500 font-bold block">Jam Revisi:</span>
+                            <span class="text-rose-400 font-bold">${t.lastRevision}</span>
+                        </div>
+                        <div class="col-span-2 pt-1 border-t border-slate-800 flex justify-between">
+                            <span class="text-slate-400 font-medium">Mesin: <b class="text-indigo-300">${t.mesin}</b></span>
+                            <span class="text-slate-400 font-medium">Gram: <b class="text-teal-300">${t.gramasi}</b></span>
                         </div>
                     </div>
-                `;
-                feed.innerHTML += html;
-            });
+                </div>
+            `).join('');
         }
 
-        // Simulasi saat Admin klik "Tugaskan Sekarang"
+        // SWITCH TAB LOG KARYAWAN
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-400', 'text-slate-950');
+                btn.classList.add('text-slate-400');
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.classList.add('bg-emerald-400', 'text-slate-950');
+            activeBtn.classList.remove('text-slate-400');
+
+            renderTimeline();
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('activityTimeline');
+            const filteredLogs = currentTab === "Semua" ? logs : logs.filter(l => l.user === currentTab);
+
+            if(filteredLogs.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6 font-bold">Belum ada catatan aktivitas untuk ${currentTab}</p>`;
+                return;
+            }
+
+            container.innerHTML = filteredLogs.map(l => `
+                <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-900/50 border border-slate-800/60 hover:bg-slate-900 transition-all">
+                    <div class="w-16 shrink-0 text-right">
+                        <span class="text-[10px] font-black text-emerald-400 block">${l.time}</span>
+                        <span class="text-[8px] text-slate-500 font-bold">${l.date}</span>
+                    </div>
+
+                    <div class="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 shrink-0"></div>
+
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-black text-white">${l.user} <span class="text-slate-500 font-normal">/ ${l.action}</span></span>
+                            ${l.project !== '-' ? `<span class="text-[9px] font-bold bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">${l.project}</span>` : ''}
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1 font-medium">${l.detail}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ASSIGN TASK ACTION
         function handleAssignTask(e) {
             e.preventDefault();
-            const project = document.getElementById('projectName').value;
+            const project = document.getElementById('assignProject').value;
             const assignee = document.getElementById('assignee').value;
-            const jobType = document.querySelector('input[name="jobType"]:checked').value;
-            
+            const type = document.getElementById('assignType').value;
+
             const now = new Date();
-            const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ' WIB';
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ' WIB';
 
-            // Tambahkan ke log aktivitas teratas
-            const newLog = {
+            // Push to log
+            logs.unshift({
                 id: Date.now(),
-                time: timeString,
-                user: "Admin",
-                action: "Assign Tugas",
-                detail: `Menugaskan ${assignee} untuk ${jobType === 'Mockup' ? 'membuat Mockup' : 'langsung Produksi'}`,
+                user: "Admin (Bos)",
+                time: timeStr,
+                date: "01 Oct 2026",
+                action: "Assign Tugas Baru",
                 project: project,
-                type: "admin"
-            };
+                detail: `Menugaskan ${assignee} untuk ${type}`
+            });
 
-            activityLogs.unshift(newLog); // Masukkan ke urutan pertama
-            renderActivityFeed();
-            
-            // Reset form
+            // Update/Add active task list
+            const existingTaskIndex = activeTasks.findIndex(t => t.employee === assignee);
+            if(existingTaskIndex !== -1) {
+                activeTasks[existingTaskIndex].project = project;
+                activeTasks[existingTaskIndex].status = type === 'Langsung Produksi' ? 'Lagi Produksi' : 'Lagi Dikerjain';
+                activeTasks[existingTaskIndex].statusBg = type === 'Langsung Produksi' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+                activeTasks[existingTaskIndex].startTime = timeStr;
+            }
+
+            renderActiveTasks();
+            renderTimeline();
+
+            alert(`Tugas ${project} berhasil dikirim ke dashboard ${assignee}!`);
             document.getElementById('formAssign').reset();
         }
 
-        function refreshLog() {
-            // Animasi loading kecil
-            const feed = document.getElementById('activityFeed');
-            feed.style.opacity = '0.5';
-            setTimeout(() => {
-                renderActivityFeed();
-                feed.style.opacity = '1';
-            }, 300);
-        }
-
-        // Inisialisasi awal
-        window.onload = renderActivityFeed;
+        // Auto check session status on load
+        window.onload = function() {
+            if(sessionStorage.getItem('adminAuthed') === 'true') {
+                showDashboard();
+            }
+        };
     </script>
 </body>
 </html>
