@@ -21,7 +21,7 @@
         .tab-active { border-bottom: 2px solid #000000; color: #000000; font-weight: 600; }
         .tab-inactive { color: #64748b; }
         
-        /* Animasi ala 3D Slicer (Cura) */
+        /* Animasi 3D Slicer */
         .slicer-bed { background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.2) 2px, rgba(255,255,255,0.2) 4px); }
         @keyframes printUp { from { height: 0%; } }
     </style>
@@ -60,10 +60,9 @@
             </div>
         </header>
 
-        <!-- STATS & DELEGASI -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- FORM DELEGASI (Sesuai Gambar) -->
+            <!-- FORM DELEGASI -->
             <div class="lg:col-span-1 card p-6 shadow-sm">
                 <h3 class="text-sm font-extrabold uppercase tracking-widest flex items-center gap-2 mb-6 text-black border-b border-gray-100 pb-3">
                     <i class="ph-fill ph-paper-plane-tilt text-lg"></i> DELEGASI TUGAS
@@ -79,16 +78,14 @@
                         <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5">Pilih Karyawan</label>
                         <select id="f_karyawan" required class="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm font-semibold focus:border-black outline-none appearance-none bg-gray-50">
                             <option value="" disabled selected>Pilih Tim...</option>
-                            <option value="Teguh">Teguh</option>
-                            <option value="Zalfa">Zalfa</option>
-                            <option value="Tester3D">Tester3D</option>
+                            <option value="teguh">teguh</option>
+                            <option value="zalfa">zalfa</option>
                         </select>
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5">Tipe Pekerjaan</label>
                         <div class="flex gap-2">
-                            <!-- Radio Button Custom -->
                             <label class="flex-1 text-center cursor-pointer">
                                 <input type="radio" name="f_tipe" value="Bikin Mockup" class="peer hidden" checked>
                                 <div class="border border-gray-200 rounded-lg py-2 text-xs font-semibold peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-700 transition-all">Bikin Mockup</div>
@@ -119,25 +116,25 @@
                         <h3 class="text-xl font-black text-black" id="stat-gram-year">...</h3>
                     </div>
                     <div class="card p-4 flex flex-col justify-center shadow-sm border-b-4 border-blue-500">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Mesin Jalan</span>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Mesin Jalan (Hari Ini)</span>
                         <h3 class="text-xl font-black text-blue-600" id="stat-mesin-today">...</h3>
                     </div>
                     <div class="card p-4 flex flex-col justify-center shadow-sm">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total Mesin</span>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total Mesin Terdaftar</span>
                         <h3 class="text-xl font-black text-black" id="stat-mesin-total">...</h3>
                     </div>
                 </div>
 
-                <!-- Status Live Karyawan (Cura Style) -->
+                <!-- Status Live Karyawan -->
                 <div class="card p-0 shadow-sm flex-1">
                     <div class="p-4 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
                         <h3 class="text-sm font-extrabold uppercase tracking-widest text-black flex items-center gap-2">
                             <i class="ph-bold ph-monitor-play text-gray-500 text-lg"></i> Monitor Produksi 3D
                         </h3>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100" id="employee-status-container">
-                        <div class="p-8 text-center text-gray-400 text-xs font-semibold col-span-3">
-                            <i class="ph-bold ph-spinner animate-spin text-2xl mb-2 text-blue-500"></i><br>Menarik data realtime dari AppScript...
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100" id="employee-status-container">
+                        <div class="p-8 text-center text-gray-400 text-xs font-semibold col-span-full">
+                            <i class="ph-bold ph-spinner animate-spin text-2xl mb-2 text-blue-500"></i><br>Menarik data realtime...
                         </div>
                     </div>
                 </div>
@@ -150,12 +147,10 @@
                 <h3 class="text-sm font-extrabold uppercase tracking-widest text-black flex items-center gap-2">
                     <i class="ph-bold ph-list-dashes text-gray-500 text-lg"></i> Log Aktivitas
                 </h3>
-                <!-- Filter Tabs -->
                 <div class="flex gap-4 text-xs font-semibold">
                     <button onclick="setTab('Semua')" id="tab-Semua" class="tab-active pb-1">Semua</button>
-                    <button onclick="setTab('Teguh')" id="tab-Teguh" class="tab-inactive pb-1 hover:text-black">Teguh</button>
-                    <button onclick="setTab('Zalfa')" id="tab-Zalfa" class="tab-inactive pb-1 hover:text-black">Zalfa</button>
-                    <button onclick="setTab('Tester3D')" id="tab-Tester3D" class="tab-inactive pb-1 hover:text-black">Tester3D</button>
+                    <button onclick="setTab('teguh')" id="tab-teguh" class="tab-inactive pb-1 hover:text-black">Teguh</button>
+                    <button onclick="setTab('zalfa')" id="tab-zalfa" class="tab-inactive pb-1 hover:text-black">Zalfa</button>
                 </div>
             </div>
             
@@ -170,12 +165,14 @@
     </div>
 
     <script>
-        const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxKQCp8huU_pEJ2uOF3aYE30oYHo_3FYNXJ1pX2AEiHfiVO8LPZip8Z3e9uE8OPJquew/exec";
+        // GANTI DENGAN URL DEPLOY KAMU YANG BARU
+        const APPSCRIPT_URL = "URL_APPSCRIPT_KAMU_DISINI"; 
+        
         const ADMIN_PASS = "mlsc123";
         let allLogs = [];
         let currentTab = 'Semua';
 
-        // === 1. SISTEM LOGIN ===
+        // 1. LOGIN SYSTEM
         function handleLogin(e) {
             e.preventDefault();
             if(document.getElementById('adminPassword').value === ADMIN_PASS) {
@@ -196,46 +193,54 @@
             }
         };
 
-        // === 2. FETCH DATA REAL DARI APPSCRIPT (NO DUMMY) ===
+        // 2. FETCH DATA DASHBOARD
         async function fetchData() {
             const btn = document.getElementById('btnRefresh');
             const icon = btn.querySelector('i');
             icon.classList.add('animate-spin');
             
             try {
-                // Parameter action=getData untuk membedakan dengan fungsi post
-                const response = await fetch(`${APPSCRIPT_URL}?action=getData`);
+                // Fetch POST sesuai format AppScript bawaan aslimu (action: "get_dashboard")
+                const payload = {
+                    sheetName: "tasks_3d",
+                    action: "get_dashboard"
+                };
+
+                const response = await fetch(APPSCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain" }, // text/plain menghindari error CORS
+                    body: JSON.stringify(payload)
+                });
                 
-                if (!response.ok) throw new Error("Gagal mengambil respons API");
-                const data = await response.json();
+                const result = await response.json();
+                if(result.status !== "success") throw new Error(result.message);
                 
+                const data = result.data;
+
                 // Render Statistik
                 document.getElementById('stat-gram-today').innerText = data.stats.gramasiToday || "0";
                 document.getElementById('stat-gram-year').innerText = data.stats.gramasiYear || "0";
                 document.getElementById('stat-mesin-today').innerText = data.stats.mesinJalanToday || "0";
                 document.getElementById('stat-mesin-total').innerText = data.stats.totalMesin || "0";
 
-                // Render Karyawan
+                // Render Karyawan & Logs
                 renderEmployeeStatus(data.karyawan || []);
-
-                // Render Logs
                 allLogs = data.logs || [];
                 renderLogs();
 
             } catch (error) {
                 console.error(error);
                 document.getElementById('employee-status-container').innerHTML = `
-                    <div class="col-span-3 p-8 text-center text-red-500 font-bold text-xs">
+                    <div class="col-span-full p-8 text-center text-red-500 font-bold text-xs">
                         <i class="ph-fill ph-warning-circle text-2xl mb-2"></i><br>
-                        Data belum tersedia / AppScript error.<br>
-                        Pastikan Google Apps Script mereturn format JSON yang benar.
+                        Gagal memuat data dari Spreadsheet. Pastikan URL Apps Script benar.
                     </div>`;
             } finally {
                 icon.classList.remove('animate-spin');
             }
         }
 
-        // === 3. KIRIM DATA KE APPSCRIPT (REAL POST) ===
+        // 3. INSERT TUGAS (DELEGASI)
         async function kirimTugas(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmitTugas');
@@ -249,55 +254,73 @@
             btn.disabled = true;
 
             try {
-                // Menggunakan POST request dengan body JSON (Atau sesuaikan jika AppScript mu memakai FormData)
-                const formData = new FormData();
-                formData.append('action', 'assignTugas');
-                formData.append('project', project);
-                formData.append('karyawan', karyawan);
-                formData.append('tipe', tipe);
+                // Format parameter sesuai dengan GS aslimu (action: "insert")
+                const payload = {
+                    sheetName: "tasks_3d",
+                    action: "insert",
+                    data: {
+                        id: new Date().getTime(), // Generate ID (Unix Timestamp)
+                        assignee: karyawan,
+                        projectName: project,
+                        priority: "Normal",
+                        catatanAdmin: tipe,
+                        status: "Menunggu Konfirmasi",
+                        waktuMesinJalan: "-",
+                        startTime: "-",
+                        endTime: "-",
+                        gramasi: "-",
+                        jumlah: "-",
+                        mesin: "-",
+                        catatanTim: "-"
+                    }
+                };
 
-                // Kirim data murni ke AppScript
-                await fetch(APPSCRIPT_URL, {
+                const response = await fetch(APPSCRIPT_URL, {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
                 });
 
-                // Bersihkan form & tarik data ulang setelah berhasil
-                document.getElementById('f_project').value = "";
-                document.getElementById('f_karyawan').value = "";
-                alert("Tugas berhasil didelegasikan!");
-                
-                fetchData(); // Sinkron ulang data
-                
+                const res = await response.json();
+                if(res.status === "success") {
+                    document.getElementById('f_project').value = "";
+                    document.getElementById('f_karyawan').value = "";
+                    alert("Tugas berhasil didelegasikan!");
+                    fetchData(); // Reload UI
+                } else {
+                    alert("Gagal mengirim tugas: " + res.message);
+                }
             } catch (error) {
                 console.error(error);
-                alert("Gagal mengirim tugas ke Spreadsheet. Pastikan AppScript doPost() dikonfigurasi menerima form-data.");
+                alert("Terjadi kesalahan jaringan.");
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         }
 
-        // === 4. RENDER UI & INDIKATOR CURA ===
+        // 4. RENDER UI MONITOR (ANIMASI CURA)
         function renderEmployeeStatus(karyawanData) {
             const container = document.getElementById('employee-status-container');
+            if (karyawanData.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-gray-400 text-xs font-semibold col-span-full">Belum ada data tugas tim.</div>`;
+                return;
+            }
+
             container.innerHTML = karyawanData.map(k => {
-                
-                // Logika Warna Badge Status
                 let statusColor = "bg-gray-100 text-gray-700 border-gray-200";
                 if(k.status.toLowerCase().includes("produksi")) statusColor = "bg-green-100 text-green-700 border-green-300";
-                else if(k.status.toLowerCase().includes("mockup") || k.status.toLowerCase().includes("mulai")) statusColor = "bg-blue-100 text-blue-700 border-blue-300";
+                else if(k.status.toLowerCase().includes("dikerjain")) statusColor = "bg-blue-100 text-blue-700 border-blue-300";
                 else if(k.status.toLowerCase().includes("revisi")) statusColor = "bg-red-100 text-red-700 border-red-300";
 
-                // Persentase (progress) untuk Cura Box
-                const prog = k.progress || 0; // Jika tidak ada dari db, set 0
+                const prog = k.progress || 0;
                 const bedColor = prog > 0 ? 'bg-blue-500' : 'bg-gray-300';
 
                 return `
                 <div class="p-5 flex flex-col justify-between hover:bg-gray-50 transition-colors">
                     <div>
                         <div class="flex justify-between items-center mb-3">
-                            <h4 class="font-extrabold text-black text-sm">${k.nama}</h4>
+                            <h4 class="font-extrabold text-black text-sm capitalize">${k.nama}</h4>
                             <span class="text-[10px] px-2 py-0.5 rounded font-bold border uppercase tracking-wider ${statusColor}">
                                 ${k.status}
                             </span>
@@ -307,18 +330,16 @@
                     </div>
 
                     <div class="flex items-center gap-4 bg-white border border-gray-100 p-3 rounded-xl shadow-sm">
-                        <!-- Indikator Animasi 3D Cura Style -->
+                        <!-- Indikator 3D Bed -->
                         <div class="w-8 h-12 bg-gray-100 border border-gray-200 rounded-md relative flex items-end overflow-hidden shrink-0">
-                            <!-- Garis dasar -->
                             <div class="w-full h-1 bg-gray-300 absolute bottom-0 z-10"></div>
-                            <!-- Progres naik ke atas -->
                             <div class="w-full ${bedColor} slicer-bed transition-all duration-1000 ease-out z-0" style="height: ${prog}%; animation: printUp 1.5s ease-out;"></div>
                             <span class="absolute inset-0 flex items-center justify-center text-[8px] font-black text-white mix-blend-difference">${prog}%</span>
                         </div>
                         
                         <div class="flex-1 text-[10px] font-semibold text-gray-500 space-y-1.5">
                             <div class="flex justify-between border-b border-gray-100 pb-1">
-                                <span>Mesin</span> <span class="text-black font-bold">${k.mesin || '-'}</span>
+                                <span>Mesin</span> <span class="text-black font-bold truncate max-w-[80px] text-right">${k.mesin || '-'}</span>
                             </div>
                             <div class="flex justify-between border-b border-gray-100 pb-1">
                                 <span>Gramasi</span> <span class="text-black font-bold">${k.gramasi || '-'}</span>
@@ -332,20 +353,22 @@
             `}).join('');
         }
 
-        // === 5. TAB LOGS ===
+        // 5. RENDER LOG AKTIVITAS
         function setTab(tabName) {
             currentTab = tabName;
-            ['Semua', 'Teguh', 'Zalfa', 'Tester3D'].forEach(name => {
+            ['Semua', 'teguh', 'zalfa'].forEach(name => {
                 const btn = document.getElementById(`tab-${name}`);
-                if(name === tabName) btn.className = "tab-active pb-1";
-                else btn.className = "tab-inactive pb-1 hover:text-black";
+                if(btn) {
+                    if(name === tabName) btn.className = "tab-active pb-1";
+                    else btn.className = "tab-inactive pb-1 hover:text-black";
+                }
             });
             renderLogs();
         }
 
         function renderLogs() {
             const container = document.getElementById('log-container');
-            const filtered = currentTab === 'Semua' ? allLogs : allLogs.filter(log => log.nama === currentTab);
+            const filtered = currentTab === 'Semua' ? allLogs : allLogs.filter(log => log.nama.toLowerCase() === currentTab.toLowerCase());
 
             if(filtered.length === 0) {
                 container.innerHTML = `<tr><td class="p-6 text-center text-xs font-bold text-gray-400">Belum ada riwayat.</td></tr>`;
