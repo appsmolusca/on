@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Workspace - Molusca Project</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control - Molusca</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,438 +13,255 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
-                    colors: { bgApp: '#F8FAFC', surface: '#FFFFFF', borderLight: '#E2E8F0', textMain: '#0F172A', textMuted: '#64748B' }
+                    colors: { 
+                        neutral: { 50: '#fafafa', 100: '#f5f5f5', 200: '#e5e5e5', 300: '#d4d4d4', 800: '#262626', 900: '#171717' }
+                    }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #F8FAFC; color: #0F172A; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        body { background-color: #fafafa; color: #171717; }
+        /* Custom Scrollbar minimalis */
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a3a3a3; }
     </style>
 </head>
-<body class="pb-24" onload="initApp()" oncontextmenu="return false;">
+<body class="min-h-screen">
 
-    <!-- HEADER -->
-    <header class="bg-surface/90 backdrop-blur-md border-b border-borderLight sticky top-0 z-40 shadow-sm">
-        <div class="max-w-5xl mx-auto px-4 md:px-6 py-3 md:py-4">
-            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
-                <div class="flex items-center justify-between">
-                    <h1 class="text-xs md:text-sm font-extrabold text-textMain uppercase tracking-widest flex items-center gap-1.5">
-                        <i class="ph-fill ph-cube text-emerald-600 text-xl"></i> Divisi 3D <span class="text-borderLight mx-1">|</span> 
-                        <span id="userName" class="text-emerald-600">...</span>
-                    </h1>
+    <!-- HEADER ADMIN -->
+    <header class="bg-white border-b border-neutral-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-black text-white flex items-center justify-center rounded-md">
+                    <i class="ph-bold ph-cube text-xl"></i>
                 </div>
-                <div class="flex items-center gap-4">
-                    <!-- Tracking Login (Contoh UI) -->
-                    <span class="hidden md:flex text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg items-center gap-1">
-                        <i class="ph-bold ph-clock-counter-clockwise"></i> Terakhir Login: <span id="loginTimeStr">Hari ini, 08:15 WIB</span>
-                    </span>
-                    <nav class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 md:pb-0">
-                        <button onclick="logout()" class="shrink-0 text-[11px] md:text-xs font-bold text-rose-500 bg-white border border-rose-100 px-3.5 py-2 rounded-xl hover:bg-rose-50 transition-colors flex items-center gap-1.5"><i class="ph-bold ph-sign-out text-base"></i> Keluar</button>
-                    </nav>
-                </div>
+                <h1 class="text-sm font-extrabold tracking-widest uppercase">Admin Workspace</h1>
+            </div>
+            <div class="text-[11px] font-bold text-neutral-500 border border-neutral-200 px-3 py-1.5 rounded-full flex items-center gap-2">
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                Sistem Aktif
             </div>
         </div>
     </header>
 
-    <!-- MAIN CONTENT -->
-    <main class="p-4 max-w-5xl mx-auto mt-2 md:mt-6 space-y-8">
+    <main class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        <!-- SECTION 1: FORM ASSIGN ADMIN (Sesuai Referensi Gambar) -->
-        <section class="bg-white border border-slate-200 p-6 md:p-8 rounded-[24px] shadow-sm relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
-            <h3 class="text-sm font-extrabold text-emerald-700 uppercase tracking-widest mb-6 flex items-center gap-2">
-                <i class="ph-bold ph-plus-circle text-lg"></i> Buat Tugas 3D
-            </h3>
+        <!-- KOLOM KIRI: ASSIGN TUGAS & STATUS KARYAWAN -->
+        <div class="lg:col-span-4 space-y-8">
             
-            <form id="formAssignAdmin" onsubmit="sendAssignTask(event)" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Kolom 1: Project Name -->
-                <div class="space-y-2 md:col-span-1">
-                    <label class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Nama Project</label>
-                    <div class="relative">
-                        <i class="ph-bold ph-folder absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="adminProjectName" required placeholder="Contoh: Booth Pameran PLN" autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-semibold focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all outline-none">
+            <!-- FORM ASSIGN TUGAS (BOS) -->
+            <section class="bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm">
+                <h3 class="text-xs font-extrabold text-black uppercase tracking-widest mb-5 flex items-center gap-2 border-b border-neutral-100 pb-3">
+                    <i class="ph-bold ph-paper-plane-tilt text-lg"></i> Delegasi Tugas
+                </h3>
+                
+                <form id="formAssign" onsubmit="handleAssignTask(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Nama Project</label>
+                        <input type="text" id="projectName" placeholder="Contoh: Bank BRI" required class="w-full bg-neutral-50 border border-neutral-200 rounded-lg py-2.5 px-3 text-sm font-semibold focus:border-black focus:ring-1 focus:ring-black outline-none transition-all">
                     </div>
-                </div>
-
-                <!-- Kolom 2: Tugaskan Ke -->
-                <div class="space-y-2 md:col-span-1">
-                    <label class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Tugaskan Ke</label>
-                    <div class="relative">
-                        <i class="ph-bold ph-user absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500"></i>
-                        <select id="adminAssignee" required class="w-full bg-white border border-emerald-300 text-emerald-700 rounded-xl py-3 pl-11 pr-10 text-sm font-semibold outline-none cursor-pointer focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 appearance-none">
-                            <option value="" disabled selected>Pilih Tim 3D...</option>
-                            <option value="Teguh">Teguh</option>
-                            <option value="Zalfa">Zalfa</option>
+                    
+                    <div>
+                        <label class="block text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Pilih Karyawan</label>
+                        <select id="assignee" required class="w-full bg-neutral-50 border border-neutral-200 rounded-lg py-2.5 px-3 text-sm font-semibold focus:border-black outline-none appearance-none cursor-pointer">
+                            <option value="" disabled selected>Pilih Tim...</option>
+                            <option value="Teguh">Teguh (3D)</option>
+                            <option value="Zalfa">Zalfa (3D)</option>
                         </select>
-                        <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                     </div>
-                </div>
 
-                <!-- Kolom 3: Prioritas -->
-                <div class="space-y-2 md:col-span-1">
-                    <label class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Prioritas</label>
-                    <div class="relative">
-                        <i class="ph-bold ph-flag absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <select id="adminPriority" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-10 text-sm font-semibold outline-none cursor-pointer focus:border-emerald-400 appearance-none">
-                            <option value="Normal">Normal</option>
-                            <option value="Urgent">Urgent 🔥</option>
-                        </select>
-                        <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                    </div>
-                </div>
-
-                <!-- Catatan & Mesin -->
-                <div class="space-y-2 md:col-span-3">
-                    <label class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Catatan Admin & Spesifikasi Produksi</label>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
-                        <div class="relative md:col-span-2">
-                            <i class="ph-bold ph-note-pencil absolute left-4 top-3 text-slate-400"></i>
-                            <textarea id="adminNotes" placeholder="Tulis instruksi tambahan jika ada..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-medium focus:border-emerald-400 outline-none min-h-[50px] resize-none"></textarea>
-                        </div>
-                        <div class="flex gap-2">
-                             <div class="relative w-1/2"><i class="ph-bold ph-scales absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="adminGramasi" placeholder="Gramasi" class="w-full bg-white border border-slate-200 rounded-xl py-3 pl-9 pr-2 text-xs font-semibold outline-none"></div>
-                             <div class="relative w-1/2"><i class="ph-bold ph-package absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="number" id="adminQty" placeholder="Qty" class="w-full bg-white border border-slate-200 rounded-xl py-3 pl-9 pr-2 text-xs font-semibold outline-none"></div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">Tipe Pekerjaan</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center justify-center gap-2 border border-neutral-200 bg-white py-2 rounded-lg cursor-pointer hover:bg-neutral-50 has-[:checked]:bg-black has-[:checked]:text-white has-[:checked]:border-black transition-all">
+                                <input type="radio" name="jobType" value="Mockup" required class="hidden">
+                                <span class="text-xs font-bold">Bikin Mockup</span>
+                            </label>
+                            <label class="flex items-center justify-center gap-2 border border-neutral-200 bg-white py-2 rounded-lg cursor-pointer hover:bg-neutral-50 has-[:checked]:bg-black has-[:checked]:text-white has-[:checked]:border-black transition-all">
+                                <input type="radio" name="jobType" value="Produksi" class="hidden">
+                                <span class="text-xs font-bold">Langsung Produksi</span>
+                            </label>
                         </div>
                     </div>
-                </div>
 
-                <div class="md:col-span-3">
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3.5 rounded-xl text-xs font-extrabold uppercase tracking-widest flex items-center gap-2 active:scale-[0.98] transition-all shadow-md">
-                        Kirim Tugas 3D <i class="ph-bold ph-paper-plane-right text-base"></i>
+                    <button type="submit" class="w-full bg-black hover:bg-neutral-800 text-white py-3 rounded-lg text-xs font-extrabold uppercase tracking-widest mt-2 active:scale-95 transition-all">
+                        Tugaskan Sekarang
+                    </button>
+                </form>
+            </section>
+
+            <!-- STATUS KARYAWAN -->
+            <section class="bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm">
+                <h3 class="text-xs font-extrabold text-black uppercase tracking-widest mb-5 flex items-center gap-2 border-b border-neutral-100 pb-3">
+                    <i class="ph-bold ph-users text-lg"></i> Pantauan Tim
+                </h3>
+                <div class="space-y-4">
+                    <!-- Karyawan 1 -->
+                    <div class="flex items-center justify-between p-3 border border-neutral-200 rounded-xl bg-neutral-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-white border border-neutral-300 flex items-center justify-center font-bold text-xs">TG</div>
+                            <div>
+                                <h4 class="text-xs font-extrabold">Teguh</h4>
+                                <p class="text-[10px] text-neutral-500 font-medium">Sedang Aktif</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] font-bold text-neutral-500 uppercase">Login Hari Ini</p>
+                            <p class="text-xs font-extrabold text-black">08:12 WIB</p>
+                        </div>
+                    </div>
+                    <!-- Karyawan 2 -->
+                    <div class="flex items-center justify-between p-3 border border-neutral-200 rounded-xl bg-neutral-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-white border border-neutral-300 flex items-center justify-center font-bold text-xs">ZL</div>
+                            <div>
+                                <h4 class="text-xs font-extrabold">Zalfa</h4>
+                                <p class="text-[10px] text-neutral-500 font-medium">Offline</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] font-bold text-neutral-500 uppercase">Login Terakhir</p>
+                            <p class="text-xs font-extrabold text-neutral-400">Kemarin, 17:00</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- KOLOM KANAN: LIVE ACTIVITY TRACKER -->
+        <div class="lg:col-span-8">
+            <section class="bg-white border border-neutral-200 p-6 md:p-8 rounded-2xl shadow-sm h-full min-h-[600px] flex flex-col">
+                <div class="flex justify-between items-center mb-6 border-b border-neutral-100 pb-4">
+                    <h3 class="text-sm font-extrabold text-black uppercase tracking-widest flex items-center gap-2">
+                        <i class="ph-bold ph-activity text-xl"></i> Log Aktivitas Karyawan
+                    </h3>
+                    <button onclick="refreshLog()" class="text-[10px] font-bold text-neutral-600 bg-neutral-100 px-3 py-1.5 rounded-md hover:bg-neutral-200 transition-colors flex items-center gap-1">
+                        <i class="ph-bold ph-arrows-clockwise"></i> Segarkan
                     </button>
                 </div>
-            </form>
-        </section>
-
-        <!-- SECTION 2: BOARD ACTIVE 3D (Sesuai Referensi Gambar) -->
-        <div>
-            <div class="flex items-center justify-between mb-6 ml-1">
-                <h3 class="text-sm md:text-base font-extrabold text-slate-700 uppercase tracking-widest flex items-center gap-2">
-                    <i class="ph-fill ph-kanban text-emerald-500 text-xl"></i> Active Projects 3D
-                </h3>
-                <button onclick="loadMyTasks3dFast()" id="syncStatus3d" class="text-[10px] font-bold text-slate-500 bg-white shadow-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-slate-200 hover:bg-slate-50 transition-colors">
-                    <i class="ph-bold ph-arrows-clockwise"></i> Refresh Data
-                </button>
-            </div>
-            
-            <!-- Grid untuk masing-masing desainer -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
-                <!-- Kolom TEGUH -->
-                <div class="bg-slate-50/50 border border-slate-200 rounded-[24px] p-4">
-                    <div class="flex items-center gap-3 mb-4 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center border border-emerald-200"><i class="ph-bold ph-user text-lg"></i></div>
-                        <div>
-                            <h4 class="font-extrabold text-slate-800 text-sm">TEGUH</h4>
-                            <span class="text-[9px] font-bold text-slate-500 border border-slate-200 bg-slate-50 px-2 py-0.5 rounded uppercase tracking-wider">Tim 3D & Produksi</span>
-                        </div>
-                    </div>
-                    <div id="board-teguh" class="space-y-4">
-                        <!-- Data Teguh masuk kesini -->
-                        <!-- Contoh isi card sesuai gambar referensi -->
-                        <div class="bg-white p-5 rounded-[20px] shadow-sm border border-yellow-200">
-                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-yellow-700 bg-yellow-100 border border-yellow-300 px-2.5 py-1 rounded-md mb-3"><i class="ph-bold ph-gear"></i> Lagi Produksi</span>
-                            <h5 class="font-extrabold text-slate-800 mb-1">Bank Mandiri</h5>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">"TUGAS EXTRA"</p>
-                            
-                            <!-- Tracking Log UI -->
-                            <div class="bg-slate-50 rounded-lg p-3 text-[10px] font-medium text-slate-500 space-y-1.5 mb-4 border border-slate-100">
-                                <div class="flex justify-between"><span>Diberikan:</span> <span class="font-bold text-slate-700">01/10/2026, 09:00</span></div>
-                                <div class="flex justify-between"><span>Mulai Dikerjakan:</span> <span class="font-bold text-emerald-600">01/10/2026, 09:15</span></div>
-                                <div class="flex justify-between"><span>Terakhir Revisi:</span> <span class="font-bold text-slate-700">-</span></div>
-                                <div class="flex justify-between pt-1 border-t border-slate-200 mt-1"><span>Mesin / Gramasi:</span> <span class="font-bold text-blue-600">Mesin A1.1 / 260gr</span></div>
-                            </div>
-
-                            <button onclick="openModal3d('id_mock')" class="w-full bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 border border-slate-200 hover:border-emerald-200 py-3 rounded-xl text-xs font-bold uppercase transition-colors flex justify-center items-center gap-2">Update <i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                        </div>
+                <!-- TIMELINE CONTAINER -->
+                <div class="flex-1 overflow-y-auto pr-2 relative" id="timelineContainer">
+                    <!-- Garis vertikal timeline -->
+                    <div class="absolute left-[27px] top-2 bottom-0 w-[2px] bg-neutral-100"></div>
+                    
+                    <!-- DAFTAR AKTIVITAS (DI-RENDER DARI JAVASCRIPT) -->
+                    <div id="activityFeed" class="space-y-6 relative z-10">
+                        <!-- Konten akan dimasukkan lewat fungsi renderActivityFeed() -->
                     </div>
                 </div>
-
-                <!-- Kolom ZALFA -->
-                <div class="bg-slate-50/50 border border-slate-200 rounded-[24px] p-4">
-                    <div class="flex items-center gap-3 mb-4 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center border border-emerald-200"><i class="ph-bold ph-user text-lg"></i></div>
-                        <div>
-                            <h4 class="font-extrabold text-slate-800 text-sm">ZALFA</h4>
-                            <span class="text-[9px] font-bold text-slate-500 border border-slate-200 bg-slate-50 px-2 py-0.5 rounded uppercase tracking-wider">Tim 3D & Produksi</span>
-                        </div>
-                    </div>
-                    <div id="board-zalfa" class="space-y-4">
-                        <!-- Data Zalfa masuk kesini -->
-                        <!-- Contoh isi card sesuai gambar referensi -->
-                        <div class="bg-white p-5 rounded-[20px] shadow-sm border border-purple-200">
-                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 bg-purple-100 border border-purple-300 px-2.5 py-1 rounded-md mb-3"><i class="ph-bold ph-arrows-clockwise"></i> Nunggu Revisi</span>
-                            <h5 class="font-extrabold text-slate-800 mb-1">Chibi boy E-money</h5>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">"TUGAS EXTRA"</p>
-                            
-                            <!-- Tracking Log UI -->
-                            <div class="bg-slate-50 rounded-lg p-3 text-[10px] font-medium text-slate-500 space-y-1.5 mb-4 border border-slate-100">
-                                <div class="flex justify-between"><span>Diberikan:</span> <span class="font-bold text-slate-700">30/09/2026, 14:00</span></div>
-                                <div class="flex justify-between"><span>Mulai Dikerjakan:</span> <span class="font-bold text-slate-700">30/09/2026, 14:30</span></div>
-                                <div class="flex justify-between"><span>Terakhir Revisi:</span> <span class="font-bold text-rose-600">01/10/2026, 10:15</span></div>
-                                <div class="flex justify-between pt-1 border-t border-slate-200 mt-1"><span>Mesin / Gramasi:</span> <span class="font-bold text-blue-600">- / -</span></div>
-                            </div>
-
-                            <button onclick="openModal3d('id_mock2')" class="w-full bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 border border-slate-200 hover:border-emerald-200 py-3 rounded-xl text-xs font-bold uppercase transition-colors flex justify-center items-center gap-2">Update <i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+            </section>
         </div>
 
-        <!-- SECTION 3: FORM LAPOR MANDIRI 3D -->
-        <section class="bg-slate-900 p-1 rounded-[24px] shadow-lg mt-12">
-            <div class="bg-surface p-5 md:p-6 rounded-[20px]">
-                <h3 class="text-xs md:text-sm font-extrabold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="ph-bold ph-hand-pointing text-lg"></i> Lapor Tugas Mandiri (Desainer)
-                </h3>
-                <form id="formManual3d" onsubmit="sendManualTask3d(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2 relative"><i class="ph-bold ph-folder absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="m3dProject" required placeholder="NAMA PROJECT" autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-semibold focus:border-slate-400 outline-none">
-                    </div>
-                    
-                    <div class="relative"><i class="ph-bold ph-info absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <select id="m3dStatus" onchange="handleStatusChange('m3dStatus', 'm3dStart', 'm3dMesinContainer')" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-semibold outline-none cursor-pointer focus:border-slate-400 appearance-none">
-                            <option value="" disabled selected>Pilih Status Awal...</option>
-                            <option value="Lagi Dikerjain">✍️ Lagi Dikerjain (Desain)</option>
-                            <option value="Lagi Produksi">⚙️ Lagi Produksi (Cetak)</option>
-                            <option value="Nunggu Revisi">🔄 Nunggu Revisi</option>
-                            <option value="Selesai">✅ Selesai</option>
-                        </select>
-                        <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <div class="relative w-1/2"><i class="ph-bold ph-clock absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500"></i>
-                            <input type="text" id="m3dStart" readonly placeholder="Jam Mulai" class="w-full bg-emerald-50 text-emerald-700 cursor-not-allowed border border-emerald-200 rounded-xl py-3 pl-9 pr-2 text-xs font-bold outline-none" title="Otomatis terekam jam sekarang">
-                        </div>
-                        <div class="relative w-1/2"><i class="ph-bold ph-clock absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="time" id="m3dEnd" placeholder="Selesai" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-9 pr-2 text-xs font-semibold outline-none focus:border-slate-400">
-                        </div>
-                    </div>
-                    
-                    <!-- PANEL MESIN & GRAMASI (Muncul jika Produksi) -->
-                    <div id="m3dMesinContainer" class="hidden md:col-span-2 space-y-4 p-4 bg-slate-50 rounded-[20px] border border-slate-200 mt-2">
-                        <div class="grid grid-cols-2 gap-4 mb-2">
-                            <div class="relative"><i class="ph-bold ph-scales absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="m3dGramasi" placeholder="Gramasi" class="w-full bg-white border border-slate-300 rounded-xl py-2.5 pl-11 pr-3 text-sm font-semibold outline-none"></div>
-                            <div class="relative"><i class="ph-bold ph-package absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="number" id="m3dJumlah" placeholder="Qty" class="w-full bg-white border border-slate-300 rounded-xl py-2.5 pl-11 pr-3 text-sm font-semibold outline-none"></div>
-                        </div>
-                        <div class="relative">
-                            <p class="text-[11px] font-bold text-slate-600 mb-2 flex items-center gap-1"><i class="ph-bold ph-cpu"></i> Pilih Mesin (Bisa lebih dari 1):</p>
-                            <div id="m3dMesinGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                                <!-- Rendered via JS -->
-                            </div>
-                            <input type="hidden" id="m3dMesin" value="">
-                        </div>
-                    </div>
-
-                    <div class="md:col-span-2 mt-2">
-                        <button type="submit" id="btnManual3d" class="w-full bg-slate-800 hover:bg-slate-900 text-white px-6 py-3.5 rounded-xl text-xs font-extrabold uppercase tracking-widest flex justify-center items-center gap-2 active:scale-[0.98] transition-all shadow-md">
-                            Simpan Tugas Mandiri <i class="ph-bold ph-check text-lg"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </section>
-
-        <!-- BOARD FINAL 3D -->
-        <div class="pt-8 border-t border-slate-200 opacity-70 hover:opacity-100 transition-opacity">
-            <h3 class="text-sm font-extrabold text-slate-400 uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
-                <i class="ph-fill ph-archive-box text-slate-400 text-xl"></i> Tugas Selesai
-            </h3>
-            <div id="final-list-3d" class="space-y-3 grid grid-cols-1 md:grid-cols-2 gap-3 md:space-y-0"></div>
-        </div>
     </main>
 
-    <!-- MODAL UPDATE PROGRESS 3D -->
-    <div id="modalUpdate3d" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex justify-center items-end md:items-center">
-        <div class="bg-white w-full md:w-[500px] rounded-t-[32px] md:rounded-[32px] p-6 shadow-2xl transform transition-transform duration-300 translate-y-full md:translate-y-0 overflow-y-auto max-h-[90vh]" id="modalBox3d">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h3 class="text-lg font-extrabold text-slate-800">Update Progress</h3>
-                    <p class="text-xs text-slate-500 mt-1 font-medium truncate w-64" id="modalProjectName">Nama Project...</p>
-                </div>
-                <button onclick="closeModal3d()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-red-100 hover:text-red-500 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
-            </div>
-
-            <form id="formUpdate3d" onsubmit="saveUpdate3d(event)" class="space-y-4">
-                <input type="hidden" id="updId">
-                
-                <div class="relative"><i class="ph-bold ph-info absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <select id="updStatus" onchange="handleStatusChange('updStatus', 'updStart', 'updMesinContainer')" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm font-semibold outline-none cursor-pointer focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 appearance-none text-emerald-700">
-                        <option value="Menunggu Respon">Menunggu Respon</option>
-                        <option value="Lagi Dikerjain">✍️ Lagi Dikerjain (Desain)</option>
-                        <option value="Nunggu Revisi">🔄 Nunggu Revisi</option>
-                        <option value="Lagi Produksi">⚙️ Lagi Produksi (Cetak)</option>
-                        <option value="Mesin Jalan Project">🚀 Mesin Jalan Project</option>
-                        <option value="Selesai">✅ Selesai</option>
-                    </select>
-                    <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- JAM MULAI (DI-AUTO SET OLEH SISTEM SAAT KLIK PRODUKSI/REVISI) -->
-                    <div class="relative"><i class="ph-bold ph-clock absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500"></i>
-                        <input type="text" id="updStart" readonly placeholder="Jam Mulai" autocomplete="off" class="w-full bg-emerald-50 text-emerald-700 cursor-not-allowed border border-emerald-200 rounded-xl py-3 pl-11 pr-3 text-xs font-bold outline-none" title="Di-set otomatis oleh sistem">
-                    </div>
-                    <div class="relative"><i class="ph-bold ph-clock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="time" id="updEnd" placeholder="Jam Selesai (Custom)" autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-3 text-xs font-semibold focus:border-emerald-400 outline-none">
-                    </div>
-                </div>
-
-                <div id="updMesinContainer" class="hidden space-y-4 p-4 bg-slate-50 rounded-[20px] border border-slate-200">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="relative"><i class="ph-bold ph-scales absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="updGramasi" placeholder="Gramasi" class="w-full bg-white border border-slate-300 rounded-xl py-3 pl-11 pr-3 text-sm font-semibold outline-none"></div>
-                        <div class="relative"><i class="ph-bold ph-package absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="number" id="updJumlah" placeholder="Qty" class="w-full bg-white border border-slate-300 rounded-xl py-3 pl-11 pr-3 text-sm font-semibold outline-none"></div>
-                    </div>
-                    <!-- PANEL MESIN MULTI-SELECT -->
-                    <div class="relative mt-2">
-                        <p class="text-[11px] font-bold text-slate-600 mb-2 flex items-center gap-1"><i class="ph-bold ph-cpu"></i> Pilih Mesin (Bisa lebih dari 1):</p>
-                        <div id="updMesinGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                            <!-- Rendered via JS -->
-                        </div>
-                        <input type="hidden" id="updMesin" value="">
-                    </div>
-                </div>
-
-                <div class="relative"><i class="ph-bold ph-note-pencil absolute left-4 top-4 text-slate-400"></i>
-                    <textarea id="updCatatanTim" placeholder="Catatan progress/revisi untuk admin..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm font-medium focus:border-emerald-400 outline-none min-h-[80px] resize-none"></textarea>
-                </div>
-
-                <button type="submit" id="btnUpdate3d" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl text-sm font-extrabold uppercase tracking-widest flex justify-center items-center gap-2 mt-4 transition-colors">Simpan Progress <i class="ph-bold ph-check-circle text-lg"></i></button>
-            </form>
-        </div>
-    </div>
-
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
-        const SPREADSHEET_ID = '1d3njy330ifMnm-uBD8daaey5AqYO3rQxaI-tLZQdeyI';
-
-        let currentUser = localStorage.getItem('moluscaUser') || 'Admin 3D'; // Default mockup
-        
-        let myTasks3dGlobal = []; 
-
-        const daftarMesin = [
-            "Mesin A1.1", "Mesin A1.2", "Mesin A1.3", "Mesin A1.4", "Mesin A1.5", 
-            "Mesin A1.6", "Mesin A1.7", "Mesin A1.8", "Mesin A1.9", "Mesin A1.10", 
-            "Mesin A1.11", "Mesin A2.1", "Mesin A2.2", "Mesin C1.1"
+        // Simulasi Database Jejak Aktivitas (Bisa diganti response dari Google Sheets/Apps Script)
+        let activityLogs = [
+            { id: 1, time: "11:10 WIB", user: "Teguh", action: "Update Progress", detail: "Mengubah status menjadi Nunggu Revisi", project: "Bank BRI", type: "revisi" },
+            { id: 2, time: "10:35 WIB", user: "Zalfa", action: "Mulai Produksi", detail: "Mesin jalan untuk project", project: "Chibi Boy", type: "produksi" },
+            { id: 3, time: "09:15 WIB", user: "Teguh", action: "Mulai Pekerjaan", detail: "Mulai membuat Mockup", project: "Bank BRI", type: "mulai" },
+            { id: 4, time: "09:00 WIB", user: "Admin", action: "Assign Tugas", detail: "Memberikan tugas pembuatan Mockup", project: "Bank BRI", type: "admin" },
+            { id: 5, time: "08:12 WIB", user: "Teguh", action: "Login Aplikasi", detail: "Berhasil masuk ke dashboard karyawan", project: "-", type: "login" },
         ];
-        
-        function initApp() {
-            document.getElementById('userName').innerText = currentUser;
+
+        function getIconForType(type) {
+            switch(type) {
+                case 'login': return '<i class="ph-bold ph-sign-in text-neutral-500"></i>';
+                case 'admin': return '<i class="ph-bold ph-paper-plane-tilt text-black"></i>';
+                case 'mulai': return '<i class="ph-bold ph-play text-black"></i>';
+                case 'produksi': return '<i class="ph-bold ph-gear text-black"></i>';
+                case 'revisi': return '<i class="ph-bold ph-arrows-clockwise text-black"></i>';
+                default: return '<i class="ph-bold ph-check text-neutral-500"></i>';
+            }
+        }
+
+        function getBadgeForType(type) {
+            switch(type) {
+                case 'login': return 'bg-neutral-100 text-neutral-600 border border-neutral-200';
+                case 'produksi': return 'bg-black text-white';
+                case 'revisi': return 'bg-white text-black border border-black';
+                default: return 'bg-neutral-100 text-neutral-800';
+            }
+        }
+
+        function renderActivityFeed() {
+            const feed = document.getElementById('activityFeed');
+            feed.innerHTML = '';
+
+            activityLogs.forEach(log => {
+                const icon = getIconForType(log.type);
+                const badgeClass = getBadgeForType(log.type);
+                
+                const html = `
+                    <div class="flex gap-4 items-start group">
+                        <!-- Waktu -->
+                        <div class="w-14 text-right pt-1 shrink-0">
+                            <span class="text-[10px] font-extrabold text-neutral-400 group-hover:text-black transition-colors">${log.time}</span>
+                        </div>
+                        
+                        <!-- Icon Node -->
+                        <div class="w-8 h-8 rounded-full bg-white border-2 border-neutral-200 flex items-center justify-center shrink-0 z-10 group-hover:border-black transition-colors">
+                            ${icon}
+                        </div>
+                        
+                        <!-- Content Box -->
+                        <div class="flex-1 bg-white border border-neutral-200 rounded-xl p-3 shadow-sm hover:shadow-md transition-all">
+                            <div class="flex justify-between items-start mb-1">
+                                <h4 class="text-xs font-extrabold text-black">${log.user} <span class="text-neutral-400 font-medium">/ ${log.action}</span></h4>
+                                ${log.project !== '-' ? `<span class="text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${badgeClass}">${log.project}</span>` : ''}
+                            </div>
+                            <p class="text-[11px] text-neutral-500 font-medium">${log.detail}</p>
+                        </div>
+                    </div>
+                `;
+                feed.innerHTML += html;
+            });
+        }
+
+        // Simulasi saat Admin klik "Tugaskan Sekarang"
+        function handleAssignTask(e) {
+            e.preventDefault();
+            const project = document.getElementById('projectName').value;
+            const assignee = document.getElementById('assignee').value;
+            const jobType = document.querySelector('input[name="jobType"]:checked').value;
             
-            // Set waktu login simulasi
             const now = new Date();
-            document.getElementById('loginTimeStr').innerText = `Hari ini, ${formatTime(now)} WIB`;
+            const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ' WIB';
 
-            renderMesinChips('m3dMesinGrid', 'm3dMesin');
-            renderMesinChips('updMesinGrid', 'updMesin');
+            // Tambahkan ke log aktivitas teratas
+            const newLog = {
+                id: Date.now(),
+                time: timeString,
+                user: "Admin",
+                action: "Assign Tugas",
+                detail: `Menugaskan ${assignee} untuk ${jobType === 'Mockup' ? 'membuat Mockup' : 'langsung Produksi'}`,
+                project: project,
+                type: "admin"
+            };
+
+            activityLogs.unshift(newLog); // Masukkan ke urutan pertama
+            renderActivityFeed();
             
-            // Logika auto-time saat pertama load
-            document.getElementById('m3dStart').value = formatTime(new Date());
-
-            // Load data dummy atau real
-            // loadMyTasks3dFast(); 
+            // Reset form
+            document.getElementById('formAssign').reset();
         }
 
-        function formatTime(date) {
-            return date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+        function refreshLog() {
+            // Animasi loading kecil
+            const feed = document.getElementById('activityFeed');
+            feed.style.opacity = '0.5';
+            setTimeout(() => {
+                renderActivityFeed();
+                feed.style.opacity = '1';
+            }, 300);
         }
 
-        // ==========================================
-        // AUTO JAM & LOGIC FORM
-        // ==========================================
-        function handleStatusChange(statusId, startInputId, containerMesinId) {
-            const status = document.getElementById(statusId).value;
-            const container = document.getElementById(containerMesinId);
-            
-            // 1. Tampilkan container mesin jika Produksi
-            if(status === 'Lagi Produksi' || status === 'Mesin Jalan Project' || status === 'Selesai') {
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-            }
-
-            // 2. Set "Jam Mulai" dengan jam sekarang (Produksi Sekarang / Dikerjakan Sekarang)
-            if(status === 'Lagi Produksi' || status === 'Lagi Dikerjain' || status === 'Nunggu Revisi') {
-                document.getElementById(startInputId).value = formatTime(new Date());
-            }
-        }
-
-        // ==========================================
-        // MULTI-SELECT CHIPS LOGIC
-        // ==========================================
-        function renderMesinChips(containerId, inputId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = daftarMesin.map(m => `
-                <button type="button" onclick="toggleChip(this, '${inputId}', '${m}')" class="mesin-chip border border-slate-200 text-slate-600 bg-white rounded-lg py-2 px-1 text-[10px] font-bold transition-all hover:bg-slate-100 active:scale-95 text-center truncate">
-                    ${m}
-                </button>
-            `).join('');
-        }
-
-        function toggleChip(btn, inputId, value) {
-            const input = document.getElementById(inputId);
-            let currentValues = input.value ? input.value.split(', ') : [];
-            
-            if (currentValues.includes(value)) {
-                currentValues = currentValues.filter(v => v !== value);
-                btn.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-600', 'shadow-md');
-                btn.classList.add('bg-white', 'text-slate-600', 'border-slate-200');
-            } else {
-                currentValues.push(value);
-                btn.classList.remove('bg-white', 'text-slate-600', 'border-slate-200');
-                btn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600', 'shadow-md');
-            }
-            input.value = currentValues.join(', ');
-        }
-
-        // ==========================================
-        // MODAL LOGIC
-        // ==========================================
-        function openModal3d(taskId) {
-            // Logika fetch task & isi form
-            const modal = document.getElementById('modalUpdate3d');
-            const modalBox = document.getElementById('modalBox3d');
-            
-            // Auto update start time ke jam saat modal dibuka (Tracking real-time)
-            document.getElementById('updStart').value = formatTime(new Date());
-            
-            modal.classList.remove('hidden');
-            setTimeout(() => { modalBox.classList.remove('translate-y-full', 'md:translate-y-0'); modalBox.classList.add('translate-y-0'); }, 10);
-        }
-
-        function closeModal3d() {
-            const modal = document.getElementById('modalUpdate3d');
-            const modalBox = document.getElementById('modalBox3d');
-            modalBox.classList.remove('translate-y-0');
-            modalBox.classList.add('translate-y-full', 'md:translate-y-0');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
-
-        // Dummy submit logic
-        function sendAssignTask(e) {
-            e.preventDefault();
-            alert("Tugas berhasil di-assign ke " + document.getElementById('adminAssignee').value);
-        }
-        function saveUpdate3d(e) {
-            e.preventDefault();
-            alert("Progress berhasil diupdate dengan waktu: " + document.getElementById('updStart').value);
-            closeModal3d();
-        }
-        function sendManualTask3d(e) {
-            e.preventDefault();
-            alert("Tugas mandiri berhasil disimpan!");
-        }
-
-        function logout() { window.location.href = 'index.html'; }
+        // Inisialisasi awal
+        window.onload = renderActivityFeed;
     </script>
 </body>
 </html>
