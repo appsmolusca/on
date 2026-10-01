@@ -22,9 +22,7 @@
         .tab-active { border-bottom: 3px solid #3b82f6; color: #1e40af; font-weight: 700; }
         .tab-inactive { color: #64748b; font-weight: 500; }
         
-        .slicer-bed { background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.2) 2px, rgba(255,255,255,0.2) 4px); }
-        @keyframes printUp { from { height: 0%; } }
-
+        /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -89,7 +87,6 @@
                             <option value="" disabled selected>Pilih Tim...</option>
                             <option value="teguh">Teguh</option>
                             <option value="zalfa">Zalfa</option>
-                            <!-- Value nya tester karena disesuaikan nama asli di Sheet bro -->
                             <option value="tester">Tester3D</option>
                         </select>
                     </div>
@@ -149,7 +146,6 @@
                     </div>
                     
                     <div class="p-5 overflow-y-auto custom-scrollbar max-h-[500px] bg-slate-50/50">
-                        <!-- Wrapper Error Global -->
                         <div id="global-error" class="hidden p-4 mb-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-bold"></div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:divide-x divide-slate-200" id="kanban-board">
@@ -245,12 +241,11 @@
 
                 const response = await fetch(APPSCRIPT_URL, {
                     method: "POST",
-                    headers: { "Content-Type": "text/plain" }, // Wajib text/plain agar tidak CORS
+                    headers: { "Content-Type": "text/plain" }, 
                     body: JSON.stringify(payload)
                 });
                 
-                // Cek kalau format balasan bukan JSON (Biasanya karena salah URL / izin deploy)
-                if (!response.ok) throw new Error(`HTTP Error: ${response.status} - Pastikan script di-deploy "Anyone"`);
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
                 
                 let result;
                 try {
@@ -309,12 +304,12 @@
                     action: "insert",
                     data: {
                         id: new Date().getTime(),
-                        assignee: karyawan, // Mengirim "tester" jika Tester3D dipilih
+                        assignee: karyawan,
                         projectName: project,
                         priority: "Normal",
                         catatanAdmin: tipe,
                         status: "Menunggu Konfirmasi",
-                        waktuMesinJala: "-",
+                        waktuMesinJalan: "-",
                         startTime: "-",
                         endTime: "-",
                         gramasi: "-",
@@ -349,43 +344,43 @@
         }
 
         // ==========================================
-        // RENDER TASK KANBAN
+        // RENDER TASK KANBAN (TANPA ICON 3D)
         // ==========================================
         function createCardHTML(k) {
             let statusColor = "bg-slate-100 text-slate-700 border-slate-200";
-            if(k.status.toLowerCase().includes("produksi")) statusColor = "bg-emerald-100 text-emerald-700 border-emerald-300";
-            else if(k.status.toLowerCase().includes("dikerjain")) statusColor = "bg-blue-100 text-blue-700 border-blue-300";
-            else if(k.status.toLowerCase().includes("revisi")) statusColor = "bg-rose-100 text-rose-700 border-rose-300";
+            if(k.status.toLowerCase().includes("produksi") || k.status.toLowerCase().includes("mesin jalan")) {
+                statusColor = "bg-emerald-100 text-emerald-700 border-emerald-300";
+            }
+            else if(k.status.toLowerCase().includes("dikerjain")) {
+                statusColor = "bg-blue-100 text-blue-700 border-blue-300";
+            }
+            else if(k.status.toLowerCase().includes("revisi")) {
+                statusColor = "bg-rose-100 text-rose-700 border-rose-300";
+            }
 
-            const prog = k.progress || 0;
-            const bedColor = prog > 0 ? 'bg-blue-500' : 'bg-slate-300';
-            const displayMesin = k.mesin.replace(/mesin/gi, '').trim() || '-';
+            // Bersihkan data dari app desainer agar tampil rapi
+            const displayMesin = k.mesin && k.mesin !== '-' ? k.mesin.replace(/mesin/gi, '').trim() : '-';
+            const displayGramasi = k.gramasi && k.gramasi !== '-' ? k.gramasi + ' gr' : '-';
 
             return `
             <div class="bg-white border border-slate-200 p-5 rounded-[20px] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
                 <div>
-                    <div class="flex justify-between items-center mb-3">
+                    <div class="flex justify-between items-center mb-4">
                         <span class="text-[9px] px-2.5 py-1 rounded-full font-black border uppercase tracking-wider ${statusColor}">
                             ${k.status}
                         </span>
                     </div>
                     <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Project</p>
-                    <p class="text-sm font-bold text-slate-800 mb-4 line-clamp-2 leading-snug">${k.project || '-'}</p>
+                    <p class="text-sm font-bold text-slate-800 mb-5 line-clamp-2 leading-snug">${k.project || '-'}</p>
                 </div>
 
-                <div class="flex items-center gap-4 bg-slate-50 border border-slate-100 p-3.5 rounded-[16px]">
-                    <div class="w-10 h-14 bg-white border border-slate-200 rounded-[10px] relative flex items-end overflow-hidden shrink-0 shadow-inner">
-                        <div class="w-full h-1 bg-slate-300 absolute bottom-0 z-10"></div>
-                        <div class="w-full ${bedColor} slicer-bed transition-all duration-1000 ease-out z-0" style="height: ${prog}%; animation: printUp 1.5s ease-out;"></div>
-                        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-white mix-blend-difference drop-shadow-md">${prog}%</span>
-                    </div>
-                    
-                    <div class="flex-1 text-[11px] font-bold text-slate-500 space-y-2">
+                <div class="bg-slate-50 border border-slate-100 p-4 rounded-[16px]">
+                    <div class="text-[11px] font-bold text-slate-500 space-y-2.5">
                         <div class="flex justify-between border-b border-slate-200 pb-1.5">
-                            <span>Mesin</span> <span class="text-slate-800 font-black truncate max-w-[80px] text-right">${displayMesin}</span>
+                            <span>Mesin</span> <span class="text-slate-800 font-black truncate max-w-[120px] text-right">${displayMesin}</span>
                         </div>
                         <div class="flex justify-between border-b border-slate-200 pb-1.5">
-                            <span>Gramasi</span> <span class="text-slate-800 font-black">${k.gramasi || '-'}</span>
+                            <span>Gramasi</span> <span class="text-slate-800 font-black">${displayGramasi}</span>
                         </div>
                         <div class="flex justify-between text-[10px]">
                             <span>Update</span> <span class="text-slate-400">${k.waktu || '-'}</span>
@@ -409,7 +404,6 @@
                 else if (nameLow === 'zalfa' || nameLow === 'dzalfa') { 
                     htmlZalfa += cardHTML; countZalfa++; 
                 }
-                // Jika namanya 'tester' ATAU 'tester3d' dari Sheet, masukkan ke kolom Tester3D
                 else if (nameLow === 'tester' || nameLow === 'tester3d') { 
                     htmlTester += cardHTML; countTester++; 
                 }
