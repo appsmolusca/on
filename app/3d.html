@@ -89,7 +89,8 @@
                             <option value="" disabled selected>Pilih Tim...</option>
                             <option value="teguh">Teguh</option>
                             <option value="zalfa">Zalfa</option>
-                            <option value="tester3d">Tester3D</option>
+                            <!-- Value nya tester karena disesuaikan nama asli di Sheet bro -->
+                            <option value="tester">Tester3D</option>
                         </select>
                     </div>
 
@@ -139,7 +140,7 @@
                     </div>
                 </div>
 
-                <!-- Status Live Karyawan (Scrollable Task - KANBAN STYLE) -->
+                <!-- Status Live Karyawan (KANBAN) -->
                 <div class="card p-0 shadow-sm flex-1 overflow-hidden flex flex-col h-full">
                     <div class="p-5 border-b border-slate-100 bg-white z-10 rounded-t-[24px]">
                         <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 flex items-center gap-2">
@@ -147,10 +148,11 @@
                         </h3>
                     </div>
                     
-                    <!-- Area Scroll Semua Task dengan 3 Kolom Khusus -->
                     <div class="p-5 overflow-y-auto custom-scrollbar max-h-[500px] bg-slate-50/50">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:divide-x divide-slate-200">
-                            
+                        <!-- Wrapper Error Global -->
+                        <div id="global-error" class="hidden p-4 mb-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-bold"></div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:divide-x divide-slate-200" id="kanban-board">
                             <!-- Kolom Teguh -->
                             <div class="md:px-4 first:pl-0">
                                 <h4 class="font-black text-slate-800 uppercase tracking-widest text-xs mb-4 flex items-center justify-between">
@@ -158,7 +160,6 @@
                                 </h4>
                                 <div class="flex flex-col gap-4" id="col-teguh"></div>
                             </div>
-
                             <!-- Kolom Zalfa -->
                             <div class="md:px-4">
                                 <h4 class="font-black text-slate-800 uppercase tracking-widest text-xs mb-4 flex items-center justify-between">
@@ -166,7 +167,6 @@
                                 </h4>
                                 <div class="flex flex-col gap-4" id="col-zalfa"></div>
                             </div>
-
                             <!-- Kolom Tester3D -->
                             <div class="md:px-4 last:pr-0">
                                 <h4 class="font-black text-slate-800 uppercase tracking-widest text-xs mb-4 flex items-center justify-between">
@@ -174,7 +174,6 @@
                                 </h4>
                                 <div class="flex flex-col gap-4" id="col-tester3d"></div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -191,7 +190,7 @@
                     <button onclick="setTab('Semua')" id="tab-Semua" class="tab-active pb-1 transition-all">Semua</button>
                     <button onclick="setTab('teguh')" id="tab-teguh" class="tab-inactive pb-1 hover:text-slate-800 transition-all">Teguh</button>
                     <button onclick="setTab('zalfa')" id="tab-zalfa" class="tab-inactive pb-1 hover:text-slate-800 transition-all">Zalfa</button>
-                    <button onclick="setTab('tester3d')" id="tab-tester3d" class="tab-inactive pb-1 hover:text-slate-800 transition-all">Tester3D</button>
+                    <button onclick="setTab('tester')" id="tab-tester" class="tab-inactive pb-1 hover:text-slate-800 transition-all">Tester3D</button>
                 </div>
             </div>
             
@@ -206,8 +205,8 @@
     </div>
 
     <script>
-        // MASUKAN URL GS KAMU YANG BARU DISINI BRO
-        const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/execI"; 
+        // MASUKAN URL GS KAMU YANG BARU DISINI
+        const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec"; 
         
         const ADMIN_PASS = "mlsc123";
         let allLogs = [];
@@ -236,23 +235,35 @@
         async function fetchData() {
             const btn = document.getElementById('btnRefresh');
             const icon = btn.querySelector('i');
+            const errBox = document.getElementById('global-error');
+            
             icon.classList.add('animate-spin');
+            errBox.classList.add('hidden');
             
             try {
                 const payload = { sheetName: "tasks_3d", action: "get_dashboard" };
 
                 const response = await fetch(APPSCRIPT_URL, {
                     method: "POST",
-                    headers: { "Content-Type": "text/plain" },
+                    headers: { "Content-Type": "text/plain" }, // Wajib text/plain agar tidak CORS
                     body: JSON.stringify(payload)
                 });
                 
-                const result = await response.json();
-                if(result.status !== "success") throw new Error(result.message);
+                // Cek kalau format balasan bukan JSON (Biasanya karena salah URL / izin deploy)
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status} - Pastikan script di-deploy "Anyone"`);
+                
+                let result;
+                try {
+                    result = await response.json();
+                } catch(e) {
+                    throw new Error("Gagal parsing data. Pastikan URL Web App benar dan di-deploy dengan opsi akses 'Anyone'.");
+                }
+
+                if(result.status !== "success") throw new Error("Database merespon: " + result.message);
                 
                 const data = result.data;
 
-                // Render Statistik Numerik
+                // Render Statistik
                 document.getElementById('stat-gram-today').innerText = data.stats.gramasiToday || "0 gr";
                 document.getElementById('stat-gram-year').innerText = data.stats.gramasiYear || "0 gr";
                 
@@ -266,14 +277,15 @@
                 document.getElementById('stat-pernah-list').innerText = mPernah.length > 0 ? mPernah.join(', ') : "Belum ada riwayat";
                 document.getElementById('stat-pernah-list').title = "Pernah Jalan: " + mPernah.join(', ');
 
-                // Render Task & Logs
+                // Render Task
                 renderEmployeeStatus(data.karyawan || []);
                 allLogs = data.logs || [];
                 renderLogs();
 
             } catch (error) {
                 console.error(error);
-                document.getElementById('col-teguh').innerHTML = `<div class="text-red-500 font-bold text-xs">Gagal memuat data.</div>`;
+                errBox.classList.remove('hidden');
+                errBox.innerHTML = `⚠️ Gagal Memuat Data.<br><span class="text-xs font-normal">Pesan Error: ${error.message}</span>`;
             } finally {
                 icon.classList.remove('animate-spin');
             }
@@ -297,7 +309,7 @@
                     action: "insert",
                     data: {
                         id: new Date().getTime(),
-                        assignee: karyawan,
+                        assignee: karyawan, // Mengirim "tester" jika Tester3D dipilih
                         projectName: project,
                         priority: "Normal",
                         catatanAdmin: tipe,
@@ -329,7 +341,7 @@
                 }
             } catch (error) {
                 console.error(error);
-                alert("Terjadi kesalahan jaringan.");
+                alert("Terjadi kesalahan jaringan atau Apps Script.");
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
@@ -337,7 +349,7 @@
         }
 
         // ==========================================
-        // FUNGSI RENDER TASK KANBAN (PER KOLOM ORANG)
+        // RENDER TASK KANBAN
         // ==========================================
         function createCardHTML(k) {
             let statusColor = "bg-slate-100 text-slate-700 border-slate-200";
@@ -387,7 +399,6 @@
             let htmlTeguh = '', htmlZalfa = '', htmlTester = '';
             let countTeguh = 0, countZalfa = 0, countTester = 0;
 
-            // Sortir data ke masing-masing orang
             karyawanData.forEach(k => {
                 const nameLow = k.nama.toLowerCase();
                 const cardHTML = createCardHTML(k);
@@ -395,30 +406,32 @@
                 if (nameLow === 'teguh') { 
                     htmlTeguh += cardHTML; countTeguh++; 
                 }
-                else if (nameLow === 'zalfa' || nameLow === 'dzalfa') { // Antisipasi typo dZalfa
+                else if (nameLow === 'zalfa' || nameLow === 'dzalfa') { 
                     htmlZalfa += cardHTML; countZalfa++; 
                 }
-                else if (nameLow === 'tester3d') { 
+                // Jika namanya 'tester' ATAU 'tester3d' dari Sheet, masukkan ke kolom Tester3D
+                else if (nameLow === 'tester' || nameLow === 'tester3d') { 
                     htmlTester += cardHTML; countTester++; 
                 }
             });
 
             const emptyState = `<div class="p-6 border-2 border-dashed border-slate-200 rounded-xl text-center text-slate-400 text-[10px] font-bold uppercase">Tidak ada tugas aktif</div>`;
 
-            // Tembak ke HTML masing-masing kolom
             document.getElementById('col-teguh').innerHTML = htmlTeguh || emptyState;
             document.getElementById('col-zalfa').innerHTML = htmlZalfa || emptyState;
             document.getElementById('col-tester3d').innerHTML = htmlTester || emptyState;
 
-            // Update Header Angka Tugas
             document.getElementById('count-teguh').innerText = countTeguh + " Tugas";
             document.getElementById('count-zalfa').innerText = countZalfa + " Tugas";
             document.getElementById('count-tester3d').innerText = countTester + " Tugas";
         }
 
+        // ==========================================
+        // RENDER LOGS
+        // ==========================================
         function setTab(tabName) {
             currentTab = tabName;
-            ['Semua', 'teguh', 'zalfa', 'tester3d'].forEach(name => {
+            ['Semua', 'teguh', 'zalfa', 'tester'].forEach(name => {
                 const btn = document.getElementById(`tab-${name}`);
                 if(btn) {
                     if(name === tabName) btn.className = "tab-active pb-1 transition-all";
@@ -430,7 +443,12 @@
 
         function renderLogs() {
             const container = document.getElementById('log-container');
-            const filtered = currentTab === 'Semua' ? allLogs : allLogs.filter(log => log.nama.toLowerCase() === currentTab.toLowerCase() || (currentTab === 'zalfa' && log.nama.toLowerCase() === 'dzalfa'));
+            const filtered = currentTab === 'Semua' ? allLogs : allLogs.filter(log => {
+                const n = log.nama.toLowerCase();
+                if(currentTab === 'zalfa') return n === 'zalfa' || n === 'dzalfa';
+                if(currentTab === 'tester') return n === 'tester' || n === 'tester3d';
+                return n === currentTab;
+            });
 
             if(filtered.length === 0) {
                 container.innerHTML = `<tr><td class="p-6 text-center text-sm font-bold text-slate-400">Belum ada riwayat.</td></tr>`;
