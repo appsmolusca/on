@@ -3,172 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - 3D Printing</title>
+    <title>Admin 3D - Molusca</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
-            theme: {
-                extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } }
-            }
+            theme: { extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] } } }
         }
     </script>
     <style>
-        body { background-color: #f1f5f9; color: #0f172a; }
-        .card { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; }
+        body { background-color: #FAFAFA; color: #0F172A; font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        .tab-active { border-bottom: 3px solid #3b82f6; color: #1e40af; font-weight: 700; }
-        .tab-inactive { color: #64748b; font-weight: 500; }
+        /* Modern Glass UI */
+        .glass-card { background: #FFFFFF; border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 4px 20px -2px rgba(0,0,0,0.03); border-radius: 24px; }
+        .kanban-col { background: #F8FAFC; border-radius: 20px; padding: 16px; height: max-content; }
+        .kanban-card { background: #FFFFFF; border-radius: 16px; box-shadow: 0 2px 8px -2px rgba(0,0,0,0.04); border: 1px solid #F1F5F9; transition: all 0.2s ease; }
+        .kanban-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); border-color: #E2E8F0; }
         
-        /* Custom Scrollbar */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .tab-active { border-bottom: 3px solid #0F172A; color: #0F172A; font-weight: 800; }
+        .tab-inactive { color: #94A3B8; font-weight: 600; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
     </style>
 </head>
-<body class="min-h-screen pb-10">
+<body class="min-h-screen pb-12">
 
     <!-- LOGIN SCREEN -->
-    <div id="loginGate" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-        <div class="card p-8 max-w-sm w-full text-center shadow-2xl">
-            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="ph-fill ph-lock-key text-3xl"></i>
+    <div id="loginGate" class="fixed inset-0 bg-[#FAFAFA] z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass-card p-10 max-w-sm w-full text-center">
+            <div class="w-16 h-16 bg-slate-900 text-white rounded-[20px] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-slate-900/20">
+                <i class="ph-bold ph-fingerprint text-3xl"></i>
             </div>
-            <h2 class="text-2xl font-extrabold mb-2 text-black">Akses Admin</h2>
-            <p class="text-sm text-gray-500 mb-6">Masukkan password keamanan</p>
+            <h2 class="text-2xl font-extrabold mb-2 text-slate-900">Admin Area</h2>
+            <p class="text-xs text-slate-500 mb-8 font-semibold">Workspace Monitoring System</p>
             <form onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="password" id="adminPassword" placeholder="Password..." required class="w-full border-2 border-gray-200 rounded-2xl py-3 px-4 text-center font-bold focus:border-blue-500 outline-none transition-all">
-                <button type="submit" id="btnLogin" class="w-full bg-blue-600 text-white font-bold py-3 rounded-2xl hover:bg-blue-700 transition-all shadow-md flex justify-center items-center gap-2">Buka Dashboard</button>
+                <input type="password" id="adminPassword" placeholder="Enter PIN..." required class="w-full bg-slate-50 border border-slate-200 rounded-[16px] py-4 px-4 text-center font-bold tracking-widest focus:border-slate-900 outline-none transition-all">
+                <button type="submit" id="btnLogin" class="w-full bg-slate-900 text-white font-bold py-4 rounded-[16px] hover:bg-slate-800 active:scale-[0.98] transition-all flex justify-center items-center gap-2">Login Securely</button>
             </form>
-            <p id="loginError" class="text-sm text-red-500 mt-4 hidden font-medium">Password salah.</p>
+            <p id="loginError" class="text-xs text-red-500 mt-4 hidden font-bold">Autentikasi Gagal.</p>
         </div>
     </div>
 
     <!-- MAIN APP -->
-    <div id="appContent" class="hidden max-w-[90rem] mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div id="appContent" class="hidden max-w-[95rem] mx-auto px-4 sm:px-6 py-6 space-y-6">
         
         <!-- HEADER -->
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 rounded-[24px] border border-gray-200 shadow-sm gap-4">
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center glass-card p-5 gap-4">
             <div>
-                <h1 class="text-2xl font-black tracking-tight text-gray-800">Admin Control Panel</h1>
-                <p class="text-xs font-bold text-emerald-600 flex items-center gap-2 mt-1">
-                    <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span> 
-                    Terhubung ke Spreadsheet (Realtime)
+                <h1 class="text-xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+                    <i class="ph-fill ph-hexagon text-blue-600"></i> Admin Panel
+                </h1>
+                <p class="text-[11px] font-bold text-emerald-600 flex items-center gap-1.5 mt-1 ml-1">
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Terhubung Live
                 </p>
             </div>
-            <div class="flex items-center gap-3">
-                <button onclick="fetchData()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all font-bold" id="btnRefresh">
-                    <i class="ph-bold ph-arrows-clockwise text-sm"></i> Segarkan
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <button onclick="fetchData()" class="flex-1 sm:flex-none text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all font-extrabold" id="btnRefresh">
+                    <i class="ph-bold ph-arrows-clockwise text-sm"></i> Refresh
                 </button>
-                <button id="btnLogoutTop" onclick="logoutAdmin()" class="text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2">Logout</button>
+                <button onclick="logoutAdmin()" id="btnLogoutTop" class="flex-1 sm:flex-none text-xs font-extrabold text-rose-600 bg-rose-50 hover:bg-rose-100 px-4 py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+                    Keluar <i class="ph-bold ph-sign-out"></i>
+                </button>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             
             <!-- FORM DELEGASI -->
-            <div class="lg:col-span-1 card p-6 shadow-sm h-fit">
-                <h3 class="text-sm font-black uppercase tracking-widest flex items-center gap-2 mb-6 text-slate-800 border-b-2 border-slate-100 pb-3">
-                    <i class="ph-fill ph-paper-plane-tilt text-blue-500 text-lg"></i> DELEGASI TUGAS
+            <div class="lg:col-span-1 glass-card p-6 h-fit">
+                <h3 class="text-xs font-extrabold uppercase tracking-widest flex items-center gap-2 mb-6 text-slate-400">
+                    <i class="ph-fill ph-paper-plane-tilt text-blue-500 text-base"></i> Delegasi Tugas
                 </h3>
                 
-                <form onsubmit="kirimTugas(event)" class="space-y-5">
+                <form onsubmit="kirimTugas(event)" class="space-y-4">
                     <div>
-                        <label class="block text-[11px] font-extrabold text-slate-500 uppercase mb-2">Nama Project</label>
-                        <input type="text" id="f_project" placeholder="contoh: Bank Mandiri" required class="w-full border-2 border-slate-200 rounded-xl py-2.5 px-3 text-sm font-bold focus:border-blue-500 outline-none transition-all">
+                        <input type="text" id="f_project" placeholder="Nama Project..." required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold focus:border-slate-900 outline-none transition-all">
                     </div>
-                    
                     <div>
-                        <label class="block text-[11px] font-extrabold text-slate-500 uppercase mb-2">Pilih Karyawan</label>
-                        <select id="f_karyawan" required class="w-full border-2 border-slate-200 rounded-xl py-2.5 px-3 text-sm font-bold focus:border-blue-500 outline-none appearance-none bg-slate-50 cursor-pointer">
-                            <option value="" disabled selected>Pilih Tim...</option>
+                        <select id="f_karyawan" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold focus:border-slate-900 outline-none appearance-none cursor-pointer">
+                            <option value="" disabled selected>Pilih Staff...</option>
                             <option value="teguh">Teguh</option>
                             <option value="zalfa">Zalfa</option>
                             <option value="tester">Tester3D</option>
                         </select>
                     </div>
-
-                    <div>
-                        <label class="block text-[11px] font-extrabold text-slate-500 uppercase mb-2">Tipe Pekerjaan</label>
-                        <div class="flex gap-2">
-                            <label class="flex-1 text-center cursor-pointer">
-                                <input type="radio" name="f_tipe" value="Bikin Mockup" class="peer hidden" checked>
-                                <div class="border-2 border-slate-200 rounded-xl py-2 text-xs font-bold peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-700 transition-all">Mockup</div>
-                            </label>
-                            <label class="flex-1 text-center cursor-pointer">
-                                <input type="radio" name="f_tipe" value="Langsung Produksi" class="peer hidden">
-                                <div class="border-2 border-slate-200 rounded-xl py-2 text-xs font-bold peer-checked:bg-emerald-50 peer-checked:border-emerald-500 peer-checked:text-emerald-700 transition-all">Produksi</div>
-                            </label>
-                        </div>
+                    <div class="flex gap-2">
+                        <label class="flex-1 text-center cursor-pointer">
+                            <input type="radio" name="f_tipe" value="Bikin Mockup" class="peer hidden" checked>
+                            <div class="border border-slate-200 bg-slate-50 rounded-xl py-2.5 text-[11px] font-extrabold peer-checked:bg-slate-900 peer-checked:border-slate-900 peer-checked:text-white transition-all">Mockup</div>
+                        </label>
+                        <label class="flex-1 text-center cursor-pointer">
+                            <input type="radio" name="f_tipe" value="Langsung Produksi" class="peer hidden">
+                            <div class="border border-slate-200 bg-slate-50 rounded-xl py-2.5 text-[11px] font-extrabold peer-checked:bg-emerald-600 peer-checked:border-emerald-600 peer-checked:text-white transition-all">Produksi</div>
+                        </label>
                     </div>
-
-                    <button type="submit" id="btnSubmitTugas" class="w-full bg-slate-900 text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-widest hover:bg-slate-800 active:scale-95 transition-all shadow-lg mt-4 flex justify-center items-center gap-2">
-                        Tugaskan Sekarang
+                    <button type="submit" id="btnSubmitTugas" class="w-full bg-slate-900 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-widest hover:bg-slate-800 active:scale-[0.98] transition-all shadow-md mt-2 flex justify-center items-center gap-2">
+                        Kirim Tugas
                     </button>
                 </form>
             </div>
 
-            <!-- STATISTIK & MONITOR KARYAWAN -->
+            <!-- STATISTIK & KANBAN -->
             <div class="lg:col-span-3 flex flex-col gap-6">
                 <!-- 4 Box Statistik -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="card p-5 flex flex-col justify-center shadow-sm">
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Gramasi (Hari Ini)</span>
-                        <h3 class="text-2xl font-black text-slate-800" id="stat-gram-today">...</h3>
+                    <div class="glass-card p-5">
+                        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1">Gramasi Harian</span>
+                        <h3 class="text-2xl font-black text-slate-900" id="stat-gram-today">-</h3>
                     </div>
-                    <div class="card p-5 flex flex-col justify-center shadow-sm">
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Gramasi (2026)</span>
-                        <h3 class="text-2xl font-black text-slate-800" id="stat-gram-year">...</h3>
+                    <div class="glass-card p-5">
+                        <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block mb-1">Gramasi Tahunan</span>
+                        <h3 class="text-2xl font-black text-slate-900" id="stat-gram-year">-</h3>
                     </div>
-                    <div class="card p-5 flex flex-col shadow-sm border-b-4 border-blue-500">
-                        <span class="text-[10px] font-black text-blue-500 uppercase tracking-wider mb-1">Mesin Aktif</span>
-                        <h3 class="text-2xl font-black text-slate-800 mb-1" id="stat-mesin-today">...</h3>
+                    <div class="glass-card p-5 border-l-4 border-l-blue-500">
+                        <span class="text-[10px] font-extrabold text-blue-500 uppercase tracking-widest block mb-1">Mesin Berjalan</span>
+                        <h3 class="text-2xl font-black text-slate-900 mb-1" id="stat-mesin-today">-</h3>
                         <p class="text-[10px] font-bold text-slate-500 truncate" id="stat-mesin-list">Mendeteksi...</p>
                     </div>
-                    <div class="card p-5 flex flex-col shadow-sm border-b-4 border-emerald-500">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-[10px] font-black text-emerald-500 uppercase tracking-wider">Total Mesin (14)</span>
-                        </div>
-                        <h3 class="text-2xl font-black text-slate-800 mb-1" id="stat-pernah-jalan">...</h3>
-                        <p class="text-[10px] font-bold text-slate-500 truncate" id="stat-pernah-list" title="Pernah Digunakan">Mendeteksi...</p>
+                    <div class="glass-card p-5 border-l-4 border-l-emerald-500">
+                        <span class="text-[10px] font-extrabold text-emerald-500 uppercase tracking-widest block mb-1">Pernah Digunakan</span>
+                        <h3 class="text-2xl font-black text-slate-900 mb-1" id="stat-pernah-jalan">-</h3>
+                        <p class="text-[10px] font-bold text-slate-500 truncate" id="stat-pernah-list">Mendeteksi...</p>
                     </div>
                 </div>
 
-                <!-- Status Live Karyawan (KANBAN) -->
-                <div class="card p-0 shadow-sm flex-1 overflow-hidden flex flex-col h-full">
-                    <div class="p-5 border-b border-slate-100 bg-white z-10 rounded-t-[24px]">
+                <!-- KANBAN BOARD -->
+                <div class="glass-card p-0 flex-1 flex flex-col h-[550px]">
+                    <div class="p-5 border-b border-slate-100 flex justify-between items-center">
                         <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 flex items-center gap-2">
-                            <i class="ph-fill ph-monitor-play text-blue-500 text-lg"></i> Monitor Produksi (Berdasarkan Tim)
+                            <i class="ph-fill ph-kanban text-blue-500 text-lg"></i> Live Workspace
                         </h3>
+                        <div id="global-error" class="hidden text-xs font-bold text-red-500 bg-red-50 px-3 py-1 rounded-lg">Error Koneksi</div>
                     </div>
                     
-                    <div class="p-5 overflow-y-auto custom-scrollbar max-h-[500px] bg-slate-50/50">
-                        <div id="global-error" class="hidden p-4 mb-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-bold"></div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:divide-x divide-slate-200" id="kanban-board">
+                    <div class="p-5 flex-1 overflow-x-auto custom-scrollbar bg-[#FAFAFA] rounded-b-[24px]">
+                        <div class="flex flex-col md:flex-row gap-5 h-full min-w-full md:min-w-[800px]" id="kanban-board">
                             <!-- Kolom Teguh -->
-                            <div class="md:px-4 first:pl-0">
-                                <h4 class="font-black text-slate-800 uppercase tracking-widest text-xs mb-4 flex items-center justify-between">
-                                    Teguh <span class="bg-slate-200 text-slate-600 py-1 px-2 rounded-lg text-[10px]" id="count-teguh">0 Tugas</span>
+                            <div class="kanban-col flex-1 flex flex-col max-h-full">
+                                <h4 class="font-extrabold text-slate-800 uppercase tracking-widest text-[11px] mb-4 flex items-center justify-between px-1">
+                                    Teguh <span class="bg-slate-200/60 text-slate-500 py-1 px-2 rounded font-bold text-[9px]" id="count-teguh">0</span>
                                 </h4>
-                                <div class="flex flex-col gap-4" id="col-teguh"></div>
+                                <div class="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-3 pr-1 pb-4" id="col-teguh"></div>
                             </div>
                             <!-- Kolom Zalfa -->
-                            <div class="md:px-4">
-                                <h4 class="font-black text-slate-800 uppercase tracking-widest text-xs mb-4 flex items-center justify-between">
-                                    Zalfa <span class="bg-slate-200 text-slate-600 py-1 px-2 rounded-lg text-[10px]" id="count-zalfa">0 Tugas</span>
+                            <div class="kanban-col flex-1 flex flex-col max-h-full">
+                                <h4 class="font-extrabold text-slate-800 uppercase tracking-widest text-[11px] mb-4 flex items-center justify-between px-1">
+                                    Zalfa <span class="bg-slate-200/60 text-slate-500 py-1 px-2 rounded font-bold text-[9px]" id="count-zalfa">0</span>
                                 </h4>
-                                <div class="flex flex-col gap-4" id="col-zalfa"></div>
+                                <div class="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-3 pr-1 pb-4" id="col-zalfa"></div>
                             </div>
                             <!-- Kolom Tester3D -->
-                            <div class="md:px-4 last:pr-0">
-                                <h4 class="font-black text-slate-800 uppercase tracking-widest text-xs mb-4 flex items-center justify-between">
-                                    Tester3D <span class="bg-slate-200 text-slate-600 py-1 px-2 rounded-lg text-[10px]" id="count-tester3d">0 Tugas</span>
+                            <div class="kanban-col flex-1 flex flex-col max-h-full">
+                                <h4 class="font-extrabold text-slate-800 uppercase tracking-widest text-[11px] mb-4 flex items-center justify-between px-1">
+                                    Tester3D <span class="bg-slate-200/60 text-slate-500 py-1 px-2 rounded font-bold text-[9px]" id="count-tester3d">0</span>
                                 </h4>
-                                <div class="flex flex-col gap-4" id="col-tester3d"></div>
+                                <div class="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-3 pr-1 pb-4" id="col-tester3d"></div>
                             </div>
                         </div>
                     </div>
@@ -177,23 +171,23 @@
         </div>
 
         <!-- LOG AKTIVITAS -->
-        <div class="card p-0 shadow-sm overflow-hidden mt-6">
-            <div class="p-5 border-b border-slate-200 bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="glass-card p-0 mt-6">
+            <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <h3 class="text-sm font-black uppercase tracking-widest text-slate-800 flex items-center gap-2">
-                    <i class="ph-fill ph-list-dashes text-blue-500 text-lg"></i> Log Aktivitas
+                    <i class="ph-fill ph-list-dashes text-blue-500 text-lg"></i> Activity Log
                 </h3>
-                <div class="flex gap-5 text-xs">
-                    <button onclick="setTab('Semua')" id="tab-Semua" class="tab-active pb-1 transition-all">Semua</button>
-                    <button onclick="setTab('teguh')" id="tab-teguh" class="tab-inactive pb-1 hover:text-slate-800 transition-all">Teguh</button>
-                    <button onclick="setTab('zalfa')" id="tab-zalfa" class="tab-inactive pb-1 hover:text-slate-800 transition-all">Zalfa</button>
-                    <button onclick="setTab('tester')" id="tab-tester" class="tab-inactive pb-1 hover:text-slate-800 transition-all">Tester3D</button>
+                <div class="flex gap-5 text-xs overflow-x-auto w-full md:w-auto hide-scrollbar pb-2 md:pb-0">
+                    <button onclick="setTab('Semua')" id="tab-Semua" class="tab-active pb-1 whitespace-nowrap">Semua</button>
+                    <button onclick="setTab('teguh')" id="tab-teguh" class="tab-inactive pb-1 whitespace-nowrap">Teguh</button>
+                    <button onclick="setTab('zalfa')" id="tab-zalfa" class="tab-inactive pb-1 whitespace-nowrap">Zalfa</button>
+                    <button onclick="setTab('tester')" id="tab-tester" class="tab-inactive pb-1 whitespace-nowrap">Tester3D</button>
                 </div>
             </div>
             
-            <div class="p-0 max-h-[300px] overflow-y-auto custom-scrollbar">
+            <div class="max-h-[300px] overflow-y-auto custom-scrollbar bg-white rounded-b-[24px]">
                 <table class="w-full text-left text-sm">
-                    <tbody id="log-container" class="divide-y divide-slate-100">
-                        <!-- Rendered by JS -->
+                    <tbody id="log-container" class="divide-y divide-slate-50">
+                        <!-- JS -->
                     </tbody>
                 </table>
             </div>
@@ -201,59 +195,42 @@
     </div>
 
     <script>
-        // URL API SUDAH DIMASUKKAN
-        const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec"; 
+        // MASUKAN URL GS KAMU YANG BARU DISINI
+        const APPSCRIPT_URL = "URL_APPSCRIPT_KAMU_DISINI"; 
         
         const ADMIN_PASS = "mlsc123";
         let allLogs = [];
         let currentTab = 'Semua';
 
-        // Fungsi Catat Login/Logout ke Sheet
         async function logAdminActivity(aktivitas) {
             try {
                 await fetch(APPSCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({
-                        action: 'log_event',
-                        data: { id: Date.now(), nama: 'Admin 3D', aktivitas: aktivitas }
-                    })
+                    method: 'POST', headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'log_event', data: { id: Date.now(), nama: 'Admin 3D', aktivitas: aktivitas }})
                 });
-            } catch (error) { console.error("Gagal mencatat log Admin", error); }
+            } catch (error) {}
         }
 
         async function handleLogin(e) {
             e.preventDefault();
             const btn = document.getElementById('btnLogin');
-            
             if(document.getElementById('adminPassword').value === ADMIN_PASS) {
-                btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i> Membuka...`;
+                btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i> Verifying...`;
                 btn.disabled = true;
-
-                // Tembak log API saat login sukses
-                await logAdminActivity("Login ke Dashboard");
-
+                await logAdminActivity("Login ke Dashboard Admin");
                 sessionStorage.setItem('adminAuthed', 'true');
                 document.getElementById('loginGate').classList.add('hidden');
                 document.getElementById('appContent').classList.remove('hidden');
                 fetchData();
-                
-                btn.innerHTML = `Buka Dashboard`;
-                btn.disabled = false;
-            } else {
-                document.getElementById('loginError').classList.remove('hidden');
-            }
+                btn.innerHTML = `Login Securely`; btn.disabled = false;
+            } else { document.getElementById('loginError').classList.remove('hidden'); }
         }
         
         async function logoutAdmin() { 
             const btn = document.getElementById('btnLogoutTop');
-            btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i> Keluar...`;
-            
-            // Tembak log API saat logout
-            await logAdminActivity("Logout dari Dashboard");
-            
-            sessionStorage.removeItem('adminAuthed'); 
-            location.reload(); 
+            btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i> Exiting...`;
+            await logAdminActivity("Logout dari Dashboard Admin");
+            sessionStorage.removeItem('adminAuthed'); location.reload(); 
         }
 
         window.onload = () => {
@@ -269,226 +246,139 @@
             const icon = btn.querySelector('i');
             const errBox = document.getElementById('global-error');
             
-            icon.classList.add('animate-spin');
-            errBox.classList.add('hidden');
+            icon.classList.add('animate-spin'); errBox.classList.add('hidden');
             
             try {
-                const payload = { sheetName: "tasks_3d", action: "get_dashboard" };
-
                 const response = await fetch(APPSCRIPT_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain" }, 
-                    body: JSON.stringify(payload)
+                    method: "POST", headers: { "Content-Type": "text/plain" }, 
+                    body: JSON.stringify({ sheetName: "tasks_3d", action: "get_dashboard" })
                 });
                 
-                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-                
-                let result;
-                try {
-                    result = await response.json();
-                } catch(e) {
-                    throw new Error("Gagal parsing data. Pastikan URL Web App benar dan di-deploy dengan opsi akses 'Anyone'.");
-                }
-
-                if(result.status !== "success") throw new Error("Database merespon: " + result.message);
+                if (!response.ok) throw new Error();
+                const result = await response.json();
+                if(result.status !== "success") throw new Error();
                 
                 const data = result.data;
+                document.getElementById('stat-gram-today').innerText = data.stats.gramasiToday;
+                document.getElementById('stat-gram-year').innerText = data.stats.gramasiYear;
+                
+                const mJalan = data.stats.mesinJalanArray;
+                const mPernah = data.stats.pernahJalanArray;
+                
+                document.getElementById('stat-mesin-today').innerText = mJalan.length;
+                document.getElementById('stat-mesin-list').innerText = mJalan.length > 0 ? mJalan.join(', ') : "Standby";
+                
+                document.getElementById('stat-pernah-jalan').innerText = mPernah.length;
+                document.getElementById('stat-pernah-list').innerText = mPernah.length > 0 ? mPernah.join(', ') : "Belum ada";
 
-                // Render Statistik
-                document.getElementById('stat-gram-today').innerText = data.stats.gramasiToday || "0 gr";
-                document.getElementById('stat-gram-year').innerText = data.stats.gramasiYear || "0 gr";
-                
-                const mJalan = data.stats.mesinJalanArray || [];
-                const mPernah = data.stats.pernahJalanArray || [];
-                
-                document.getElementById('stat-mesin-today').innerText = mJalan.length + " Unit";
-                document.getElementById('stat-mesin-list').innerText = mJalan.length > 0 ? mJalan.join(', ') : "Belum ada yg jalan";
-                
-                document.getElementById('stat-pernah-jalan').innerText = mPernah.length + " Digunakan";
-                document.getElementById('stat-pernah-list').innerText = mPernah.length > 0 ? mPernah.join(', ') : "Belum ada riwayat";
-                document.getElementById('stat-pernah-list').title = "Pernah Jalan: " + mPernah.join(', ');
-
-                // Render Task
                 renderEmployeeStatus(data.karyawan || []);
                 allLogs = data.logs || [];
                 renderLogs();
 
-            } catch (error) {
-                console.error(error);
-                errBox.classList.remove('hidden');
-                errBox.innerHTML = `⚠️ Gagal Memuat Data.<br><span class="text-xs font-normal">Pesan Error: ${error.message}</span>`;
-            } finally {
-                icon.classList.remove('animate-spin');
-            }
+            } catch (error) { errBox.classList.remove('hidden'); errBox.innerText = `Koneksi Gagal`; } 
+            finally { icon.classList.remove('animate-spin'); }
         }
 
         async function kirimTugas(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmitTugas');
             const originalText = btn.innerHTML;
-            
-            const project = document.getElementById('f_project').value;
-            const karyawan = document.getElementById('f_karyawan').value;
-            const tipe = document.querySelector('input[name="f_tipe"]:checked').value;
-
-            btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i> Mengirim...`;
+            btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i> Sending...`;
             btn.disabled = true;
 
             try {
                 const payload = {
-                    sheetName: "tasks_3d",
-                    action: "insert",
+                    sheetName: "tasks_3d", action: "insert",
                     data: {
                         id: new Date().getTime(),
-                        assignee: karyawan,
-                        projectName: project,
-                        priority: "Normal",
-                        catatanAdmin: tipe,
-                        status: "Menunggu Konfirmasi",
-                        waktuMesinJalan: "-",
-                        startTime: "-",
-                        endTime: "-",
-                        gramasi: "-",
-                        jumlah: "-",
-                        mesin: "-",
-                        catatanTim: "-"
+                        assignee: document.getElementById('f_karyawan').value,
+                        projectName: document.getElementById('f_project').value,
+                        priority: "Normal", catatanAdmin: document.querySelector('input[name="f_tipe"]:checked').value,
+                        status: "Menunggu Konfirmasi", waktuMesinJalan: "-", startTime: "-", endTime: "-", gramasi: "-", jumlah: "-", mesin: "-", catatanTim: "-"
                     }
                 };
-
-                const response = await fetch(APPSCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(payload)
-                });
-
+                const response = await fetch(APPSCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
                 const res = await response.json();
                 if(res.status === "success") {
-                    document.getElementById('f_project').value = "";
-                    document.getElementById('f_karyawan').value = "";
-                    alert("Tugas berhasil didelegasikan!");
+                    document.getElementById('f_project').value = ""; document.getElementById('f_karyawan').value = "";
                     fetchData();
-                } else {
-                    alert("Gagal mengirim tugas: " + res.message);
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Terjadi kesalahan jaringan atau Apps Script.");
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+                } else alert("Gagal");
+            } catch (error) { alert("Error"); } 
+            finally { btn.innerHTML = originalText; btn.disabled = false; }
         }
 
-        // ==========================================
-        // RENDER TASK KANBAN (TANPA ICON 3D)
-        // ==========================================
         function createCardHTML(k) {
-            let statusColor = "bg-slate-100 text-slate-700 border-slate-200";
-            if(k.status.toLowerCase().includes("produksi") || k.status.toLowerCase().includes("mesin jalan")) {
-                statusColor = "bg-emerald-100 text-emerald-700 border-emerald-300";
-            }
-            else if(k.status.toLowerCase().includes("dikerjain")) {
-                statusColor = "bg-blue-100 text-blue-700 border-blue-300";
-            }
-            else if(k.status.toLowerCase().includes("revisi")) {
-                statusColor = "bg-rose-100 text-rose-700 border-rose-300";
-            }
+            let statusColor = "bg-slate-100 text-slate-600";
+            if(/produksi|mesin jalan/i.test(k.status)) statusColor = "bg-emerald-100 text-emerald-700";
+            else if(/dikerjain/i.test(k.status)) statusColor = "bg-blue-100 text-blue-700";
+            else if(/revisi/i.test(k.status)) statusColor = "bg-rose-100 text-rose-700";
 
             const displayMesin = k.mesin && k.mesin !== '-' ? k.mesin.replace(/mesin/gi, '').trim() : '-';
-            const displayGramasi = k.gramasi && k.gramasi !== '-' ? k.gramasi + ' gr' : '-';
+            const displayGramasi = k.gramasi && k.gramasi !== '-' ? k.gramasi + 'g' : '-';
 
             return `
-            <div class="bg-white border border-slate-200 p-5 rounded-[20px] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-                <div>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-[9px] px-2.5 py-1 rounded-full font-black border uppercase tracking-wider ${statusColor}">
-                            ${k.status}
-                        </span>
-                    </div>
-                    <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Project</p>
-                    <p class="text-sm font-bold text-slate-800 mb-5 line-clamp-2 leading-snug">${k.project || '-'}</p>
+            <div class="kanban-card p-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[9px] px-2 py-1 rounded font-extrabold uppercase tracking-wide ${statusColor}">${k.status}</span>
+                    <span class="text-[9px] font-bold text-slate-400">${k.waktu || '-'}</span>
                 </div>
-
-                <div class="bg-slate-50 border border-slate-100 p-4 rounded-[16px]">
-                    <div class="text-[11px] font-bold text-slate-500 space-y-2.5">
-                        <div class="flex justify-between border-b border-slate-200 pb-1.5">
-                            <span>Mesin</span> <span class="text-slate-800 font-black truncate max-w-[120px] text-right">${displayMesin}</span>
-                        </div>
-                        <div class="flex justify-between border-b border-slate-200 pb-1.5">
-                            <span>Gramasi</span> <span class="text-slate-800 font-black">${displayGramasi}</span>
-                        </div>
-                        <div class="flex justify-between text-[10px]">
-                            <span>Update</span> <span class="text-slate-400">${k.waktu || '-'}</span>
-                        </div>
-                    </div>
+                <p class="text-sm font-black text-slate-800 mb-3 leading-snug break-words">${k.project || '-'}</p>
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <div class="flex items-center gap-1 truncate w-1/2"><i class="ph-fill ph-cpu text-emerald-500"></i> <span class="truncate">${displayMesin}</span></div>
+                    <div class="flex items-center gap-1 w-1/2 justify-end"><i class="ph-fill ph-scales text-blue-500"></i> ${displayGramasi}</div>
                 </div>
             </div>`;
         }
 
         function renderEmployeeStatus(karyawanData) {
-            let htmlTeguh = '', htmlZalfa = '', htmlTester = '';
-            let countTeguh = 0, countZalfa = 0, countTester = 0;
+            let hTeguh = '', hZalfa = '', hTester = '';
+            let cTeguh = 0, cZalfa = 0, cTester = 0;
 
             karyawanData.forEach(k => {
-                const nameLow = k.nama.toLowerCase();
-                const cardHTML = createCardHTML(k);
-
-                if (nameLow === 'teguh') { 
-                    htmlTeguh += cardHTML; countTeguh++; 
-                }
-                else if (nameLow === 'zalfa' || nameLow === 'dzalfa') { 
-                    htmlZalfa += cardHTML; countZalfa++; 
-                }
-                else if (nameLow === 'tester' || nameLow === 'tester3d') { 
-                    htmlTester += cardHTML; countTester++; 
-                }
+                const n = k.nama.toLowerCase();
+                const card = createCardHTML(k);
+                if (n === 'teguh') { hTeguh += card; cTeguh++; }
+                else if (n === 'zalfa' || n === 'dzalfa') { hZalfa += card; cZalfa++; }
+                else if (n === 'tester' || n === 'tester3d') { hTester += card; cTester++; }
             });
 
-            const emptyState = `<div class="p-6 border-2 border-dashed border-slate-200 rounded-xl text-center text-slate-400 text-[10px] font-bold uppercase">Tidak ada tugas aktif</div>`;
+            const empty = `<div class="p-4 border-2 border-dashed border-slate-200 rounded-xl text-center text-slate-400 text-[10px] font-extrabold uppercase">Kosong</div>`;
 
-            document.getElementById('col-teguh').innerHTML = htmlTeguh || emptyState;
-            document.getElementById('col-zalfa').innerHTML = htmlZalfa || emptyState;
-            document.getElementById('col-tester3d').innerHTML = htmlTester || emptyState;
-
-            document.getElementById('count-teguh').innerText = countTeguh + " Tugas";
-            document.getElementById('count-zalfa').innerText = countZalfa + " Tugas";
-            document.getElementById('count-tester3d').innerText = countTester + " Tugas";
+            document.getElementById('col-teguh').innerHTML = hTeguh || empty;
+            document.getElementById('col-zalfa').innerHTML = hZalfa || empty;
+            document.getElementById('col-tester3d').innerHTML = hTester || empty;
+            document.getElementById('count-teguh').innerText = cTeguh;
+            document.getElementById('count-zalfa').innerText = cZalfa;
+            document.getElementById('count-tester3d').innerText = cTester;
         }
 
-        // ==========================================
-        // RENDER LOGS
-        // ==========================================
-        function setTab(tabName) {
-            currentTab = tabName;
-            ['Semua', 'teguh', 'zalfa', 'tester'].forEach(name => {
-                const btn = document.getElementById(`tab-${name}`);
-                if(btn) {
-                    if(name === tabName) btn.className = "tab-active pb-1 transition-all";
-                    else btn.className = "tab-inactive pb-1 hover:text-slate-800 transition-all";
-                }
+        function setTab(tName) {
+            currentTab = tName;
+            ['Semua', 'teguh', 'zalfa', 'tester'].forEach(n => {
+                const btn = document.getElementById(`tab-${n}`);
+                if(btn) btn.className = (n === tName) ? "tab-active pb-1" : "tab-inactive pb-1 hover:text-slate-800 transition-colors";
             });
             renderLogs();
         }
 
         function renderLogs() {
-            const container = document.getElementById('log-container');
-            const filtered = currentTab === 'Semua' ? allLogs : allLogs.filter(log => {
-                const n = log.nama.toLowerCase();
+            const cont = document.getElementById('log-container');
+            const filt = currentTab === 'Semua' ? allLogs : allLogs.filter(l => {
+                const n = l.nama.toLowerCase();
                 if(currentTab === 'zalfa') return n === 'zalfa' || n === 'dzalfa';
                 if(currentTab === 'tester') return n === 'tester' || n === 'tester3d';
                 return n === currentTab;
             });
 
-            if(filtered.length === 0) {
-                container.innerHTML = `<tr><td class="p-6 text-center text-sm font-bold text-slate-400">Belum ada riwayat.</td></tr>`;
-                return;
+            if(filt.length === 0) {
+                cont.innerHTML = `<tr><td class="p-6 text-center text-xs font-bold text-slate-400">Belum ada aktivitas.</td></tr>`; return;
             }
 
-            container.innerHTML = filtered.map(log => `
+            cont.innerHTML = filt.map(l => `
                 <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="p-4 w-40 text-[11px] font-bold text-slate-400 border-r border-slate-100 whitespace-nowrap">${log.waktu}</td>
-                    <td class="p-4 w-28 text-xs font-black text-slate-800 uppercase tracking-wider">${log.nama}</td>
-                    <td class="p-4 text-xs font-semibold text-slate-600">${log.aktivitas}</td>
+                    <td class="p-4 w-36 text-[10px] font-extrabold text-slate-400 whitespace-nowrap">${l.waktu}</td>
+                    <td class="p-4 w-28 text-[11px] font-black text-slate-800 uppercase tracking-widest">${l.nama}</td>
+                    <td class="p-4 text-xs font-semibold text-slate-600">${l.aktivitas}</td>
                 </tr>
             `).join('');
         }
