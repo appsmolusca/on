@@ -3,298 +3,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Molusca</title>
+    <title>Admin Dashboard - Realtime</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
             theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        brand: '#000000', // Hitam minimalis
-                        surface: '#f9fafb'
-                    }
-                }
+                extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } }
             }
         }
     </script>
     <style>
-        body { background-color: #f3f4f6; color: #111827; }
-        .card { background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; }
+        body { background-color: #f8fafc; color: #0f172a; }
+        .card { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; }
         .tab-active { border-bottom: 2px solid #000000; color: #000000; font-weight: 600; }
-        .tab-inactive { color: #6b7280; }
+        .tab-inactive { color: #64748b; }
+        
+        /* Animasi ala 3D Slicer (Cura) */
+        .slicer-bed { background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.2) 2px, rgba(255,255,255,0.2) 4px); }
+        @keyframes printUp { from { height: 0%; } }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-10">
 
     <!-- LOGIN SCREEN -->
     <div id="loginGate" class="fixed inset-0 bg-white z-50 flex items-center justify-center p-4">
-        <div class="card p-8 max-w-sm w-full text-center shadow-lg">
-            <h2 class="text-2xl font-bold mb-2">Admin Login</h2>
-            <p class="text-sm text-gray-500 mb-6">Masukkan password untuk akses data</p>
-            
+        <div class="card p-8 max-w-sm w-full text-center shadow-2xl">
+            <h2 class="text-2xl font-extrabold mb-2 text-black">Akses Admin</h2>
+            <p class="text-sm text-gray-500 mb-6">Masukkan password untuk sinkronisasi data</p>
             <form onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="password" id="adminPassword" placeholder="Password..." required class="w-full border border-gray-300 rounded-lg py-3 px-4 text-center focus:border-black focus:ring-1 focus:ring-black outline-none transition-all">
-                <button type="submit" class="w-full bg-black text-white font-semibold py-3 rounded-lg hover:bg-gray-800 transition-all">
-                    Masuk Dashboard
-                </button>
+                <input type="password" id="adminPassword" placeholder="Password..." required class="w-full border border-gray-300 rounded-lg py-3 px-4 text-center font-bold focus:border-black outline-none transition-all">
+                <button type="submit" class="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition-all shadow-md">Buka Dashboard</button>
             </form>
-            <p id="loginError" class="text-sm text-red-500 mt-4 hidden">Password salah.</p>
+            <p id="loginError" class="text-sm text-red-500 mt-4 hidden font-medium">Password salah.</p>
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD -->
-    <div id="appContent" class="hidden flex flex-col min-h-screen">
+    <!-- MAIN APP -->
+    <div id="appContent" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         
         <!-- HEADER -->
-        <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-                <div>
-                    <h1 class="text-lg font-bold text-black tracking-tight">Admin Control Panel</h1>
-                    <p class="text-xs text-gray-500 flex items-center gap-1">
-                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Terkoneksi ke Spreadsheet
-                    </p>
-                </div>
-                <button onclick="logoutAdmin()" class="text-sm font-medium text-gray-500 hover:text-black transition-colors">
-                    Logout
+        <header class="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+            <div>
+                <h1 class="text-xl font-extrabold tracking-tight">Admin Control Panel</h1>
+                <p class="text-[11px] font-semibold text-green-600 flex items-center gap-1.5 mt-0.5">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> Terhubung ke Spreadsheet
+                </p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="fetchData()" class="text-xs bg-gray-100 hover:bg-gray-200 border border-gray-300 text-black px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all font-semibold" id="btnRefresh">
+                    <i class="ph-bold ph-arrows-clockwise"></i> Segarkan Data
                 </button>
+                <button onclick="logoutAdmin()" class="text-xs font-semibold text-gray-500 hover:text-red-500 transition-colors">Logout</button>
             </div>
         </header>
 
-        <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-8 w-full space-y-8">
+        <!-- STATS & DELEGASI -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- 1. DASHBOARD STATS -->
-            <section>
-                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Ringkasan Produksi</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="card p-5">
-                        <p class="text-xs text-gray-500 mb-1">Gramasi Kepakai (Hari Ini)</p>
-                        <h3 class="text-2xl font-bold" id="stat-gram-today">Menunggu Data...</h3>
-                    </div>
-                    <div class="card p-5">
-                        <p class="text-xs text-gray-500 mb-1">Total Gramasi (Tahun Ini)</p>
-                        <h3 class="text-2xl font-bold" id="stat-gram-year">Menunggu Data...</h3>
-                    </div>
-                    <div class="card p-5">
-                        <p class="text-xs text-gray-500 mb-1">Mesin Jalan (Hari Ini)</p>
-                        <h3 class="text-2xl font-bold" id="stat-mesin-today">Menunggu Data...</h3>
-                    </div>
-                    <div class="card p-5">
-                        <p class="text-xs text-gray-500 mb-1">Total Mesin</p>
-                        <h3 class="text-2xl font-bold" id="stat-mesin-total">Menunggu Data...</h3>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 2. STATUS PEKERJAAN KARYAWAN -->
-            <section>
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Status Karyawan Saat Ini</h2>
-                    <button onclick="fetchSpreadsheetData()" class="text-xs bg-gray-100 hover:bg-gray-200 text-black px-3 py-1.5 rounded flex items-center gap-1 border border-gray-200">
-                        <i class="ph ph-arrows-clockwise"></i> Refresh Data
-                    </button>
-                </div>
+            <!-- FORM DELEGASI (Sesuai Gambar) -->
+            <div class="lg:col-span-1 card p-6 shadow-sm">
+                <h3 class="text-sm font-extrabold uppercase tracking-widest flex items-center gap-2 mb-6 text-black border-b border-gray-100 pb-3">
+                    <i class="ph-fill ph-paper-plane-tilt text-lg"></i> DELEGASI TUGAS
+                </h3>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="employee-status-container">
-                    <!-- Data ditarik dari Spreadsheet -->
-                    <div class="card p-8 text-center text-gray-400 text-sm"><i class="ph ph-spinner animate-spin text-2xl mb-2"></i><br>Memuat data dari Spreadsheet...</div>
-                </div>
-            </section>
-
-            <!-- 3. LOG AKTIVITAS (DIPISAH PER KARYAWAN) -->
-            <section class="card p-0 overflow-hidden">
-                <div class="p-5 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Log Aktivitas</h2>
+                <form onsubmit="kirimTugas(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5">Nama Project</label>
+                        <input type="text" id="f_project" placeholder="contoh: bank bri" required class="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm font-semibold focus:border-black outline-none transition-all">
+                    </div>
                     
-                    <!-- TABS -->
-                    <div class="flex gap-6 text-sm">
-                        <button onclick="setTab('Semua')" id="tab-Semua" class="tab-active pb-1">Semua</button>
-                        <button onclick="setTab('Teguh')" id="tab-Teguh" class="tab-inactive pb-1 hover:text-black">Teguh</button>
-                        <button onclick="setTab('Zalfa')" id="tab-Zalfa" class="tab-inactive pb-1 hover:text-black">Zalfa</button>
-                        <button onclick="setTab('Tester3D')" id="tab-Tester3D" class="tab-inactive pb-1 hover:text-black">Tester3D</button>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5">Pilih Karyawan</label>
+                        <select id="f_karyawan" required class="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm font-semibold focus:border-black outline-none appearance-none bg-gray-50">
+                            <option value="" disabled selected>Pilih Tim...</option>
+                            <option value="Teguh">Teguh</option>
+                            <option value="Zalfa">Zalfa</option>
+                            <option value="Tester3D">Tester3D</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5">Tipe Pekerjaan</label>
+                        <div class="flex gap-2">
+                            <!-- Radio Button Custom -->
+                            <label class="flex-1 text-center cursor-pointer">
+                                <input type="radio" name="f_tipe" value="Bikin Mockup" class="peer hidden" checked>
+                                <div class="border border-gray-200 rounded-lg py-2 text-xs font-semibold peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-700 transition-all">Bikin Mockup</div>
+                            </label>
+                            <label class="flex-1 text-center cursor-pointer">
+                                <input type="radio" name="f_tipe" value="Langsung Produksi" class="peer hidden">
+                                <div class="border border-gray-200 rounded-lg py-2 text-xs font-semibold peer-checked:bg-green-50 peer-checked:border-green-500 peer-checked:text-green-700 transition-all">Langsung Produksi</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnSubmitTugas" class="w-full bg-black text-white font-bold py-3 rounded-lg text-xs uppercase tracking-widest hover:bg-gray-800 active:scale-95 transition-all shadow-md mt-2 flex justify-center items-center gap-2">
+                        Tugaskan Sekarang
+                    </button>
+                </form>
+            </div>
+
+            <!-- STATISTIK & STATUS KARYAWAN -->
+            <div class="lg:col-span-2 flex flex-col gap-6">
+                <!-- 4 Box Statistik -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="card p-4 flex flex-col justify-center shadow-sm">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Gramasi (Hari Ini)</span>
+                        <h3 class="text-xl font-black text-black" id="stat-gram-today">...</h3>
+                    </div>
+                    <div class="card p-4 flex flex-col justify-center shadow-sm">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Gramasi (2026)</span>
+                        <h3 class="text-xl font-black text-black" id="stat-gram-year">...</h3>
+                    </div>
+                    <div class="card p-4 flex flex-col justify-center shadow-sm border-b-4 border-blue-500">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Mesin Jalan</span>
+                        <h3 class="text-xl font-black text-blue-600" id="stat-mesin-today">...</h3>
+                    </div>
+                    <div class="card p-4 flex flex-col justify-center shadow-sm">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total Mesin</span>
+                        <h3 class="text-xl font-black text-black" id="stat-mesin-total">...</h3>
                     </div>
                 </div>
 
-                <div class="p-5 max-h-[400px] overflow-y-auto">
-                    <table class="w-full text-left text-sm" id="log-table">
-                        <thead>
-                            <tr class="text-gray-400 border-b border-gray-100">
-                                <th class="pb-3 font-medium w-32">Tanggal & Jam</th>
-                                <th class="pb-3 font-medium w-24">Karyawan</th>
-                                <th class="pb-3 font-medium">Aktivitas / Project</th>
-                            </tr>
-                        </thead>
-                        <tbody id="log-container" class="divide-y divide-gray-100">
-                            <!-- Data ditarik dari Spreadsheet -->
-                        </tbody>
-                    </table>
+                <!-- Status Live Karyawan (Cura Style) -->
+                <div class="card p-0 shadow-sm flex-1">
+                    <div class="p-4 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
+                        <h3 class="text-sm font-extrabold uppercase tracking-widest text-black flex items-center gap-2">
+                            <i class="ph-bold ph-monitor-play text-gray-500 text-lg"></i> Monitor Produksi 3D
+                        </h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100" id="employee-status-container">
+                        <div class="p-8 text-center text-gray-400 text-xs font-semibold col-span-3">
+                            <i class="ph-bold ph-spinner animate-spin text-2xl mb-2 text-blue-500"></i><br>Menarik data realtime dari AppScript...
+                        </div>
+                    </div>
                 </div>
-            </section>
+            </div>
+        </div>
 
-        </main>
+        <!-- LOG AKTIVITAS -->
+        <div class="card p-0 shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <h3 class="text-sm font-extrabold uppercase tracking-widest text-black flex items-center gap-2">
+                    <i class="ph-bold ph-list-dashes text-gray-500 text-lg"></i> Log Aktivitas
+                </h3>
+                <!-- Filter Tabs -->
+                <div class="flex gap-4 text-xs font-semibold">
+                    <button onclick="setTab('Semua')" id="tab-Semua" class="tab-active pb-1">Semua</button>
+                    <button onclick="setTab('Teguh')" id="tab-Teguh" class="tab-inactive pb-1 hover:text-black">Teguh</button>
+                    <button onclick="setTab('Zalfa')" id="tab-Zalfa" class="tab-inactive pb-1 hover:text-black">Zalfa</button>
+                    <button onclick="setTab('Tester3D')" id="tab-Tester3D" class="tab-inactive pb-1 hover:text-black">Tester3D</button>
+                </div>
+            </div>
+            
+            <div class="p-0 max-h-[350px] overflow-y-auto">
+                <table class="w-full text-left text-sm">
+                    <tbody id="log-container" class="divide-y divide-gray-100">
+                        <!-- Rendered by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
-        // ==========================================
-        // 1. SISTEM LOGIN
-        // ==========================================
+        const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxKQCp8huU_pEJ2uOF3aYE30oYHo_3FYNXJ1pX2AEiHfiVO8LPZip8Z3e9uE8OPJquew/exec";
         const ADMIN_PASS = "mlsc123";
+        let allLogs = [];
+        let currentTab = 'Semua';
 
+        // === 1. SISTEM LOGIN ===
         function handleLogin(e) {
             e.preventDefault();
-            const pass = document.getElementById('adminPassword').value;
-            if(pass === ADMIN_PASS) {
+            if(document.getElementById('adminPassword').value === ADMIN_PASS) {
                 sessionStorage.setItem('adminAuthed', 'true');
                 document.getElementById('loginGate').classList.add('hidden');
                 document.getElementById('appContent').classList.remove('hidden');
-                fetchSpreadsheetData(); // Langsung tarik data saat login berhasil
+                fetchData();
             } else {
                 document.getElementById('loginError').classList.remove('hidden');
             }
         }
-
-        function logoutAdmin() {
-            sessionStorage.removeItem('adminAuthed');
-            location.reload();
-        }
-
-        // Cek sesi saat halaman dimuat
+        function logoutAdmin() { sessionStorage.removeItem('adminAuthed'); location.reload(); }
         window.onload = () => {
             if(sessionStorage.getItem('adminAuthed') === 'true') {
                 document.getElementById('loginGate').classList.add('hidden');
                 document.getElementById('appContent').classList.remove('hidden');
-                fetchSpreadsheetData();
+                fetchData();
             }
         };
 
-        // ==========================================
-        // 2. KONEKSI KE GOOGLE SPREADSHEET (APPSCRIPT)
-        // ==========================================
-        
-        // GANTI URL INI DENGAN URL WEB APP GOOGLE SCRIPT KAMU
-        const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxKQCp8huU_pEJ2uOF3aYE30oYHo_3FYNXJ1pX2AEiHfiVO8LPZip8Z3e9uE8OPJquew/exec"; 
-
-        // Variabel penampung data
-        let allLogs = [];
-        let currentTab = 'Semua';
-
-        // Fungsi utama untuk menarik data
-        async function fetchSpreadsheetData() {
+        // === 2. FETCH DATA REAL DARI APPSCRIPT (NO DUMMY) ===
+        async function fetchData() {
+            const btn = document.getElementById('btnRefresh');
+            const icon = btn.querySelector('i');
+            icon.classList.add('animate-spin');
+            
             try {
-                // Tampilkan loading state
-                document.getElementById('stat-gram-today').innerText = "Loading...";
+                // Parameter action=getData untuk membedakan dengan fungsi post
+                const response = await fetch(`${APPSCRIPT_URL}?action=getData`);
                 
-                /* 
-                // UNTUK KONEKSI ASLI KE SPREADSHEET, GUNAKAN KODE INI:
-                const response = await fetch(APPSCRIPT_URL + "?action=getAdminData");
-                const data = await response.json(); 
-                */
+                if (!response.ok) throw new Error("Gagal mengambil respons API");
+                const data = await response.json();
+                
+                // Render Statistik
+                document.getElementById('stat-gram-today').innerText = data.stats.gramasiToday || "0";
+                document.getElementById('stat-gram-year').innerText = data.stats.gramasiYear || "0";
+                document.getElementById('stat-mesin-today').innerText = data.stats.mesinJalanToday || "0";
+                document.getElementById('stat-mesin-total').innerText = data.stats.totalMesin || "0";
 
-                // KARENA INI PREVIEW, KITA GUNAKAN DATA DUMMY YANG STRUKTURNYA SAMA PERSIS 
-                // SEPERTI YANG HARUS DIKELUARKAN OLEH SPREADSHEET KAMU NANTINYA:
-                const data = {
-                    stats: {
-                        gramasiToday: "1,250 gr",
-                        gramasiYear: "45.2 kg",
-                        mesinJalanToday: "3 Mesin",
-                        totalMesin: "12 Mesin"
-                    },
-                    karyawan: [
-                        { nama: "Teguh", project: "Project Bank BJB", waktu: "Hari ini, 09:15 WIB", status: "Produksi", mesin: "A1.1", gramasi: "450g" },
-                        { nama: "Zalfa", project: "Mockup Maskot", waktu: "Hari ini, 10:30 WIB", status: "Revisi", mesin: "-", gramasi: "-" },
-                        { nama: "Tester3D", project: "Uji Coba Sistem", waktu: "Hari ini, 11:00 WIB", status: "Mulai", mesin: "C1", gramasi: "100g" }
-                    ],
-                    logs: [
-                        { waktu: "01 Oct 2026, 11:30", nama: "Tester3D", aktivitas: "Mulai print project Uji Coba Sistem" },
-                        { waktu: "01 Oct 2026, 10:30", nama: "Zalfa", aktivitas: "Kirim revisi Mockup Maskot ke grup" },
-                        { waktu: "01 Oct 2026, 09:15", nama: "Teguh", aktivitas: "Mulai produksi Project Bank BJB di Mesin A1.1" },
-                        { waktu: "30 Sep 2026, 16:00", nama: "Teguh", aktivitas: "Selesai produksi box custom" },
-                        { waktu: "30 Sep 2026, 14:20", nama: "Tester3D", aktivitas: "Login ke sistem" }
-                    ]
-                };
+                // Render Karyawan
+                renderEmployeeStatus(data.karyawan || []);
 
-                // 1. Update Widget Stats
-                document.getElementById('stat-gram-today').innerText = data.stats.gramasiToday;
-                document.getElementById('stat-gram-year').innerText = data.stats.gramasiYear;
-                document.getElementById('stat-mesin-today').innerText = data.stats.mesinJalanToday;
-                document.getElementById('stat-mesin-total').innerText = data.stats.totalMesin;
-
-                // 2. Update Status Karyawan
-                renderEmployeeStatus(data.karyawan);
-
-                // 3. Simpan dan Update Logs
-                allLogs = data.logs;
+                // Render Logs
+                allLogs = data.logs || [];
                 renderLogs();
 
             } catch (error) {
-                console.error("Gagal menarik data dari Spreadsheet:", error);
-                alert("Gagal terhubung ke Spreadsheet. Pastikan link AppScript benar.");
+                console.error(error);
+                document.getElementById('employee-status-container').innerHTML = `
+                    <div class="col-span-3 p-8 text-center text-red-500 font-bold text-xs">
+                        <i class="ph-fill ph-warning-circle text-2xl mb-2"></i><br>
+                        Data belum tersedia / AppScript error.<br>
+                        Pastikan Google Apps Script mereturn format JSON yang benar.
+                    </div>`;
+            } finally {
+                icon.classList.remove('animate-spin');
             }
         }
 
-        // ==========================================
-        // 3. RENDER UI FUNCTIONS
-        // ==========================================
+        // === 3. KIRIM DATA KE APPSCRIPT (REAL POST) ===
+        async function kirimTugas(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitTugas');
+            const originalText = btn.innerHTML;
+            
+            const project = document.getElementById('f_project').value;
+            const karyawan = document.getElementById('f_karyawan').value;
+            const tipe = document.querySelector('input[name="f_tipe"]:checked').value;
 
-        function renderEmployeeStatus(karyawanData) {
-            const container = document.getElementById('employee-status-container');
-            container.innerHTML = karyawanData.map(k => `
-                <div class="card p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-bold text-black">${k.nama}</h3>
-                            <span class="text-[10px] bg-gray-100 px-2 py-1 rounded font-medium border border-gray-200">${k.status}</span>
-                        </div>
-                        <p class="text-xs text-gray-500 mb-1">Lagi Ngerjain:</p>
-                        <p class="text-sm font-semibold text-black mb-3">${k.project}</p>
-                    </div>
-                    
-                    <div class="bg-gray-50 border border-gray-100 rounded p-3 text-xs text-gray-600 space-y-1">
-                        <div class="flex justify-between"><span>Waktu:</span> <span class="font-medium text-black">${k.waktu}</span></div>
-                        <div class="flex justify-between"><span>Mesin:</span> <span class="font-medium text-black">${k.mesin}</span></div>
-                        <div class="flex justify-between"><span>Gramasi:</span> <span class="font-medium text-black">${k.gramasi}</span></div>
-                    </div>
-                </div>
-            `).join('');
+            btn.innerHTML = `<i class="ph ph-spinner animate-spin"></i> Mengirim...`;
+            btn.disabled = true;
+
+            try {
+                // Menggunakan POST request dengan body JSON (Atau sesuaikan jika AppScript mu memakai FormData)
+                const formData = new FormData();
+                formData.append('action', 'assignTugas');
+                formData.append('project', project);
+                formData.append('karyawan', karyawan);
+                formData.append('tipe', tipe);
+
+                // Kirim data murni ke AppScript
+                await fetch(APPSCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                // Bersihkan form & tarik data ulang setelah berhasil
+                document.getElementById('f_project').value = "";
+                document.getElementById('f_karyawan').value = "";
+                alert("Tugas berhasil didelegasikan!");
+                
+                fetchData(); // Sinkron ulang data
+                
+            } catch (error) {
+                console.error(error);
+                alert("Gagal mengirim tugas ke Spreadsheet. Pastikan AppScript doPost() dikonfigurasi menerima form-data.");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
 
+        // === 4. RENDER UI & INDIKATOR CURA ===
+        function renderEmployeeStatus(karyawanData) {
+            const container = document.getElementById('employee-status-container');
+            container.innerHTML = karyawanData.map(k => {
+                
+                // Logika Warna Badge Status
+                let statusColor = "bg-gray-100 text-gray-700 border-gray-200";
+                if(k.status.toLowerCase().includes("produksi")) statusColor = "bg-green-100 text-green-700 border-green-300";
+                else if(k.status.toLowerCase().includes("mockup") || k.status.toLowerCase().includes("mulai")) statusColor = "bg-blue-100 text-blue-700 border-blue-300";
+                else if(k.status.toLowerCase().includes("revisi")) statusColor = "bg-red-100 text-red-700 border-red-300";
+
+                // Persentase (progress) untuk Cura Box
+                const prog = k.progress || 0; // Jika tidak ada dari db, set 0
+                const bedColor = prog > 0 ? 'bg-blue-500' : 'bg-gray-300';
+
+                return `
+                <div class="p-5 flex flex-col justify-between hover:bg-gray-50 transition-colors">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-extrabold text-black text-sm">${k.nama}</h4>
+                            <span class="text-[10px] px-2 py-0.5 rounded font-bold border uppercase tracking-wider ${statusColor}">
+                                ${k.status}
+                            </span>
+                        </div>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Project Aktif</p>
+                        <p class="text-sm font-bold text-black mb-4 truncate">${k.project || '-'}</p>
+                    </div>
+
+                    <div class="flex items-center gap-4 bg-white border border-gray-100 p-3 rounded-xl shadow-sm">
+                        <!-- Indikator Animasi 3D Cura Style -->
+                        <div class="w-8 h-12 bg-gray-100 border border-gray-200 rounded-md relative flex items-end overflow-hidden shrink-0">
+                            <!-- Garis dasar -->
+                            <div class="w-full h-1 bg-gray-300 absolute bottom-0 z-10"></div>
+                            <!-- Progres naik ke atas -->
+                            <div class="w-full ${bedColor} slicer-bed transition-all duration-1000 ease-out z-0" style="height: ${prog}%; animation: printUp 1.5s ease-out;"></div>
+                            <span class="absolute inset-0 flex items-center justify-center text-[8px] font-black text-white mix-blend-difference">${prog}%</span>
+                        </div>
+                        
+                        <div class="flex-1 text-[10px] font-semibold text-gray-500 space-y-1.5">
+                            <div class="flex justify-between border-b border-gray-100 pb-1">
+                                <span>Mesin</span> <span class="text-black font-bold">${k.mesin || '-'}</span>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-100 pb-1">
+                                <span>Gramasi</span> <span class="text-black font-bold">${k.gramasi || '-'}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Update</span> <span class="text-gray-400">${k.waktu || '-'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // === 5. TAB LOGS ===
         function setTab(tabName) {
             currentTab = tabName;
-            
-            // Ubah style tab
             ['Semua', 'Teguh', 'Zalfa', 'Tester3D'].forEach(name => {
                 const btn = document.getElementById(`tab-${name}`);
-                if(name === tabName) {
-                    btn.className = "tab-active pb-1";
-                } else {
-                    btn.className = "tab-inactive pb-1 hover:text-black";
-                }
+                if(name === tabName) btn.className = "tab-active pb-1";
+                else btn.className = "tab-inactive pb-1 hover:text-black";
             });
-
             renderLogs();
         }
 
         function renderLogs() {
             const container = document.getElementById('log-container');
-            
-            // Filter data berdasarkan tab
-            const filteredLogs = currentTab === 'Semua' 
-                ? allLogs 
-                : allLogs.filter(log => log.nama === currentTab);
+            const filtered = currentTab === 'Semua' ? allLogs : allLogs.filter(log => log.nama === currentTab);
 
-            if(filteredLogs.length === 0) {
-                container.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-sm text-gray-400">Belum ada data untuk ${currentTab}</td></tr>`;
+            if(filtered.length === 0) {
+                container.innerHTML = `<tr><td class="p-6 text-center text-xs font-bold text-gray-400">Belum ada riwayat.</td></tr>`;
                 return;
             }
 
-            container.innerHTML = filteredLogs.map(log => `
+            container.innerHTML = filtered.map(log => `
                 <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="py-3 pr-4 text-xs text-gray-500">${log.waktu}</td>
-                    <td class="py-3 pr-4 font-medium text-black">${log.nama}</td>
-                    <td class="py-3 text-gray-700">${log.aktivitas}</td>
+                    <td class="p-4 w-40 text-[10px] font-bold text-gray-400 border-r border-gray-100">${log.waktu}</td>
+                    <td class="p-4 w-28 text-xs font-extrabold text-black uppercase tracking-wider">${log.nama}</td>
+                    <td class="p-4 text-xs font-medium text-gray-700">${log.aktivitas}</td>
                 </tr>
             `).join('');
         }
