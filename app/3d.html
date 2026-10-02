@@ -31,24 +31,8 @@
 </head>
 <body class="min-h-screen pb-10">
 
-    <!-- LOGIN SCREEN -->
-    <div id="loginGate" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-        <div class="card p-8 max-w-sm w-full text-center shadow-2xl">
-            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="ph-fill ph-lock-key text-3xl"></i>
-            </div>
-            <h2 class="text-2xl font-extrabold mb-2 text-black">Akses Admin</h2>
-            <p class="text-sm text-gray-500 mb-6">Masukkan password keamanan</p>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="password" id="adminPassword" placeholder="Password..." required class="w-full border-2 border-gray-200 rounded-2xl py-3 px-4 text-center font-bold focus:border-blue-500 outline-none transition-all">
-                <button type="submit" id="btnLogin" class="w-full bg-blue-600 text-white font-bold py-3 rounded-2xl hover:bg-blue-700 transition-all shadow-md flex justify-center items-center gap-2">Buka Dashboard</button>
-            </form>
-            <p id="loginError" class="text-sm text-red-500 mt-4 hidden font-medium">Password salah.</p>
-        </div>
-    </div>
-
-    <!-- MAIN APP -->
-    <div id="appContent" class="hidden max-w-[90rem] mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <!-- MAIN APP (Langsung Terbuka) -->
+    <div id="appContent" class="max-w-[90rem] mx-auto px-4 sm:px-6 py-6 space-y-6">
         
         <!-- HEADER -->
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 rounded-[24px] border border-gray-200 shadow-sm gap-4">
@@ -63,7 +47,6 @@
                 <button onclick="fetchData()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all font-bold" id="btnRefresh">
                     <i class="ph-bold ph-arrows-clockwise text-sm"></i> Segarkan
                 </button>
-                <button id="btnLogoutTop" onclick="logoutAdmin()" class="text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2">Logout</button>
             </div>
         </header>
 
@@ -202,76 +185,19 @@
 
     <script>
         // ==========================================
-        // MASUKAN URL APPSCRIPT TERBARU KAMU DISINI!
+        // URL APPSCRIPT
         // ==========================================
         const APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec"; 
         
-        const ADMIN_PASS = "mlsc123";
         let allLogs = [];
         let currentTab = 'Semua';
 
         // ==========================================
-        // FUNGSI CATAT LOG (DENGAN ANTI-CORS REDIRECT)
+        // LANGSUNG JALANKAN FETCH SAAT WEB DIBUKA (BIAR NGEBUT)
         // ==========================================
-        async function logAdminActivity(aktivitas) {
-            try {
-                await fetch(APPSCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({
-                        action: 'log_event',
-                        data: { id: Date.now(), nama: 'Admin 3D', aktivitas: aktivitas }
-                    }),
-                    redirect: 'follow' // INI PENTING AGAR TIDAK DIBLOKIR BROWSER
-                });
-            } catch (error) { 
-                console.error("Gagal mencatat log Admin", error); 
-            }
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnLogin');
-            
-            if(document.getElementById('adminPassword').value === ADMIN_PASS) {
-                btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i> Membuka...`;
-                btn.disabled = true;
-
-                // Mencatat Login ke Google Sheet
-                await logAdminActivity("Login ke Dashboard");
-
-                sessionStorage.setItem('adminAuthed', 'true');
-                document.getElementById('loginGate').classList.add('hidden');
-                document.getElementById('appContent').classList.remove('hidden');
-                
-                // Segarkan data
-                fetchData();
-                
-                btn.innerHTML = `Buka Dashboard`;
-                btn.disabled = false;
-            } else {
-                document.getElementById('loginError').classList.remove('hidden');
-            }
-        }
-        
-        async function logoutAdmin() { 
-            const btn = document.getElementById('btnLogoutTop');
-            btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i> Keluar...`;
-            
-            // Mencatat Logout ke Google Sheet
-            await logAdminActivity("Logout dari Dashboard");
-            
-            sessionStorage.removeItem('adminAuthed'); 
-            location.reload(); 
-        }
-
-        window.onload = () => {
-            if(sessionStorage.getItem('adminAuthed') === 'true') {
-                document.getElementById('loginGate').classList.add('hidden');
-                document.getElementById('appContent').classList.remove('hidden');
-                fetchData();
-            }
-        };
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+        });
 
         // ==========================================
         // FETCH DATA DASHBOARD
@@ -291,7 +217,7 @@
                     method: "POST",
                     headers: { "Content-Type": "text/plain" }, 
                     body: JSON.stringify(payload),
-                    redirect: 'follow' // INI PENTING AGAR TIDAK DIBLOKIR BROWSER
+                    redirect: 'follow' 
                 });
                 
                 if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
@@ -375,7 +301,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(payload),
-                    redirect: 'follow' // INI PENTING AGAR TIDAK DIBLOKIR BROWSER
+                    redirect: 'follow' 
                 });
 
                 const res = await response.json();
