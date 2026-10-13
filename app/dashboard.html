@@ -31,7 +31,7 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .card-hover { transition: all 0.2s ease-in-out; }
-        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05); border-color: #cbd5e1; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05); }
     </style>
 </head>
 <body class="pb-24" onload="checkLogin()" oncontextmenu="return false;">
@@ -86,66 +86,67 @@
         <!-- TAB 1: OVERVIEW LIVE -->
         <div id="tab-overview" class="tab-content">
             
-            <!-- WAKTU & TANGGAL LIVE -->
-            <div class="bg-slate-900 rounded-[32px] p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-4 shadow-xl mb-8 relative overflow-hidden">
-                <i class="ph-fill ph-planet absolute -right-10 -bottom-10 text-[150px] text-slate-800 opacity-50 pointer-events-none"></i>
-                <div>
-                    <h2 class="text-slate-400 font-extrabold uppercase tracking-widest text-[11px] mb-1">Waktu Server Molusca</h2>
-                    <div id="liveDate" class="text-white font-bold text-sm md:text-base">--</div>
+            <!-- WAKTU SERVER (Sesuai Referensi Gambar) -->
+            <div class="bg-[#121929] rounded-[24px] md:rounded-[32px] p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-4 shadow-xl mb-8 relative overflow-hidden">
+                <i class="ph-fill ph-planet absolute -right-10 -bottom-10 text-[150px] text-slate-800 opacity-30 pointer-events-none"></i>
+                <div class="relative z-10 w-full md:w-auto text-center md:text-left">
+                    <h2 class="text-slate-400 font-extrabold uppercase tracking-[0.2em] text-[10px] md:text-[11px] mb-1.5">Waktu Server Molusca</h2>
+                    <div id="liveDate" class="text-white font-extrabold text-sm md:text-lg">--</div>
                 </div>
-                <div class="bg-slate-800 border border-slate-700 px-6 py-3 rounded-2xl flex items-center gap-3 shadow-inner">
+                <div class="bg-slate-800/80 border border-slate-700/50 px-6 py-4 rounded-2xl flex items-center justify-center gap-3 shadow-inner w-full md:w-auto backdrop-blur-sm relative z-10">
                     <i class="ph-fill ph-clock text-blue-400 text-2xl animate-pulse"></i>
                     <span id="liveTime" class="text-white font-black text-3xl md:text-4xl tracking-tighter">--:--:--</span>
                 </div>
             </div>
 
-            <!-- LIVE MONITOR: PEKERJAAN BERJALAN (Prioritas Utama) -->
-            <div class="mb-8">
-                <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-activity text-blue-600 text-xl"></i> Live Monitor Pekerjaan Tim</h2>
+            <!-- LIVE MONITOR: PEKERJAAN BERJALAN -->
+            <div class="mb-10">
+                <h2 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-activity text-blue-600 text-xl"></i> Live Monitor Pekerjaan Tim</h2>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
                     
-                    <!-- PANEL DESAIN REGULER -->
-                    <div class="bg-white rounded-[24px] md:rounded-[32px] border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
-                        <div class="bg-blue-50/50 p-5 border-b border-blue-100 flex justify-between items-center">
-                            <h3 class="font-black text-blue-700 uppercase tracking-widest text-xs flex items-center gap-2"><i class="ph-fill ph-paint-brush text-lg"></i> Desain Grafis</h3>
-                            <span id="countDesainAktif" class="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md">0</span>
+                    <!-- PANEL DESAIN GRAFIS -->
+                    <div class="bg-white rounded-[24px] md:rounded-[32px] border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                        <div class="bg-blue-50/50 p-5 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="font-black text-blue-600 uppercase tracking-widest text-[11px] md:text-xs flex items-center gap-2"><i class="ph-fill ph-paint-brush text-lg"></i> Desain Grafis</h3>
+                            <span id="countDesainAktif" class="bg-blue-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm">0</span>
                         </div>
-                        <div id="liveDesainList" class="p-4 space-y-3 max-h-[400px] overflow-y-auto hide-scrollbar bg-slate-50/30 flex-1">
+                        <div id="liveDesainList" class="p-4 space-y-4 max-h-[600px] overflow-y-auto hide-scrollbar bg-slate-50/30">
                             <!-- Injected via JS -->
-                            <div class="skeleton h-20 w-full rounded-2xl"></div>
                         </div>
                     </div>
 
-                    <!-- PANEL DESAIN 3D & PRODUKSI -->
-                    <div class="bg-white rounded-[24px] md:rounded-[32px] border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
-                        <div class="bg-emerald-50/50 p-5 border-b border-emerald-100 flex justify-between items-center">
-                            <h3 class="font-black text-emerald-700 uppercase tracking-widest text-xs flex items-center gap-2"><i class="ph-fill ph-cube text-lg"></i> 3D & Produksi</h3>
-                            <span id="count3dAktif" class="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md">0</span>
+                    <!-- PANEL 3D & PRODUKSI -->
+                    <div class="bg-white rounded-[24px] md:rounded-[32px] border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                        <div class="bg-emerald-50/50 p-5 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="font-black text-emerald-600 uppercase tracking-widest text-[11px] md:text-xs flex items-center gap-2"><i class="ph-fill ph-cube text-lg"></i> 3D & Produksi</h3>
+                            <span id="count3dAktif" class="bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm">0</span>
                         </div>
+                        
                         <!-- 3D STATS WIDGET -->
                         <div class="p-4 bg-emerald-600 text-white flex flex-col gap-2 shadow-inner">
-                            <div class="flex justify-between items-center bg-emerald-700/50 px-3 py-2 rounded-xl">
-                                <span class="text-[10px] font-bold uppercase tracking-widest opacity-80"><i class="ph-fill ph-scales"></i> Gramasi Bln Ini</span>
+                            <div class="flex justify-between items-center bg-emerald-700/50 px-4 py-2.5 rounded-xl border border-emerald-500/30">
+                                <span class="text-[10px] font-bold uppercase tracking-widest opacity-90 flex items-center gap-1.5"><i class="ph-fill ph-scales text-sm"></i> Gramasi Bln Ini</span>
                                 <span id="statGramasi" class="font-black text-sm">0 gr</span>
                             </div>
-                            <div class="flex justify-between items-center bg-emerald-700/50 px-3 py-2 rounded-xl">
-                                <span class="text-[10px] font-bold uppercase tracking-widest opacity-80"><i class="ph-fill ph-cpu"></i> Mesin Aktif</span>
-                                <span id="statMesinAktif" class="font-black text-[10px] truncate max-w-[120px] text-right">-</span>
+                            <div class="flex justify-between items-center bg-emerald-700/50 px-4 py-2.5 rounded-xl border border-emerald-500/30">
+                                <span class="text-[10px] font-bold uppercase tracking-widest opacity-90 flex items-center gap-1.5"><i class="ph-fill ph-cpu text-sm"></i> Mesin Aktif</span>
+                                <span id="statMesinAktif" class="font-black text-[10px] truncate max-w-[140px] text-right">-</span>
                             </div>
                         </div>
-                        <div id="live3dList" class="p-4 space-y-3 max-h-[300px] overflow-y-auto hide-scrollbar bg-slate-50/30 flex-1">
+
+                        <div id="live3dList" class="p-4 space-y-4 max-h-[500px] overflow-y-auto hide-scrollbar bg-slate-50/30">
                             <!-- Injected via JS -->
                         </div>
                     </div>
 
                     <!-- PANEL KONTEN KREATOR -->
-                    <div class="bg-white rounded-[24px] md:rounded-[32px] border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden lg:col-span-1 md:col-span-2">
-                        <div class="bg-pink-50/50 p-5 border-b border-pink-100 flex justify-between items-center">
-                            <h3 class="font-black text-pink-700 uppercase tracking-widest text-xs flex items-center gap-2"><i class="ph-fill ph-video-camera text-lg"></i> Deadline Konten</h3>
-                            <span id="countKontenAktif" class="bg-pink-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md">0</span>
+                    <div class="bg-white rounded-[24px] md:rounded-[32px] border border-slate-200 shadow-sm flex flex-col overflow-hidden lg:col-span-1 md:col-span-2">
+                        <div class="bg-pink-50/50 p-5 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="font-black text-pink-600 uppercase tracking-widest text-[11px] md:text-xs flex items-center gap-2"><i class="ph-fill ph-video-camera text-lg"></i> Deadline Konten</h3>
+                            <span id="countKontenAktif" class="bg-pink-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm">0</span>
                         </div>
-                        <div id="liveKontenList" class="p-4 space-y-3 max-h-[400px] overflow-y-auto hide-scrollbar bg-slate-50/30 flex-1">
+                        <div id="liveKontenList" class="p-4 space-y-4 max-h-[600px] overflow-y-auto hide-scrollbar bg-slate-50/30">
                             <!-- Injected via JS -->
                         </div>
                     </div>
@@ -153,8 +154,8 @@
                 </div>
             </div>
 
-            <!-- STATISTIK WIDGET LAMA -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 pt-6 border-t border-slate-200">
+            <!-- STATISTIK WIDGET -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-gradient-to-br from-amber-400 to-orange-500 p-6 md:p-8 rounded-[32px] shadow-lg text-white relative overflow-hidden flex flex-col justify-center card-hover">
                     <i class="ph-fill ph-broom absolute -right-4 -bottom-4 text-9xl opacity-20 transform -rotate-12 pointer-events-none"></i>
                     <div class="relative z-10">
@@ -195,6 +196,7 @@
 
         <!-- TAB 2: TASK DESAIN (REGULER) -->
         <div id="tab-desain" class="tab-content">
+            <!-- Isi Tab Desain Tetap Sama Seperti Kode Sebelumnya (Saya ringkas di visual agar fokus di Overview) -->
             <section class="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[32px] border border-slate-200 shadow-sm mb-10 relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-[100px] -z-10"></div>
                 <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-bold ph-plus-circle text-blue-600 text-xl"></i> Buat Tugas Desain</h2>
@@ -219,20 +221,14 @@
             <div class="w-full overflow-x-auto hide-scrollbar pb-6 -mx-4 px-4 md:mx-0 md:px-0">
                 <div id="dynamic-boards" class="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 w-max md:w-full snap-x"></div>
             </div>
-
-            <section class="pt-8 border-t border-slate-200 mt-6">
-                <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-archive-box text-lg"></i> Final Archive</h2>
-                <div id="board-final" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
-            </section>
+            
+            <!-- Final Archive List akan di-inject disini lewat JS renderBoard -->
+            <div id="board-final" class="hidden"></div>
         </div>
 
         <!-- TAB 3: TASK 3D DESIGN -->
         <div id="tab-desain3d" class="tab-content">
-            <div class="mb-6">
-                <h2 class="text-sm md:text-base font-black text-slate-800 flex items-center gap-2 uppercase tracking-widest"><i class="ph-fill ph-cube text-emerald-500 text-xl"></i> Manajemen Task 3D</h2>
-                <p class="text-[11px] md:text-xs text-slate-500 mt-1 font-medium">Delegasikan project 3D design & produksi ke tim.</p>
-            </div>
-
+            <!-- Isi Tab 3D Tetap Sama -->
             <section class="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[32px] border border-slate-200 shadow-sm relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-[100px] -z-10"></div>
                 
@@ -292,19 +288,12 @@
                     <div id="dynamic-boards-3d" class="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-max md:w-full snap-x"></div>
                 </div>
             </div>
-            
-            <section class="mt-4 pt-6 border-t border-slate-200">
-                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="ph-fill ph-archive-box text-lg text-slate-300"></i> Final Archive 3D</h3>
-                <div id="board-3d-final" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
-            </section>
+            <div id="board-3d-final" class="hidden"></div>
         </div>
 
     </main>
 
     <script>
-        // ==========================================
-        // KONFIGURASI API & SHEET
-        // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec"; 
         const SPREADSHEET_ID = '1d3njy330ifMnm-uBD8daaey5AqYO3rQxaI-tLZQdeyI';
         
@@ -312,9 +301,7 @@
             try {
                 const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
                 return await res.json();
-            } catch (error) {
-                return { status: 'error', data: [] };
-            }
+            } catch (error) { return { status: 'error', data: [] }; }
         }
 
         async function fetchGviz(sheetName) {
@@ -332,9 +319,7 @@
                     row.id = row.id || Date.now().toString(); 
                     return row;
                 });
-            } catch(e) {
-                return [];
-            }
+            } catch(e) { return []; }
         }
 
         let allUsers = [];
@@ -360,7 +345,7 @@
 
         function checkLogin() {
             if (localStorage.getItem('moluscaRole') !== 'admin') {
-                // window.location.href = 'index.html'; // Un-comment to force login
+                // window.location.href = 'index.html';
             }
             startLiveClock();
             switchTab('overview'); 
@@ -383,7 +368,7 @@
         }
 
         function parseIndoDate(dateStr) {
-            if (!dateStr || dateStr === '-') return new Date(9999, 11, 31); // if no date, put at end
+            if (!dateStr || dateStr === '-') return new Date(9999, 11, 31); 
             let str = String(dateStr).replace(/-/g, ' '); 
             const idMonths = {"Jan":"Jan", "Feb":"Feb", "Mar":"Mar", "Apr":"Apr", "Mei":"May", "Jun":"Jun", "Jul":"Jul", "Ags":"Aug", "Sep":"Sep", "Okt":"Oct", "Nov":"Nov", "Des":"Dec"};
             for (let key in idMonths) { if (str.includes(key)) { str = str.replace(key, idMonths[key]); break; } }
@@ -403,7 +388,7 @@
         }
 
         // ==========================================
-        // LOAD SEMUA DATA & RENDER
+        // LOAD DATA & RENDER
         // ==========================================
         async function loadAllData() {
             document.getElementById('loadingOverlay').classList.remove('hidden');
@@ -425,16 +410,16 @@
                     renderUserBoards3d(allUsers);
                 }
 
-                // Render Boards (Tabs Desain)
+                // Render Boards Lama (Disembunyikan di tab lain)
                 renderBoard(resTasks);
                 renderBoard3d(resTasks3d);
                 
-                // Render Widget Overview
+                // Render Widget & Charts
                 processWidgetData(resIzin);
                 renderCharts(resTasks, resCreator);
 
-                // Render Live Monitor (Paling penting untuk Admin)
-                renderLiveMonitor(resTasks, resTasks3d, resCreator);
+                // Render LIVE MONITOR UTAMA (Berdasarkan Karyawan)
+                renderLiveMonitor(resTasks, resTasks3d, resCreator, allUsers);
 
             } catch (error) {
                 console.error("Error memuat data", error);
@@ -444,158 +429,191 @@
         }
 
         // ==========================================
-        // LIVE MONITOR LOGIC (NEW)
+        // LIVE MONITOR LOGIC (NEW: Per User)
         // ==========================================
-        function renderLiveMonitor(tasks, tasks3d, creatorTasks) {
-            // Helper pengurutan prioritas
-            // Urutan: 1. Urgent/Revisi, 2. Sedang Dikerjain/Jalan, 3. Menunggu
+        function renderLiveMonitor(tasks, tasks3d, creatorTasks, usersList) {
+            // Algoritma Prioritas Urutan (Urgent/Revisi paling atas, Menunggu paling bawah)
             const getPriorityScore = (status, priority) => {
                 let s = String(status).toLowerCase();
                 if(priority === 'Urgent') return 1;
                 if(s.includes('revisi')) return 2;
                 if(s.includes('dikerjain') || s.includes('produksi') || s.includes('mesin jalan')) return 3;
                 if(s.includes('layout')) return 4;
-                return 5; // Menunggu
+                return 5; // Menunggu Respon dsb
             };
 
-            // 1. DESAIN REGULER
+            // 1. DESAIN GRAFIS
             let activeDesain = tasks.filter(t => t.status && t.status.toLowerCase() !== 'final' && t.status.toLowerCase() !== 'selesai');
             document.getElementById('countDesainAktif').innerText = activeDesain.length;
-            
-            activeDesain.sort((a,b) => getPriorityScore(a.status, a.priority) - getPriorityScore(b.status, b.priority));
-            
-            const listDesain = document.getElementById('liveDesainList');
-            listDesain.innerHTML = '';
-            if(activeDesain.length === 0) listDesain.innerHTML = '<div class="text-center py-6 text-[11px] font-bold text-slate-400">Tidak ada task aktif.</div>';
-            
-            activeDesain.forEach(t => {
-                let isUrgent = t.priority === 'Urgent';
-                let stColor = 'text-blue-600 bg-blue-100 border-blue-200';
-                let stIcon = 'ph-pen-nib';
-                if(t.status.toLowerCase().includes('revisi')) { stColor = 'text-rose-600 bg-rose-100 border-rose-200'; stIcon = 'ph-wrench'; }
-                else if(t.status.toLowerCase().includes('layout')) { stColor = 'text-amber-600 bg-amber-100 border-amber-200'; stIcon = 'ph-bounding-box'; }
-                
-                listDesain.innerHTML += `
-                    <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 border-l-4 ${isUrgent?'border-l-red-500':'border-l-blue-400'}">
-                        <div class="flex justify-between items-start mb-1.5 gap-2">
-                            <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-md border ${stColor} flex items-center gap-1"><i class="ph-fill ${stIcon}"></i> ${t.status}</span>
-                            ${isUrgent ? '<span class="text-[9px] font-black text-red-600">URGENT</span>' : ''}
-                        </div>
-                        <h4 class="font-extrabold text-xs text-slate-800 leading-tight mb-1 truncate">${t.joCode} - ${t.title}</h4>
-                        <div class="flex justify-between items-center text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-2 pt-2 border-t border-slate-100">
-                            <span class="flex items-center gap-1"><i class="ph-fill ph-user-circle text-sm text-slate-400"></i> ${t.assignee}</span>
-                            <span>${t.dateStr}</span>
-                        </div>
-                    </div>`;
-            });
 
-            // 2. DESAIN 3D & PRODUKSI
+            let desainerUsers = usersList.filter(u => u.role && String(u.role).toLowerCase() === 'desainer');
+            let htmlDesain = '';
+
+            desainerUsers.forEach(u => {
+                let uTasks = activeDesain.filter(t => t.assignee === u.name).sort((a,b) => getPriorityScore(a.status, a.priority) - getPriorityScore(b.status, b.priority));
+                
+                let taskHtml = uTasks.map(t => {
+                    let isUrg = t.priority === 'Urgent';
+                    let badgeColor = 'bg-blue-100 text-blue-700';
+                    if(t.status.toLowerCase().includes('revisi')) badgeColor = 'bg-rose-100 text-rose-700';
+                    else if(t.status.toLowerCase().includes('layout')) badgeColor = 'bg-amber-100 text-amber-700';
+                    
+                    return `
+                        <div class="bg-white border ${isUrg?'border-red-400 shadow-md':'border-slate-200'} rounded-xl p-3 mb-2 shadow-sm relative overflow-hidden transition-all">
+                            ${isUrg ? '<div class="absolute top-0 left-0 w-1 h-full bg-red-500"></div>' : ''}
+                            <div class="flex justify-between items-start gap-2 mb-1.5 pl-1.5">
+                                <span class="text-[10px] font-black text-slate-800 leading-snug w-full pr-2">${t.joCode} - ${t.title}</span>
+                            </div>
+                            <div class="flex justify-between items-center pl-1.5 mt-2 border-t border-slate-100 pt-2">
+                                <span class="text-[8px] font-black uppercase px-2 py-1 rounded ${badgeColor} flex items-center gap-1 shadow-sm"><i class="ph-fill ph-tag"></i> ${t.status}</span>
+                                ${isUrg ? '<span class="text-[8px] font-black bg-red-50 text-red-600 px-2 py-1 rounded border border-red-100">URGENT</span>' : ''}
+                            </div>
+                        </div>`;
+                }).join('');
+
+                if(!taskHtml) taskHtml = `<div class="text-[10px] text-slate-400 font-bold italic py-2 text-center border-2 border-dashed border-slate-200 rounded-xl bg-white">Sedang tidak ada antrean ☕</div>`;
+
+                htmlDesain += `
+                <div class="mb-4 bg-slate-50 border border-slate-200 rounded-[20px] p-4 shadow-sm">
+                    <div class="flex items-center gap-3 mb-4 border-b border-slate-200 pb-3">
+                        <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-black text-sm shadow-inner border border-blue-200">${u.name.charAt(0)}</div>
+                        <div class="flex-1">
+                            <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest leading-none mb-1">${u.name}</h4>
+                            <span class="text-[9px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 font-bold">${uTasks.length} Task Aktif</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2">${taskHtml}</div>
+                </div>`;
+            });
+            document.getElementById('liveDesainList').innerHTML = htmlDesain || '<p class="text-xs text-slate-400 text-center py-4 font-bold">Belum ada tim desain</p>';
+
+            // 2. 3D & PRODUKSI
             let active3d = tasks3d.filter(t => t.status && t.status.toLowerCase() !== 'selesai');
             document.getElementById('count3dAktif').innerText = active3d.length;
 
-            // Hitung Stats 3D (Mesin Aktif hari ini & Gramasi Bulan ini)
-            let totalGramasi = 0;
-            let mesinAktifArr = [];
-            const currMonth = new Date().getMonth();
-            const currYear = new Date().getFullYear();
-
-            active3d.sort((a,b) => getPriorityScore(a.status, a.priority) - getPriorityScore(b.status, b.priority));
-
-            const list3d = document.getElementById('live3dList');
-            list3d.innerHTML = '';
-            if(active3d.length === 0) list3d.innerHTML = '<div class="text-center py-6 text-[11px] font-bold text-slate-400">Tidak ada task aktif.</div>';
-
-            active3d.forEach(t => {
-                let sLower = t.status.toLowerCase();
-                let isUrgent = t.priority === 'Urgent';
-                let stColor = 'text-purple-600 bg-purple-100 border-purple-200';
-                let stIcon = 'ph-cube';
-                
-                if(sLower.includes('revisi')) { stColor = 'text-rose-600 bg-rose-100 border-rose-200'; stIcon = 'ph-wrench'; }
-                else if(sLower.includes('menunggu')) { stColor = 'text-slate-500 bg-slate-200 border-slate-300'; stIcon = 'ph-clock'; }
-                else if(sLower.includes('produksi')) { stColor = 'text-amber-600 bg-amber-100 border-amber-200'; stIcon = 'ph-gear-six animate-spin-slow'; }
-                else if(sLower.includes('mesin')) { stColor = 'text-red-600 bg-red-100 border-red-200'; stIcon = 'ph-rocket'; }
-
-                // Hitung Mesin (Jika Sedang Jalan)
-                if(sLower.includes('produksi') || sLower.includes('mesin jalan')) {
-                    if(t.mesin && t.mesin !== '-') {
-                        t.mesin.split(',').forEach(m => {
-                            let mClean = m.trim();
-                            if(mClean && !mesinAktifArr.includes(mClean)) mesinAktifArr.push(mClean);
-                        });
-                    }
-                }
-
-                list3d.innerHTML += `
-                    <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 border-l-4 ${isUrgent?'border-l-red-500':'border-l-emerald-400'}">
-                        <div class="flex justify-between items-start mb-1.5 gap-2">
-                            <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-md border ${stColor} flex items-center gap-1"><i class="ph-bold ${stIcon}"></i> ${t.status}</span>
-                            ${isUrgent ? '<span class="text-[9px] font-black text-red-600">URGENT</span>' : ''}
-                        </div>
-                        <h4 class="font-extrabold text-xs text-slate-800 leading-tight mb-1 truncate">${t.projectName}</h4>
-                        <div class="flex justify-between items-center text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-2 pt-2 border-t border-slate-100">
-                            <span class="flex items-center gap-1 text-emerald-600"><i class="ph-fill ph-user-circle text-sm text-emerald-400"></i> ${t.assignee}</span>
-                            <span>${(t.mesin && t.mesin !== '-') ? `<i class="ph-fill ph-cpu"></i> \${t.mesin}` : ''}</span>
-                        </div>
-                    </div>`;
-            });
-
-            // Kalkulasi Semua Tugas 3D untuk Gramasi Bulan Ini (termasuk yang sudah selesai)
+            let mesinAktifArr = []; let totalGramasi = 0;
+            const currMonth = new Date().getMonth(); const currYear = new Date().getFullYear();
+            
+            // Hitung Gramasi (semua task bulan ini termasuk yg selesai)
             tasks3d.forEach(t => {
                 let d = new Date(parseInt(t.id));
                 if(!isNaN(d.getTime()) && d.getMonth() === currMonth && d.getFullYear() === currYear) {
-                    if(t.gramasi && t.gramasi !== '-') {
-                        totalGramasi += parseInt(t.gramasi) || 0;
+                    if(t.gramasi && t.gramasi !== '-') totalGramasi += parseInt(t.gramasi) || 0;
+                }
+            });
+            
+            // Hitung Mesin (hanya yg lagi produksi)
+            active3d.forEach(t => {
+                let sLower = t.status.toLowerCase();
+                if(sLower.includes('produksi') || sLower.includes('mesin jalan')) {
+                    if(t.mesin && t.mesin !== '-') {
+                        t.mesin.split(',').forEach(m => { let mClean = m.trim(); if(mClean && !mesinAktifArr.includes(mClean)) mesinAktifArr.push(mClean); });
                     }
                 }
             });
-
+            
             document.getElementById('statGramasi').innerText = totalGramasi + ' gr';
             document.getElementById('statMesinAktif').innerText = mesinAktifArr.length > 0 ? mesinAktifArr.join(', ') : '-';
 
+            let tim3d = usersList.filter(u => u.role && String(u.role).toLowerCase() === '3ddesign');
+            let html3d = '';
+
+            tim3d.forEach(u => {
+                let uTasks = active3d.filter(t => t.assignee === u.name).sort((a,b) => getPriorityScore(a.status, a.priority) - getPriorityScore(b.status, b.priority));
+                
+                let taskHtml = uTasks.map(t => {
+                    let isUrg = t.priority === 'Urgent';
+                    let sLower = t.status.toLowerCase();
+                    let badgeColor = 'bg-purple-100 text-purple-700';
+                    
+                    if(sLower.includes('revisi')) badgeColor = 'bg-rose-100 text-rose-700';
+                    else if(sLower.includes('menunggu')) badgeColor = 'bg-slate-200 text-slate-600';
+                    else if(sLower.includes('produksi')) badgeColor = 'bg-amber-100 text-amber-700';
+                    else if(sLower.includes('mesin')) badgeColor = 'bg-red-100 text-red-700';
+
+                    let mesinLabel = (t.mesin && t.mesin !== '-') ? `<span class="text-[8px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-1 rounded shadow-sm border border-emerald-200 flex items-center gap-1"><i class="ph-fill ph-cpu"></i> ${t.mesin}</span>` : '';
+
+                    return `
+                        <div class="bg-white border ${isUrg?'border-red-400 shadow-md':'border-slate-200'} rounded-xl p-3 mb-2 shadow-sm relative overflow-hidden transition-all">
+                            ${isUrg ? '<div class="absolute top-0 left-0 w-1 h-full bg-red-500"></div>' : ''}
+                            <div class="flex justify-between items-start gap-2 mb-1.5 pl-1.5">
+                                <span class="text-[10px] font-black text-slate-800 leading-snug truncate block w-full pr-2">${t.projectName}</span>
+                            </div>
+                            <div class="flex justify-between items-center pl-1.5 mt-2 border-t border-slate-100 pt-2 flex-wrap gap-1">
+                                <div class="flex gap-1.5 items-center">
+                                    <span class="text-[8px] font-black uppercase px-2 py-1 rounded ${badgeColor} shadow-sm">${t.status}</span>
+                                    ${mesinLabel}
+                                </div>
+                                ${isUrg ? '<span class="text-[8px] font-black bg-red-50 text-red-600 px-2 py-1 rounded border border-red-100">URGENT</span>' : ''}
+                            </div>
+                        </div>`;
+                }).join('');
+
+                if(!taskHtml) taskHtml = `<div class="text-[10px] text-slate-400 font-bold italic py-2 text-center border-2 border-dashed border-slate-200 rounded-xl bg-white">Sedang tidak ada antrean 🚀</div>`;
+
+                html3d += `
+                <div class="mb-4 bg-slate-50 border border-slate-200 rounded-[20px] p-4 shadow-sm">
+                    <div class="flex items-center gap-3 mb-4 border-b border-slate-200 pb-3">
+                        <div class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center font-black text-sm shadow-inner border border-emerald-200">${u.name.charAt(0)}</div>
+                        <div class="flex-1">
+                            <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest leading-none mb-1">${u.name}</h4>
+                            <span class="text-[9px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 font-bold">${uTasks.length} Task Aktif</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2">${taskHtml}</div>
+                </div>`;
+            });
+            document.getElementById('live3dList').innerHTML = html3d || '<p class="text-xs text-slate-400 text-center py-4 font-bold">Belum ada tim 3D</p>';
 
             // 3. KONTEN & DEADLINE
             let activeKonten = creatorTasks.filter(t => t.isCompleted === false || t.isCompleted === "false");
             document.getElementById('countKontenAktif').innerText = activeKonten.length;
             
-            // Urutkan berdasarkan tanggal terdekat
-            activeKonten.sort((a,b) => parseIndoDate(a.targetDate) - parseIndoDate(b.targetDate));
+            let timKonten = usersList.filter(u => u.role && String(u.role).toLowerCase().includes('konten'));
+            let htmlKonten = '';
+            let now = new Date(); now.setHours(0,0,0,0);
 
-            const listKonten = document.getElementById('liveKontenList');
-            listKonten.innerHTML = '';
-            if(activeKonten.length === 0) listKonten.innerHTML = '<div class="text-center py-6 text-[11px] font-bold text-slate-400">Tidak ada deadline dekat.</div>';
-
-            let now = new Date();
-            now.setHours(0,0,0,0);
-
-            activeKonten.forEach(t => {
-                let tgtDate = parseIndoDate(t.targetDate);
-                let diffTime = tgtDate - now;
-                let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            timKonten.forEach(u => {
+                let uTasks = activeKonten.filter(t => t.assignee === u.name).sort((a,b) => parseIndoDate(a.targetDate) - parseIndoDate(b.targetDate));
                 
-                let dateColor = 'text-slate-500 bg-slate-100';
-                let dateLabel = t.targetDate;
-                
-                if (diffDays < 0) { dateColor = 'text-white bg-red-500 border-red-600'; dateLabel = 'Terlewat!'; }
-                else if (diffDays === 0) { dateColor = 'text-red-600 bg-red-100 border-red-200'; dateLabel = 'Hari Ini!'; }
-                else if (diffDays <= 2) { dateColor = 'text-orange-600 bg-orange-100 border-orange-200'; dateLabel = `H-${diffDays}`; }
+                let taskHtml = uTasks.map(t => {
+                    let tgtDate = parseIndoDate(t.targetDate);
+                    let diffDays = Math.ceil((tgtDate - now) / (1000 * 60 * 60 * 24));
+                    
+                    let dateColor = 'text-slate-600 bg-slate-100 border-slate-200'; let dateLabel = t.targetDate;
+                    if (diffDays < 0) { dateColor = 'text-white bg-red-500 border-red-600 shadow-md'; dateLabel = 'Terlewat!'; }
+                    else if (diffDays === 0) { dateColor = 'text-red-700 bg-red-100 border-red-300'; dateLabel = 'Hari Ini!'; }
+                    else if (diffDays <= 2) { dateColor = 'text-orange-700 bg-orange-100 border-orange-300'; dateLabel = `H-${diffDays}`; }
 
-                listKonten.innerHTML += `
-                    <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 border-l-4 ${diffDays <= 1 ? 'border-l-red-500' : 'border-l-pink-400'} flex items-center justify-between gap-3">
-                        <div class="flex-1 overflow-hidden">
-                            <h4 class="font-extrabold text-xs text-slate-800 leading-tight mb-1 truncate">${t.title}</h4>
-                            <div class="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                                <i class="ph-fill ph-user-circle text-sm text-pink-400"></i> ${t.assignee}
+                    return `
+                        <div class="bg-white border ${diffDays <= 1?'border-red-300':'border-slate-200'} rounded-xl p-3 mb-2 shadow-sm flex items-center justify-between gap-3 transition-all">
+                            <div class="flex-1 overflow-hidden">
+                                <h5 class="text-[11px] font-black text-slate-800 truncate leading-tight">${t.title}</h5>
+                                <span class="text-[9px] font-medium text-slate-500 mt-1 block line-clamp-1 italic">"${t.description || '-'}"</span>
                             </div>
-                        </div>
-                        <div class="shrink-0 text-right">
-                            <span class="text-[9px] font-black uppercase px-2 py-1 rounded border ${dateColor} block text-center shadow-sm">${dateLabel}</span>
-                            <span class="text-[8px] font-bold text-slate-400 mt-1 block">${t.targetDate}</span>
-                        </div>
-                    </div>`;
-            });
-        }
+                            <div class="text-right shrink-0">
+                                <span class="text-[9px] font-black uppercase px-2 py-1.5 rounded border ${dateColor} block text-center shadow-sm w-20">${dateLabel}</span>
+                                <span class="text-[8px] font-bold text-slate-400 mt-1.5 block tracking-widest"><i class="ph-bold ph-calendar-blank"></i> ${t.targetDate}</span>
+                            </div>
+                        </div>`;
+                }).join('');
 
+                if(!taskHtml) taskHtml = `<div class="text-[10px] text-slate-400 font-bold italic py-2 text-center border-2 border-dashed border-slate-200 rounded-xl bg-white">Tidak ada deadline dekat 🎥</div>`;
+
+                htmlKonten += `
+                <div class="mb-4 bg-slate-50 border border-slate-200 rounded-[20px] p-4 shadow-sm">
+                    <div class="flex items-center gap-3 mb-4 border-b border-slate-200 pb-3">
+                        <div class="w-8 h-8 bg-pink-100 text-pink-600 rounded-xl flex items-center justify-center font-black text-sm shadow-inner border border-pink-200">${u.name.charAt(0)}</div>
+                        <div class="flex-1">
+                            <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest leading-none mb-1">${u.name}</h4>
+                            <span class="text-[9px] text-pink-600 bg-pink-50 px-2 py-0.5 rounded border border-pink-100 font-bold">${uTasks.length} Konten Pending</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2">${taskHtml}</div>
+                </div>`;
+            });
+            document.getElementById('liveKontenList').innerHTML = htmlKonten || '<p class="text-xs text-slate-400 text-center py-4 font-bold">Belum ada tim konten</p>';
+        }
 
         // ================== LOGIC WIDGET LAMA (STATISTIK) ==================
         function processWidgetData(izinData) {
@@ -605,8 +623,8 @@
             const piketToday = jadwalPiket[dayIndex] || [];
             
             let piketHTML = piketToday.length > 0 
-                ? piketToday.map(nama => `<span class="bg-white text-orange-600 px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-sm"><i class="ph-fill ph-user text-sm"></i> ${nama}</span>`).join(' ')
-                : `<span class="text-xs font-bold text-orange-200 border border-dashed border-orange-300 px-3 py-1.5 rounded-xl">Libur</span>`;
+                ? piketToday.map(nama => `<span class="bg-white text-orange-600 px-3 py-1.5 rounded-xl text-xs font-black inline-flex items-center gap-1.5 shadow-sm uppercase tracking-widest"><i class="ph-bold ph-user text-sm"></i> ${nama}</span>`).join(' ')
+                : `<span class="text-xs font-bold text-orange-200 border border-dashed border-orange-300 px-3 py-1.5 rounded-xl">Libur Piket</span>`;
             
             document.getElementById('widgetPiketHari').innerText = todayName;
             document.getElementById('widgetPiketNama').innerHTML = piketHTML;
@@ -616,7 +634,7 @@
             let countSakit = 0;
             
             izinData.forEach(i => {
-                let d = new Date(i.startDate); // Form Izin menggunakan format YYYY-MM-DD
+                let d = new Date(i.startDate); 
                 if(!isNaN(d.getTime()) && i.type === 'Sakit' && d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
                     countSakit++;
                 }
@@ -644,7 +662,7 @@
                     <div class="flex items-center gap-4 p-4 bg-white rounded-[20px] shadow-sm border border-slate-200 card-hover">
                         <div class="bg-slate-50 w-12 h-12 flex items-center justify-center rounded-xl border border-slate-100 shadow-inner">${icon}</div>
                         <div>
-                            <h4 class="font-extrabold text-slate-800 text-sm mb-1">${u.name}</h4>
+                            <h4 class="font-extrabold text-slate-800 text-sm mb-1 uppercase tracking-widest">${u.name}</h4>
                             <span class="text-[9px] ${roleColor} border border-slate-100 px-2.5 py-1 rounded-md uppercase tracking-widest font-black inline-block shadow-sm">${u.role}</span>
                         </div>
                     </div>`;
@@ -690,7 +708,7 @@
         }
 
 
-        // ================== LOGIC TASK DESAIN (LAMA TETAP JALAN) ==================
+        // ================== LOGIC FORM TASK DESAIN (LAMA) ==================
         function renderUserBoards(usersList) {
             const select = document.getElementById('assignee');
             const boardContainer = document.getElementById('dynamic-boards');
@@ -757,7 +775,7 @@
                 let delBtn = `<button onclick="deleteTask('${task.id}')" class="text-slate-300 hover:text-red-500 bg-white hover:bg-red-50 p-1.5 rounded-lg transition-colors border border-slate-100 shadow-sm absolute top-3 right-3 opacity-0 group-hover:opacity-100"><i class="ph-fill ph-trash text-sm"></i></button>`;
 
                 if (task.status === 'Final' || task.status === 'Selesai') {
-                    card.className = "bg-white p-4 rounded-[20px] border border-slate-200 opacity-60 hover:opacity-100 text-[11px] font-bold text-slate-500 flex justify-between items-start transition-opacity relative group";
+                    card.className = "bg-white p-4 rounded-[20px] border border-slate-200 opacity-60 hover:opacity-100 text-[11px] font-bold text-slate-500 flex justify-between items-start transition-opacity relative group card-hover";
                     card.innerHTML = `${delBtn}<div class="flex-1 pr-6"><div class="line-through flex items-center leading-tight mb-2">${jo} <span class="truncate max-w-[120px]">${task.title}</span></div><div class="text-[9px] uppercase tracking-widest text-emerald-500 flex items-center gap-1"><i class="ph-fill ph-check-circle"></i>${task.assignee}</div></div>`;
                     document.getElementById('board-final').appendChild(card);
                 } else {
@@ -785,7 +803,7 @@
         }
 
 
-        // ================== LOGIC TASK 3D (TETAP JALAN) ==================
+        // ================== LOGIC FORM TASK 3D (LAMA) ==================
         function renderUserBoards3d(usersList) {
             const select = document.getElementById('task3dAssigneeAdmin');
             const boardContainer = document.getElementById('dynamic-boards-3d');
