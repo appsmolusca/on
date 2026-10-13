@@ -13,7 +13,8 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
-                    colors: { bgApp: '#F8FAFC', surface: '#FFFFFF', borderLight: '#E2E8F0', textMain: '#0F172A', textMuted: '#64748B' }
+                    colors: { bgApp: '#F8FAFC', surface: '#FFFFFF', borderLight: '#E2E8F0', textMain: '#0F172A', textMuted: '#64748B' },
+                    animation: { 'soft-pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
                 }
             }
         }
@@ -38,10 +39,9 @@
             animation: 1.5s shine linear infinite;
         }
         @keyframes shine { to { background-position-x: -200%; } }
-
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
         
+        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
         .card-hover { transition: all 0.2s ease-in-out; }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05); }
     </style>
@@ -96,9 +96,9 @@
                 <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1 mb-1"><i class="ph-bold ph-kanban"></i> Total Konten</span>
                 <span class="text-2xl font-extrabold text-slate-700" id="statTotal">0</span>
             </div>
-            <div class="bg-blue-50 border border-blue-100 p-4 rounded-[20px] shadow-sm flex flex-col justify-center">
-                <span class="text-[10px] font-extrabold text-blue-500 uppercase tracking-widest flex items-center gap-1 mb-1"><i class="ph-bold ph-fire"></i> Deadline Dekat</span>
-                <span class="text-2xl font-extrabold text-blue-700" id="statUrgent">0</span>
+            <div class="bg-red-50 border border-red-100 p-4 rounded-[20px] shadow-sm flex flex-col justify-center">
+                <span class="text-[10px] font-extrabold text-red-500 uppercase tracking-widest flex items-center gap-1 mb-1"><i class="ph-bold ph-fire"></i> Deadline Dekat</span>
+                <span class="text-2xl font-extrabold text-red-700" id="statUrgent">0</span>
             </div>
             <div class="bg-amber-50 border border-amber-100 p-4 rounded-[20px] shadow-sm flex flex-col justify-center">
                 <span class="text-[10px] font-extrabold text-amber-600 uppercase tracking-widest flex items-center gap-1 mb-1"><i class="ph-bold ph-spinner-gap"></i> Belum Selesai</span>
@@ -204,13 +204,12 @@
                         </form>
                     </section>
 
-                    <!-- REPORT HISTORY (Muncul saat tab report aktif) -->
                     <section class="mt-8">
                         <div class="flex items-center justify-between mb-4 ml-2">
                             <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                                 <i class="ph-fill ph-clock-counter-clockwise text-[18px] text-slate-400"></i> Riwayat Terakhir
                             </h2>
-                            <span id="syncIndicatorReport" class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                            <span class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
                                 <i class="ph-bold ph-arrows-clockwise animate-spin text-emerald-500"></i> Live Sync...
                             </span>
                         </div>
@@ -221,30 +220,33 @@
                 </div>
             </div>
 
-            <!-- KOLOM KANAN (KALENDER) -->
+            <!-- KOLOM KANAN (KALENDER) Sesuai Referensi UI Baru -->
             <div class="md:col-span-1">
                 <div class="bg-white border border-slate-200 rounded-[24px] shadow-sm overflow-hidden h-full">
-                    <div class="bg-slate-800 p-4 text-white flex justify-between items-center">
+                    <div class="bg-slate-800 p-5 text-white flex justify-between items-center rounded-t-[24px]">
                         <h3 class="font-extrabold text-sm tracking-wider uppercase" id="calMonthYear">Bulan Tahun</h3>
                         <i class="ph-bold ph-calendar-blank text-xl text-slate-300"></i>
                     </div>
-                    <div class="p-4">
+                    <div class="p-5">
                         <div class="grid grid-cols-7 gap-1 text-center mb-2">
-                            <span class="text-[10px] font-extrabold text-rose-500">Min</span>
-                            <span class="text-[10px] font-bold text-slate-400">Sen</span>
-                            <span class="text-[10px] font-bold text-slate-400">Sel</span>
-                            <span class="text-[10px] font-bold text-slate-400">Rab</span>
-                            <span class="text-[10px] font-bold text-slate-400">Kam</span>
-                            <span class="text-[10px] font-bold text-slate-400">Jum</span>
-                            <span class="text-[10px] font-bold text-slate-400">Sab</span>
+                            <span class="text-[11px] font-extrabold text-rose-500">Min</span>
+                            <span class="text-[11px] font-bold text-slate-400">Sen</span>
+                            <span class="text-[11px] font-bold text-slate-400">Sel</span>
+                            <span class="text-[11px] font-bold text-slate-400">Rab</span>
+                            <span class="text-[11px] font-bold text-slate-400">Kam</span>
+                            <span class="text-[11px] font-bold text-slate-400">Jum</span>
+                            <span class="text-[11px] font-bold text-slate-400">Sab</span>
                         </div>
-                        <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center">
+                        <div id="calendarGrid" class="grid grid-cols-7 gap-1.5 text-center mt-3">
                             <!-- JS Generated Calendar -->
                         </div>
-                        <div class="mt-4 border-t border-slate-100 pt-3 space-y-1.5">
-                            <p class="text-[10px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm"></span> Tanggal Merah / Libur</p>
-                            <p class="text-[10px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm"></span> Hari Ini</p>
-                            <p class="text-[10px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-orange-400 shadow-sm"></span> Ada Deadline Konten</p>
+                        <div class="mt-6 border-t border-slate-100 pt-4 space-y-2.5">
+                            <p class="text-[11px] font-semibold text-slate-500 flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-blue-500 shadow-sm animate-soft-pulse"></span> Hari Ini
+                            </p>
+                            <p class="text-[11px] font-semibold text-slate-500 flex items-center gap-2">
+                                <span class="w-3 h-3 rounded border border-orange-300 flex justify-center items-center"><span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span></span> Ada Deadline Konten
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -257,7 +259,7 @@
                 <i class="ph-bold ph-arrows-clockwise animate-spin text-blue-500"></i> Live Sync...
             </div>
 
-            <!-- List Antrean Konten -->
+            <!-- List Antrean Konten Sesuai Referensi UI Baru -->
             <section class="mb-8">
                 <h2 class="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ml-2">
                     <i class="ph-fill ph-list-dashes text-[18px] text-blue-500"></i> Antrean Konten
@@ -293,7 +295,7 @@
         const userRole = localStorage.getItem('moluscaRole') || 'user';
         const userName = localStorage.getItem('moluscaUser') || 'Tamu';
         
-        let allTaskDates = []; // Untuk menandai kalender
+        let allTaskDates = []; 
 
         async function dbCall(payload) {
             try {
@@ -332,14 +334,11 @@
         }
 
         async function initApp() {
-            if(!localStorage.getItem('moluscaUser') && userRole !== 'admin') {
-                // window.location.href = 'index.html'; // Uncomment jika sudah live
-            }
             document.getElementById('headerName').textContent = userName;
             document.getElementById('taskDate').value = getTodayString();
             document.getElementById('reportDate').value = getTodayString();
             
-            generateCalendar([]); // Init kalender kosong dulu
+            generateCalendar([]); 
             loadAllDataFast();
         }
 
@@ -362,17 +361,17 @@
 
             if(tabName === 'planner') {
                 secPlanner.classList.remove('hidden'); secReport.classList.add('hidden');
-                listTugas.classList.remove('hidden'); // Tampilkan list konten
+                listTugas.classList.remove('hidden');
                 btnPlanner.className = `${styleActive} text-blue-600`; btnReport.className = styleInactive;
             } else {
                 secPlanner.classList.add('hidden'); secReport.classList.remove('hidden');
-                listTugas.classList.add('hidden'); // Sembunyikan list konten saat di tab report
+                listTugas.classList.add('hidden');
                 btnReport.className = `${styleActive} text-emerald-600`; btnPlanner.className = styleInactive;
             }
         }
 
         // ==========================================
-        // KALENDER PINTAR
+        // KALENDER PINTAR (UI BARU TANPA HARI LIBUR)[cite: 6]
         // ==========================================
         function generateCalendar(taskDates) {
             const date = new Date();
@@ -383,68 +382,56 @@
             const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             document.getElementById('calMonthYear').innerText = `${monthNames[month]} ${year}`;
 
-            const firstDay = new Date(year, month, 1).getDay(); // 0 = Minggu
+            const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
             let calGrid = document.getElementById('calendarGrid');
             calGrid.innerHTML = '';
 
-            const holidays = [1, 17, 25]; // Contoh libur nasional manual
-
-            // Blank spaces untuk hari sebelum awal bulan
             for(let i = 0; i < firstDay; i++) { calGrid.innerHTML += `<div></div>`; }
 
             for(let i = 1; i <= daysInMonth; i++) {
                 let dayOfWeek = new Date(year, month, i).getDay();
                 let isSunday = dayOfWeek === 0;
-                let isHoliday = holidays.includes(i) || isSunday;
                 let isToday = i === today;
                 
-                // Cek apakah tanggal ini ada deadline konten
                 let currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
                 let hasTask = taskDates.includes(currentDateStr);
 
-                let classes = "w-8 h-8 mx-auto flex items-center justify-center rounded-lg text-[11px] font-bold transition-all relative ";
+                let classes = "w-8 h-8 mx-auto flex flex-col items-center justify-center rounded-lg text-[12px] font-bold transition-all relative ";
                 let dotUI = "";
                 
-                if(isToday) {
-                    classes += "bg-blue-500 text-white shadow-md shadow-blue-500/30 scale-110";
-                } else if(isHoliday) {
-                    classes += "text-rose-500 bg-rose-50";
+                if (isToday) {
+                    classes += "bg-blue-500 text-white shadow-md shadow-blue-500/30 animate-soft-pulse";
                 } else {
-                    classes += "text-slate-600 hover:bg-slate-100";
+                    classes += "text-slate-700 hover:bg-slate-50";
                 }
 
                 if (hasTask && !isToday) {
-                    // Beri penanda titik orange di bawah tanggal jika ada tugas
-                    dotUI = `<span class="absolute bottom-1 w-1 h-1 rounded-full bg-orange-400"></span>`;
-                    classes += " border border-orange-200"; // Highlight border sedikit
+                    classes += " border border-orange-300";
+                    dotUI = `<span class="absolute bottom-1 w-1 h-1 rounded-full bg-orange-500"></span>`;
                 } else if (hasTask && isToday) {
                     dotUI = `<span class="absolute bottom-1 w-1 h-1 rounded-full bg-white"></span>`;
                 }
 
-                calGrid.innerHTML += `<div class="${classes}">${i} ${dotUI}</div>`;
+                if (isSunday && !isToday) classes += " text-rose-500";
+
+                calGrid.innerHTML += `<div class="${classes}"><span class="${hasTask ? 'mb-1' : ''}">${i}</span>${dotUI}</div>`;
             }
         }
 
         async function loadAllDataFast() {
             const syncPlanner = document.getElementById('syncIndicatorPlanner');
-            const syncReport = document.getElementById('syncIndicatorReport');
             syncPlanner.innerHTML = '<i class="ph-bold ph-arrows-clockwise animate-spin text-blue-500"></i> Syncing...';
-            syncReport.innerHTML = '<i class="ph-bold ph-arrows-clockwise animate-spin text-emerald-500"></i> Syncing...';
 
             const [usersData, tasksData, reportsData] = await Promise.all([
-                fetchSheetFast('users'),
-                fetchSheetFast('creator_tasks'),
-                fetchSheetFast('creator_reports')
+                fetchSheetFast('users'), fetchSheetFast('creator_tasks'), fetchSheetFast('creator_reports')
             ]);
 
-            // Filter task aktif untuk kalender
             allTaskDates = tasksData.filter(t => {
                 const s = String(t.isCompleted).trim().toUpperCase();
                 return s !== "TRUE" && s !== "SELESAI";
             }).map(t => {
-                // Parsing targetDate supaya formatnya yyyy-mm-dd
                 if(t.targetDate) {
                     const parts = t.targetDate.toString().split('-');
                     if(parts.length === 3) {
@@ -457,9 +444,8 @@
                 }
                 return "";
             });
-            generateCalendar(allTaskDates); // Update kalender dengan indikator tugas
+            generateCalendar(allTaskDates); 
 
-            // Render Users Dropdown
             const select = document.getElementById('reportName');
             select.innerHTML = '';
             usersData.forEach(u => {
@@ -472,22 +458,17 @@
                 if(!select.querySelector(`option[value="${userName}"]`)) {
                     select.innerHTML += `<option value="${userName}" selected>${userName}</option>`;
                 }
-                select.value = userName; 
-                select.disabled = true; 
+                select.value = userName; select.disabled = true; 
                 select.classList.add('opacity-70', 'cursor-not-allowed', 'bg-slate-100');
             }
 
             renderBoard(tasksData);
             renderHistory(reportsData.slice(-30));
-
+            
             syncPlanner.innerHTML = '<i class="ph-bold ph-check text-emerald-500"></i> Synced';
-            syncReport.innerHTML = '<i class="ph-bold ph-check text-emerald-500"></i> Synced';
-            setTimeout(() => { syncPlanner.innerHTML=''; syncReport.innerHTML=''; }, 2000);
+            setTimeout(() => { syncPlanner.innerHTML=''; }, 2000);
         }
 
-        // ==========================================
-        // UPDATE DASHBOARD STATISTIK
-        // ==========================================
         function updateDashboardStats(activeTasks, completedTasks) {
             let total = activeTasks.length + completedTasks.length;
             let selesai = completedTasks.length;
@@ -499,7 +480,7 @@
                 if(t.targetDate) {
                     const target = new Date(t.targetDate); target.setHours(0,0,0,0);
                     const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
-                    if(diffDays <= 2) urgent++; // H-2, Besok, Hari Ini, atau Terlewat dihitung urgent
+                    if(diffDays <= 2) urgent++; 
                 }
             });
 
@@ -509,19 +490,23 @@
             document.getElementById('statDone').innerText = selesai;
         }
 
-        // --- RENCANA KONTEN (PLANNER) ---
+        // ==========================================
+        // RENCANA KONTEN (CARD UI BARU)[cite: 7]
+        // ==========================================
         function getDeadlineInfo(dateStr) {
             if (!dateStr) return { text: 'Tidak ada', bg: 'bg-slate-100 text-slate-600 border-slate-200', icon: 'ph-calendar-blank' };
             const today = new Date(); today.setHours(0,0,0,0); 
             const target = new Date(dateStr); target.setHours(0,0,0,0);
             const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
-            const formattedDate = target.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
             
-            if (diffDays < 0) return { text: `Terlewat (${formattedDate})`, bg: 'bg-red-50 text-red-600 border-red-200', icon: 'ph-warning-circle' };
-            if (diffDays === 0) return { text: 'Hari Ini', bg: 'bg-orange-500 text-white shadow border-orange-500 animate-pulse', icon: 'ph-fire' };
-            if (diffDays === 1) return { text: 'Besok', bg: 'bg-amber-100 text-amber-700 border-amber-200', icon: 'ph-clock-countdown' };
-            if (diffDays <= 3) return { text: `H-${diffDays}`, bg: 'bg-blue-50 text-blue-600 border-blue-200', icon: 'ph-clock-countdown' };
-            return { text: formattedDate, bg: 'bg-slate-100 text-slate-600 border-slate-200', icon: 'ph-calendar-blank' };
+            const mNames = ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"];
+            const fDate = `${target.getDate()} ${mNames[target.getMonth()]} ${target.getFullYear()}`;
+            
+            if (diffDays < 0) return { text: `TERLEWAT (${fDate})`, bg: 'bg-red-50 text-red-500 border-red-100', icon: 'ph-warning-circle' };
+            if (diffDays === 0) return { text: 'HARI INI', bg: 'bg-orange-50 text-orange-500 border-orange-100', icon: 'ph-fire' };
+            if (diffDays === 1) return { text: 'BESOK', bg: 'bg-amber-50 text-amber-500 border-amber-100', icon: 'ph-clock-countdown' };
+            if (diffDays <= 3) return { text: `H-${diffDays}`, bg: 'bg-blue-50 text-blue-500 border-blue-100', icon: 'ph-clock-countdown' };
+            return { text: fDate, bg: 'bg-slate-50 text-slate-500 border-slate-200', icon: 'ph-calendar-blank' };
         }
 
         function renderBoard(tasks) {
@@ -539,43 +524,44 @@
                 return s === "TRUE" || s === "SELESAI";
             }).reverse();
 
-            updateDashboardStats(activeTasks, completedTasks); // Update UI Dashboard
+            updateDashboardStats(activeTasks, completedTasks); 
 
             if(activeTasks.length === 0) activeBoard.innerHTML = `<div class="md:col-span-2 text-center text-[12px] font-bold text-slate-400 py-10 border-2 border-dashed border-slate-200 rounded-3xl bg-white"><i class="ph-fill ph-coffee text-4xl mb-3 block opacity-40 text-blue-300"></i> Antrean kosong, aman bosku.</div>`;
             if(completedTasks.length === 0) completedBoard.innerHTML = `<div class="md:col-span-3 text-center text-[12px] font-bold text-slate-400 py-6 border-2 border-dashed border-slate-200 rounded-3xl bg-white/50">Belum ada yang selesai.</div>`;
 
             activeTasks.forEach(task => {
                 const d = getDeadlineInfo(task.targetDate);
-                const delIcon = `<button onclick="deleteTask('${task.id}')" class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-100"><i class="ph-bold ph-trash"></i></button>`;
+                const delIcon = `<button onclick="deleteTask('${task.id}')" class="w-7 h-7 rounded-full text-red-500 bg-red-50 hover:bg-red-500 hover:text-white border border-red-100 transition-colors flex items-center justify-center"><i class="ph-bold ph-trash"></i></button>`;
+                const editIcon = `<button onclick="editTask('${task.id}', '${(task.title||'').replace(/'/g, "\\'")}', '${(task.client||'').replace(/'/g, "\\'")}', '${task.targetDate}', '${(task.assignee||'').replace(/'/g, "\\'")}', '${(task.items||'').replace(/'/g, "\\'")}')" class="w-7 h-7 rounded-full text-orange-500 bg-orange-50 hover:bg-orange-500 hover:text-white border border-orange-100 transition-colors flex items-center justify-center"><i class="ph-bold ph-pencil-simple"></i></button>`;
                 
                 activeBoard.innerHTML += `
-                    <div class="bg-white p-4 md:p-5 rounded-[24px] border border-slate-200 shadow-sm relative transition-all card-hover hover:border-blue-300 flex flex-col justify-between">
+                    <div class="bg-white p-4 md:p-5 rounded-[20px] border border-blue-100 shadow-sm relative transition-all card-hover flex flex-col justify-between">
                         <div>
                             <div class="flex justify-between items-start mb-3">
-                                <div class="flex flex-wrap gap-2">
-                                    <span class="text-[10px] font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-lg border flex items-center gap-1 ${d.bg}"><i class="ph-bold ${d.icon}"></i> ${d.text}</span>
-                                    <span class="text-[10px] font-extrabold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 uppercase tracking-widest"><i class="ph-bold ph-briefcase"></i> ${task.client || '-'}</span>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span class="text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-md border flex items-center gap-1 ${d.bg}"><i class="ph-bold ${d.icon}"></i> ${d.text}</span>
+                                    <span class="text-[9px] font-extrabold text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100 uppercase tracking-widest"><i class="ph-bold ph-briefcase"></i> ${task.client || '-'}</span>
                                 </div>
                                 <div class="flex gap-1.5 shrink-0">
-                                    <button onclick="editTask('${task.id}', '${(task.title||'').replace(/'/g, "\\'")}', '${(task.client||'').replace(/'/g, "\\'")}', '${task.targetDate}', '${(task.assignee||'').replace(/'/g, "\\'")}', '${(task.items||'').replace(/'/g, "\\'")}')" class="w-8 h-8 rounded-full bg-orange-50 text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-100 transition-colors flex items-center justify-center"><i class="ph-bold ph-pencil-simple"></i></button>
+                                    ${editIcon}
                                     ${delIcon}
                                 </div>
                             </div>
-                            <h3 class="font-bold text-slate-900 text-[14px] md:text-base leading-snug mb-3 pr-2">${task.title || '-'}</h3>
+                            <h3 class="font-bold text-slate-800 text-[14px] leading-snug mb-3">${task.title || '-'}</h3>
                             
-                            <div class="flex flex-col gap-2 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                <div class="flex items-start gap-2 text-[11px] font-semibold text-slate-600">
-                                    <i class="ph-fill ph-user-circle text-slate-400 mt-0.5 text-sm shrink-0"></i> 
-                                    <span class="leading-tight"><span class="font-bold text-slate-700">PIC:</span> ${task.assignee || 'Belum diisi'}</span>
+                            <div class="flex flex-col gap-2 mb-4 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
+                                <div class="flex items-center gap-2 text-[11px] font-medium text-slate-600">
+                                    <i class="ph-fill ph-user-circle text-slate-400 text-sm shrink-0"></i> 
+                                    <span class="truncate"><span class="font-bold text-slate-700">PIC:</span> ${task.assignee || 'Belum diisi'}</span>
                                 </div>
-                                <div class="flex items-start gap-2 text-[11px] font-semibold text-slate-600">
-                                    <i class="ph-fill ph-package text-slate-400 mt-0.5 text-sm shrink-0"></i> 
-                                    <span class="leading-tight"><span class="font-bold text-slate-700">Barang:</span> ${task.items || '-'}</span>
+                                <div class="flex items-center gap-2 text-[11px] font-medium text-slate-600">
+                                    <i class="ph-fill ph-package text-slate-400 text-sm shrink-0"></i> 
+                                    <span class="truncate"><span class="font-bold text-slate-700">Barang:</span> ${task.items || '-'}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <button onclick="toggleComplete('${task.id}', false, this)" class="w-full bg-slate-50 hover:bg-emerald-500 hover:text-white text-slate-600 hover:border-emerald-500 text-[11px] font-extrabold p-3.5 rounded-xl uppercase tracking-widest flex justify-center items-center gap-2 transition-all border border-slate-200 shadow-sm active:scale-[0.98]">
+                        <button onclick="toggleComplete('${task.id}', false, this)" class="w-full bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-[11px] font-extrabold py-3 rounded-xl uppercase tracking-widest flex justify-center items-center gap-2 transition-all shadow-sm active:scale-[0.98]">
                             <i class="ph-bold ph-check-circle text-[16px]"></i> Tandai Selesai
                         </button>
                     </div>`;
@@ -583,7 +569,6 @@
 
             completedTasks.forEach(task => {
                 const delIcon = `<button onclick="deleteTask('${task.id}')" class="w-8 h-8 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors shrink-0"><i class="ph-bold ph-trash text-lg"></i></button>`;
-                
                 completedBoard.innerHTML += `
                     <div class="bg-white/80 p-4 rounded-[20px] border border-slate-200 flex justify-between items-center gap-4 transition-all card-hover hover:border-slate-300">
                         <div class="flex-1 min-w-0">
@@ -601,7 +586,6 @@
             });
         }
 
-        // CRUD Logic
         async function saveTask(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn'); 
@@ -707,7 +691,6 @@
             document.getElementById('cancelEditBtn').classList.remove('flex');
         }
 
-        // --- LAPORAN HARIAN (REPORT) ---
         async function saveReport(e) {
             e.preventDefault();
             const btn = document.getElementById('submitReportBtn'); 
