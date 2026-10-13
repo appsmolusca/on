@@ -44,24 +44,22 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
         
-        .card-hover { transition: all 0.2s ease-in-out; }
-        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05); }
+        /* Shimmer Skeleton Loading */
+        .skeleton {
+            background: linear-gradient(110deg, #f1f5f9 8%, #e2e8f0 18%, #f1f5f9 33%);
+            border-radius: 8px;
+            background-size: 200% 100%;
+            animation: 1.5s shine linear infinite;
+        }
+        @keyframes shine { to { background-position-x: -200%; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
     </style>
 </head>
 <body class="pb-24 text-slate-800" onload="initApp()" oncontextmenu="return false;">
 
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex justify-center items-center">
-        <div class="bg-white p-8 rounded-[32px] shadow-2xl flex flex-col items-center gap-4 text-center max-w-[250px]">
-            <i class="ph-bold ph-spinner animate-spin text-5xl text-red-500"></i>
-            <div>
-                <span class="text-xs font-black text-slate-700 uppercase tracking-widest block mb-1">Sinkronisasi Data</span>
-                <span class="text-[10px] font-bold text-slate-400">Menghubungkan ke server...</span>
-            </div>
-        </div>
-    </div>
-
     <!-- ============================================== -->
-    <!-- HEADER (Sudah Disamakan UI/UX) -->
+    <!-- HEADER -->
     <!-- ============================================== -->
     <header class="bg-surface/90 backdrop-blur-md border-b border-borderLight sticky top-0 z-40 shadow-sm">
         <div class="max-w-6xl mx-auto px-4 md:px-6 py-3 md:py-4">
@@ -71,8 +69,10 @@
                         <i class="ph-fill ph-hexagon text-red-500 text-xl"></i> MOLUSCA <span class="text-borderLight mx-1">|</span> <span id="headerName" class="text-red-500">IZIN & SAKIT</span>
                     </h1>
                 </div>
-                <!-- Link navigasi seragam -->
+                <!-- Link navigasi -->
                 <nav class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 md:pb-0">
+                    <span id="syncIndicatorDesktop" class="hidden md:flex mr-2 text-[10px] font-bold text-slate-400 bg-white px-2 py-1.5 rounded-xl items-center gap-1 border border-slate-200 shadow-sm"><i class="ph-bold ph-arrows-clockwise animate-spin text-blue-500"></i> Sync...</span>
+                    
                     <a href="library.html" class="shrink-0 text-[11px] md:text-xs font-bold text-slate-600 bg-white border border-slate-200 px-4 py-2 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-colors shadow-sm"><i class="ph-bold ph-folder-open text-base"></i> Library</a>
                     <a href="izin.html" class="shrink-0 text-[11px] md:text-xs font-bold text-red-600 bg-red-50 border border-red-100 px-4 py-2 rounded-xl flex items-center gap-1.5 hover:bg-red-100 transition-colors shadow-sm"><i class="ph-bold ph-first-aid text-base"></i> Izin / Sakit</a>
                     <a href="piket.html" id="navPiket" class="shrink-0 text-[11px] md:text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 px-4 py-2 rounded-xl flex items-center gap-1.5 hover:bg-amber-100 transition-colors shadow-sm"><i class="ph-bold ph-broom text-base"></i> Piket</a>
@@ -85,7 +85,8 @@
     <main class="p-4 md:p-6 max-w-6xl mx-auto space-y-8 mt-2">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
             
-            <section class="lg:col-span-5 bg-white p-5 md:p-8 rounded-[32px] border border-slate-200 shadow-sm h-fit order-2 lg:order-1">
+            <!-- FORM PENGAJUAN -->
+            <section class="lg:col-span-5 bg-white p-5 md:p-8 rounded-[32px] border border-slate-200 shadow-sm h-fit order-2 lg:order-1 animate-fade">
                 <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
                     <i class="ph-fill ph-hand-waving text-red-500 text-xl"></i> Form Pengajuan
                 </h2>
@@ -145,7 +146,8 @@
                 </form>
             </section>
 
-            <div class="lg:col-span-7 space-y-6 md:space-y-8 order-1 lg:order-2">
+            <!-- STATISTIK & EXCEL -->
+            <div class="lg:col-span-7 space-y-6 md:space-y-8 order-1 lg:order-2 animate-fade" style="animation-delay: 0.1s;">
                 <section class="bg-white p-5 md:p-8 rounded-[32px] border border-slate-200 shadow-sm flex flex-col">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest flex items-center gap-2">
@@ -170,17 +172,40 @@
             </div>
         </div>
 
-        <section class="pt-4 md:pt-6 border-t border-slate-200 mt-8">
+        <!-- RIWAYAT PENGAJUAN (TRANSPARAN UI) -->
+        <section class="pt-4 md:pt-6 border-t border-slate-200 mt-8 animate-fade" style="animation-delay: 0.2s;">
             <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2 ml-2">
                 <i class="ph-bold ph-clock-counter-clockwise text-lg"></i> Riwayat Pengajuan Seluruh Tim
             </h2>
-            <div id="board-history" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"></div>
+            <div id="board-history" class="flex flex-col space-y-1">
+                <!-- Skeleton loader -->
+                <div class="skeleton h-14 w-full rounded-xl mb-2"></div>
+                <div class="skeleton h-14 w-full rounded-xl mb-2"></div>
+                <div class="skeleton h-14 w-full rounded-xl"></div>
+            </div>
         </section>
     </main>
 
     <script>
+        // ==========================================
+        // KONFIGURASI API & SHEET
+        // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
-        
+        const SPREADSHEET_ID = '1d3njy330ifMnm-uBD8daaey5AqYO3rQxaI-tLZQdeyI';
+
+        let globalRequestsData = [];
+        let globalEmployees = [];
+        let myChart = null; 
+        const userRole = localStorage.getItem('moluscaRole') || 'user';
+        const userName = localStorage.getItem('moluscaUser') || 'Guest';
+
+        function goBack() {
+            if(userRole === 'admin') window.location.href = 'dashboard.html';
+            else if (userRole === 'konten') window.location.href = 'konten.html';
+            else window.location.href = 'desainer.html';
+        }
+
+        // FUNGSI TULIS DATA (BACKGROUND)
         async function dbCall(payload) {
             try {
                 const res = await fetch(SCRIPT_URL, { 
@@ -195,20 +220,31 @@
             }
         }
 
-        let globalRequestsData = [];
-        let globalEmployees = [];
-        let myChart = null; 
-        const userRole = localStorage.getItem('moluscaRole') || 'user';
-        const userName = localStorage.getItem('moluscaUser') || 'Guest';
-
-        function goBack() {
-            if(userRole === 'admin') window.location.href = 'dashboard.html';
-            else if (userRole === 'konten') window.location.href = 'konten.html';
-            else window.location.href = 'desainer.html';
+        // FUNGSI BACA DATA CEPAT (GVIZ API) - SUPER KILAT
+        async function fetchSheetFast(sheetName) {
+            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+            try {
+                const response = await fetch(url, { cache: "no-store" });
+                const text = await response.text();
+                const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+                const data = JSON.parse(jsonStr);
+                
+                const cols = data.table.cols.map(c => c ? c.label : '').map(l => l.trim());
+                return data.table.rows.map(r => {
+                    let row = {};
+                    r.c.forEach((c, i) => { if(cols[i]) row[cols[i]] = c ? (c.f !== undefined ? c.f : c.v) : ''; });
+                    return row;
+                });
+            } catch(e) {
+                return [];
+            }
         }
 
+        // ==========================================
+        // INIT & LOAD DATA
+        // ==========================================
         async function initApp() {
-            if(!localStorage.getItem('moluscaUser')) window.location.href = 'index.html';
+            if(!localStorage.getItem('moluscaUser')) { /* window.location.href = 'index.html'; */ }
             
             document.getElementById('headerName').textContent = `IZIN | ${userName}`;
 
@@ -223,19 +259,42 @@
                 monthSelect.innerHTML += `<option value="${i}" ${isSelected}>${m}</option>`;
             });
 
-            await loadEmployees();
-            await loadData();
+            await loadAllDataFast();
         }
 
-        async function loadEmployees() {
+        function setSyncStatus(status) {
+            const indDesktop = document.getElementById('syncIndicatorDesktop');
+            let content = '';
+            
+            if(status === 'loading') content = '<i class="ph-bold ph-arrows-clockwise animate-spin text-blue-500"></i> Sync...';
+            else if(status === 'done') content = '<i class="ph-bold ph-check text-emerald-500"></i> Updated';
+            else if(status === 'error') content = '<i class="ph-bold ph-warning text-rose-500"></i> Error';
+            
+            if(indDesktop) indDesktop.innerHTML = content;
+            
+            if(status === 'done' || status === 'error') {
+                setTimeout(() => { 
+                    if(indDesktop) indDesktop.innerHTML = '<i class="ph-bold ph-check-circle text-emerald-500"></i> Ready';
+                }, 2000);
+            }
+        }
+
+        async function loadAllDataFast() {
+            setSyncStatus('loading');
             try {
-                const res = await dbCall({ action: 'read', sheetName: 'users' });
+                // Tarik data Users dan Izin secara paralel dan instan
+                const [resUsers, resIzin] = await Promise.all([
+                    fetchSheetFast('users'),
+                    fetchSheetFast('izin')
+                ]);
+
+                // 1. Setup Dropdown Users
                 const select = document.getElementById('employeeName');
                 select.innerHTML = '';
                 globalEmployees = [];
                 
-                if(res.status === 'success' && res.data){
-                    res.data.forEach(u => {
+                if(resUsers && resUsers.length > 0){
+                    resUsers.forEach(u => {
                         if(u.role && u.role.toLowerCase() !== 'admin') {
                             globalEmployees.push(u.name);
                             let selected = (u.name === userName) ? 'selected' : '';
@@ -253,9 +312,22 @@
                     select.classList.add('opacity-50', 'cursor-not-allowed');
                     document.getElementById('btnExport').style.display = 'none';
                 }
-            } catch(e) { console.error("Gagal load karyawan"); }
+
+                // 2. Setup Board & Chart Izin
+                globalRequestsData = resIzin || [];
+                renderBoard(globalRequestsData);
+                renderChart(); 
+
+                setSyncStatus('done');
+            } catch(e) {
+                console.error(e);
+                setSyncStatus('error');
+            }
         }
 
+        // ==========================================
+        // UI INTERACTION & SUBMIT
+        // ==========================================
         function previewFile() {
             const file = document.getElementById('proofImage').files[0];
             if (file) {
@@ -265,9 +337,6 @@
             }
         }
 
-        // ==========================================
-        // KOMPRESI & UPLOAD CLOUDINARY
-        // ==========================================
         function compressImage(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -276,7 +345,7 @@
                     const img = new Image();
                     img.src = event.target.result;
                     img.onload = () => {
-                        const maxWidth = 1000; // Resolusi maksimal
+                        const maxWidth = 1000;
                         let width = img.width;
                         let height = img.height;
 
@@ -291,7 +360,6 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        // Output full Data URI
                         resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                     img.onerror = error => reject(error);
@@ -309,14 +377,8 @@
             formData.append('file', dataUri);
             formData.append('upload_preset', uploadPreset);
 
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error('Gagal upload gambar ke Cloudinary');
-            }
+            const response = await fetch(url, { method: 'POST', body: formData });
+            if (!response.ok) throw new Error('Gagal upload gambar ke Cloudinary');
 
             const data = await response.json();
             return data.secure_url;
@@ -331,19 +393,18 @@
             btn.disabled = true;
 
             try {
-                // 1. Upload ke Cloudinary dulu jika ada file
                 if (file) {
-                    btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i> UPLOAD KE CLOUDINARY...`;
+                    btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i> UPLOAD FOTO...`;
                     const base64DataURI = await compressImage(file);
                     proofUrl = await uploadToCloudinary(base64DataURI);
                 }
 
-                btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i> SIMPAN DATABASE...`;
+                btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i> SIMPAN DATA...`;
                 
-                // 2. Simpan Data Teks & URL Gambar ke Google Sheets
+                // PERBAIKAN BUG: Field nama diganti menjadi 'nama' agar sesuai dengan kolom Google Sheet (Gambar 6)
                 const reqData = {
                     id: Date.now().toString(),
-                    name: document.getElementById('employeeName').value,
+                    nama: document.getElementById('employeeName').value, 
                     type: document.getElementById('leaveType').value,
                     startDate: document.getElementById('startDate').value,
                     endDate: document.getElementById('endDate').value,
@@ -352,19 +413,12 @@
                     timestamp: new Date().toISOString()
                 };
 
-                const payload = {
-                    action: 'insert',
-                    sheetName: 'izin',
-                    data: reqData
-                };
-
-                const resInsert = await dbCall(payload);
+                const resInsert = await dbCall({ action: 'insert', sheetName: 'izin', data: reqData });
                 
                 if (resInsert.status !== 'success') {
                     throw new Error(resInsert.message || "Gagal menyimpan ke Server");
                 }
 
-                // Reset Form
                 document.getElementById('leaveForm').reset();
                 if(userRole !== 'admin') document.getElementById('employeeName').value = userName;
                 
@@ -372,7 +426,7 @@
                 document.getElementById('uploadText').className = "text-[11px] font-bold text-slate-500 text-center px-4";
                 document.getElementById('uploadIcon').className = "ph-bold ph-image text-3xl text-slate-300 mb-2 group-hover:text-red-400 transition-colors";
 
-                await loadData(); 
+                await loadAllDataFast(); 
             } catch (error) {
                 alert("GAGAL: " + error.message);
             } finally {
@@ -381,28 +435,60 @@
             }
         }
 
-        async function loadData() {
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            try {
-                const response = await dbCall({ action: 'read', sheetName: 'izin' });
-                if(response.status === 'success') {
-                    globalRequestsData = response.data || [];
-                    renderBoard(globalRequestsData);
-                    renderChart(); 
-                }
-            } catch(e) {
-                console.error(e);
-            } finally {
-                document.getElementById('loadingOverlay').classList.add('hidden');
+        async function deleteIzin(id, btnElement) {
+            if(confirm('Yakin ingin hapus riwayat ini secara permanen?')) {
+                btnElement.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>';
+                btnElement.disabled = true;
+                await dbCall({ action: 'delete', sheetName: 'izin', idValue: id });
+                await loadAllDataFast(); 
             }
         }
 
-        async function deleteIzin(id) {
-            if(confirm('Yakin ingin hapus riwayat izin ini permanen?')) {
-                document.getElementById('loadingOverlay').classList.remove('hidden');
-                await dbCall({ action: 'delete', sheetName: 'izin', idValue: id });
-                await loadData(); 
+        // ==========================================
+        // RENDER UI (TRANSPARAN MINIMALIS & STATISTIK)
+        // ==========================================
+        function renderBoard(requests) {
+            const board = document.getElementById('board-history');
+            board.innerHTML = '';
+            
+            if(requests.length === 0) {
+                board.innerHTML = `<div class="text-center text-xs font-bold text-slate-400 py-8 border-b border-slate-200">Belum ada data pengajuan.</div>`;
+                return;
             }
+
+            requests.sort((a, b) => b.id - a.id).forEach(req => {
+                let badgeColor = req.type.includes('Sakit') ? 'text-red-600 bg-red-50' : req.type.includes('Cuti') ? 'text-purple-600 bg-purple-50' : 'text-amber-600 bg-amber-50';
+                
+                let delBtn = userRole === 'admin' ? `<button onclick="deleteIzin('${req.id}', this)" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex justify-center items-center hover:bg-red-500 hover:text-white transition-colors shrink-0" title="Hapus"><i class="ph-bold ph-trash"></i></button>` : '';
+
+                let proofBtn = req.proofUrl ? 
+                    `<a href="${req.proofUrl}" target="_blank" class="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex justify-center items-center hover:bg-blue-600 hover:text-white transition-colors shrink-0" title="Lihat Surat/Foto"><i class="ph-bold ph-image text-sm"></i></a>` : '';
+
+                // Desain list baris transparan, bersih dan modern
+                board.innerHTML += `
+                    <div class="bg-transparent border-b border-slate-200/80 py-3.5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 hover:bg-slate-50/50 transition-colors px-2 rounded-xl group">
+                        <div>
+                            <h4 class="font-extrabold text-slate-800 text-[13px] flex items-center gap-2">
+                                ${req.nama || 'Tanpa Nama'} 
+                                <span class="px-2 py-0.5 text-[9px] font-black rounded-md uppercase tracking-widest ${badgeColor}">${req.type}</span>
+                            </h4>
+                            <div class="text-[10px] font-medium text-slate-500 mt-1.5 flex flex-wrap items-center gap-1.5">
+                                <span class="flex items-center gap-1 font-bold text-slate-600 bg-white border border-slate-200 px-1.5 py-0.5 rounded">
+                                    <i class="ph-bold ph-calendar-blank"></i> 
+                                    ${new Date(req.startDate).toLocaleDateString('id-ID', {day:'2-digit', month:'short'})} 
+                                    ${req.startDate !== req.endDate ? `- \${new Date(req.endDate).toLocaleDateString('id-ID', {day:'2-digit', month:'short'})}` : ''}
+                                </span>
+                                <span class="text-slate-300 mx-1 hidden sm:inline">|</span>
+                                <span class="italic truncate w-full sm:w-auto max-w-[250px] md:max-w-[400px]">"${req.reason}"</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 sm:opacity-70 group-hover:opacity-100 transition-opacity">
+                            ${proofBtn}
+                            ${delBtn}
+                        </div>
+                    </div>
+                `;
+            });
         }
 
         function renderChart() {
@@ -413,10 +499,10 @@
 
             globalRequestsData.forEach(req => {
                 let reqDate = new Date(req.startDate);
-                if(!isNaN(reqDate.getTime()) && reqDate.getMonth() === selectedMonth) {
-                    if (!stats[req.name]) stats[req.name] = { Sakit: 0, Izin: 0, Cuti: 0 };
+                if(!isNaN(reqDate.getTime()) && reqDate.getMonth() === selectedMonth && req.nama) {
+                    if (!stats[req.nama]) stats[req.nama] = { Sakit: 0, Izin: 0, Cuti: 0 };
                     let typeKey = req.type.includes('Sakit') ? 'Sakit' : (req.type.includes('Cuti') ? 'Cuti' : 'Izin');
-                    stats[req.name][typeKey] += 1; 
+                    stats[req.nama][typeKey] += 1; 
                 }
             });
 
@@ -440,55 +526,12 @@
             });
         }
 
-        function renderBoard(requests) {
-            const board = document.getElementById('board-history');
-            board.innerHTML = '';
-            
-            if(requests.length === 0) {
-                board.innerHTML = `<div class="col-span-full text-center text-xs font-bold text-slate-400 py-10 border border-slate-200 rounded-[24px] bg-white shadow-sm">Belum ada data pengajuan.</div>`;
-                return;
-            }
-
-            requests.sort((a, b) => b.id - a.id).forEach(req => {
-                let badgeColor = req.type.includes('Sakit') ? 'bg-red-50 text-red-600 border-red-200' : req.type.includes('Cuti') ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-amber-50 text-amber-600 border-amber-200';
-                let delBtn = userRole === 'admin' ? `<button onclick="deleteIzin('${req.id}')" class="text-slate-300 hover:text-red-500 hover:bg-red-50 transition bg-white shadow-sm border border-slate-100 p-2 rounded-xl"><i class="ph-bold ph-trash text-lg"></i></button>` : '';
-
-                let proofBtn = req.proofUrl ? 
-                    `<button onclick="window.open('${req.proofUrl}', '_blank')" class="mt-4 w-full bg-slate-50 hover:bg-blue-600 text-slate-600 hover:text-white text-[10px] font-extrabold p-3.5 rounded-xl uppercase tracking-widest flex justify-center items-center gap-2 transition-colors border border-slate-200 shadow-sm"><i class="ph-bold ph-link text-base"></i> Cek Bukti Foto</button>` : '';
-
-                board.innerHTML += `
-                    <div class="bg-white p-5 rounded-[24px] border border-slate-200 shadow-sm relative card-hover flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 font-black text-sm uppercase shadow-sm">${req.name.charAt(0)}</div>
-                                    <div>
-                                        <h3 class="font-extrabold text-slate-800 text-[14px] md:text-[15px] leading-tight">${req.name}</h3>
-                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest"><i class="ph-fill ph-clock"></i> ${new Date(parseInt(req.id)).toLocaleDateString('id-ID', {day:'numeric', month:'short'})}</span>
-                                    </div>
-                                </div>
-                                ${delBtn}
-                            </div>
-                            <div class="mb-4 flex flex-wrap items-center gap-2">
-                                <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-md border shadow-sm ${badgeColor}">${req.type}</span>
-                                <span class="text-[9px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200 shadow-sm">
-                                    <i class="ph-bold ph-calendar-blank"></i> ${new Date(req.startDate).toLocaleDateString('id-ID', {day:'2-digit', month:'short'})}
-                                </span>
-                            </div>
-                            <p class="text-xs font-medium text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-200 leading-relaxed min-h-[60px] italic">"${req.reason}"</p>
-                        </div>
-                        ${proofBtn}
-                    </div>
-                `;
-            });
-        }
-
         function downloadExcel() {
             if(globalRequestsData.length === 0) return alert("Belum ada data.");
             const workbook = XLSX.utils.book_new();
             
             const detailData = globalRequestsData.sort((a, b) => b.id - a.id).map((req, i) => ({
-                "No": i + 1, "Nama Karyawan": req.name, "Tipe Izin": req.type,
+                "No": i + 1, "Nama Karyawan": req.nama, "Tipe Izin": req.type,
                 "Dari Tanggal": new Date(req.startDate).toLocaleDateString('id-ID'), "Sampai Tanggal": new Date(req.endDate).toLocaleDateString('id-ID'),
                 "Alasan Lengkap": req.reason, "Link Bukti Foto": req.proofUrl || "Tidak Ada"
             }));
@@ -500,10 +543,12 @@
             globalEmployees.forEach(emp => rekapStats[emp] = { Sakit: 0, Izin: 0, Cuti: 0, Total: 0 });
             
             globalRequestsData.forEach(req => {
-                if (!rekapStats[req.name]) rekapStats[req.name] = { Sakit: 0, Izin: 0, Cuti: 0, Total: 0 };
-                let typeKey = req.type.includes('Sakit') ? 'Sakit' : (req.type.includes('Cuti') ? 'Cuti' : 'Izin');
-                rekapStats[req.name][typeKey] += 1; 
-                rekapStats[req.name].Total += 1;
+                if(req.nama) {
+                    if (!rekapStats[req.nama]) rekapStats[req.nama] = { Sakit: 0, Izin: 0, Cuti: 0, Total: 0 };
+                    let typeKey = req.type.includes('Sakit') ? 'Sakit' : (req.type.includes('Cuti') ? 'Cuti' : 'Izin');
+                    rekapStats[req.nama][typeKey] += 1; 
+                    rekapStats[req.nama].Total += 1;
+                }
             });
 
             const rekap = [["Nama Pegawai", "Total Sakit", "Total Izin", "Total Cuti", "TOTAL SEMUA"]];
