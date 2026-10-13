@@ -4,45 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Izin & Sakit - Molusca</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- XLSX & Chart.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Font Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        bgApp: '#F8FAFC',    
+                        surface: '#FFFFFF',  
+                        borderLight: '#E2E8F0', 
+                        textMain: '#0F172A', 
+                        textMuted: '#64748B' 
+                    }
+                }
+            }
+        }
+    </script>
     <style> 
-        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-user-select: none; user-select: none; } 
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            -webkit-user-select: none; user-select: none; 
+            -webkit-font-smoothing: antialiased;
+            background-color: #F8FAFC;
+        } 
+        /* Custom Scrollbar */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        
+        .card-hover { transition: all 0.2s ease-in-out; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05); }
     </style>
 </head>
-<body class="bg-[#FBFBFE] pb-24 text-slate-800" onload="initApp()" oncontextmenu="return false;">
+<body class="pb-24 text-slate-800" onload="initApp()" oncontextmenu="return false;">
 
     <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex justify-center items-center">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4 text-center max-w-[250px]">
-            <i class="ph ph-spinner animate-spin text-5xl text-red-500"></i>
+        <div class="bg-white p-8 rounded-[32px] shadow-2xl flex flex-col items-center gap-4 text-center max-w-[250px]">
+            <i class="ph-bold ph-spinner animate-spin text-5xl text-red-500"></i>
             <div>
                 <span class="text-xs font-black text-slate-700 uppercase tracking-widest block mb-1">Sinkronisasi Data</span>
-                <span class="text-[10px] font-bold text-slate-400">Menghubungkan ke Sheets...</span>
+                <span class="text-[10px] font-bold text-slate-400">Menghubungkan ke server...</span>
             </div>
         </div>
     </div>
 
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4 px-4 md:px-6 border-b border-slate-100 flex flex-wrap gap-4 justify-between items-center shadow-sm">
-        <div class="flex items-center gap-2">
-            <i class="ph-fill ph-first-aid text-2xl text-red-500"></i>
-            <h1 class="text-sm font-extrabold tracking-widest text-slate-900 uppercase">MOLUSCA <span class="text-slate-300 mx-1 hidden md:inline">|</span> <span id="headerName" class="text-red-500 hidden md:inline">USER</span></h1>
-        </div>
-        <div class="flex items-center gap-1.5 md:gap-2 flex-wrap justify-end w-full md:w-auto" id="navMenu">
-            <a href="izin.html" class="text-[10px] md:text-xs font-black bg-red-100 text-red-700 px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex items-center gap-1 uppercase tracking-widest cursor-default shadow-sm border border-red-200"><i class="ph-fill ph-first-aid text-sm md:text-base"></i> <span class="hidden sm:inline">Izin</span></a>
-            <a href="piket.html" id="navPiket" class="text-[10px] md:text-xs font-black bg-orange-50 hover:bg-orange-100 text-orange-500 px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex items-center gap-1 transition uppercase tracking-widest"><i class="ph-fill ph-broom text-sm md:text-base"></i> <span class="hidden sm:inline">Piket</span></a>
-            <a href="peminjaman.html" id="navAsset" class="text-[10px] md:text-xs font-black bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex items-center gap-1 transition uppercase tracking-widest"><i class="ph-fill ph-package text-sm md:text-base"></i> <span class="hidden sm:inline">Inventaris</span></a>
-            <button onclick="goBack()" class="text-[10px] md:text-xs font-black bg-slate-900 hover:bg-slate-800 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex items-center gap-1 transition uppercase tracking-widest shadow-md"><i class="ph-bold ph-kanban text-sm md:text-base"></i> <span class="hidden sm:inline">Dashboard</span></button>
+    <!-- ============================================== -->
+    <!-- HEADER (Sudah Disamakan UI/UX) -->
+    <!-- ============================================== -->
+    <header class="bg-surface/90 backdrop-blur-md border-b border-borderLight sticky top-0 z-40 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 md:px-6 py-3 md:py-4">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-xs md:text-sm font-extrabold text-textMain uppercase tracking-widest flex items-center gap-1.5">
+                        <i class="ph-fill ph-hexagon text-red-500 text-xl"></i> MOLUSCA <span class="text-borderLight mx-1">|</span> <span id="headerName" class="text-red-500">IZIN & SAKIT</span>
+                    </h1>
+                </div>
+                <!-- Link navigasi seragam -->
+                <nav class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 md:pb-0">
+                    <a href="library.html" class="shrink-0 text-[11px] md:text-xs font-bold text-slate-600 bg-white border border-slate-200 px-4 py-2 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-colors shadow-sm"><i class="ph-bold ph-folder-open text-base"></i> Library</a>
+                    <a href="izin.html" class="shrink-0 text-[11px] md:text-xs font-bold text-red-600 bg-red-50 border border-red-100 px-4 py-2 rounded-xl flex items-center gap-1.5 hover:bg-red-100 transition-colors shadow-sm"><i class="ph-bold ph-first-aid text-base"></i> Izin / Sakit</a>
+                    <a href="piket.html" id="navPiket" class="shrink-0 text-[11px] md:text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 px-4 py-2 rounded-xl flex items-center gap-1.5 hover:bg-amber-100 transition-colors shadow-sm"><i class="ph-bold ph-broom text-base"></i> Piket</a>
+                    <button onclick="goBack()" class="shrink-0 text-[11px] md:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"><i class="ph-bold ph-arrow-left text-base"></i> Kembali</button>
+                </nav>
+            </div>
         </div>
     </header>
 
-    <main class="p-4 md:p-8 max-w-6xl mx-auto space-y-8 mt-2">
+    <main class="p-4 md:p-6 max-w-6xl mx-auto space-y-8 mt-2">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
             
-            <section class="lg:col-span-5 bg-white p-5 md:p-8 rounded-[32px] border border-slate-100 shadow-sm h-fit order-2 lg:order-1">
+            <section class="lg:col-span-5 bg-white p-5 md:p-8 rounded-[32px] border border-slate-200 shadow-sm h-fit order-2 lg:order-1">
                 <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
                     <i class="ph-fill ph-hand-waving text-red-500 text-xl"></i> Form Pengajuan
                 </h2>
@@ -52,16 +95,16 @@
                         <div class="space-y-1">
                             <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Pilih Karyawan</label>
                             <div class="relative">
-                                <i class="ph-fill ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                <select id="employeeName" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 pl-10 pr-4 text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-red-500/20 cursor-pointer"></select>
+                                <i class="ph-bold ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <select id="employeeName" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-xs font-bold outline-none appearance-none focus:ring-2 focus:border-red-400 cursor-pointer"></select>
                                 <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                             </div>
                         </div>
                         <div class="space-y-1">
                             <label class="text-[10px] font-bold text-slate-500 uppercase ml-1">Kategori</label>
                             <div class="relative">
-                                <i class="ph-fill ph-tag absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                <select id="leaveType" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 pl-10 pr-4 text-xs font-bold outline-none appearance-none focus:ring-2 focus:ring-red-500/20 cursor-pointer">
+                                <i class="ph-bold ph-tag absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                <select id="leaveType" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-xs font-bold outline-none appearance-none focus:ring-2 focus:border-red-400 cursor-pointer">
                                     <option value="Sakit">Sakit</option>
                                     <option value="Izin">Izin Keperluan</option>
                                     <option value="Cuti">Cuti</option>
@@ -74,36 +117,36 @@
                     <div class="grid grid-cols-2 gap-4 pt-1">
                         <div class="relative">
                             <label class="absolute -top-2.5 left-4 bg-white px-2 text-[9px] font-black text-slate-400 uppercase tracking-widest rounded shadow-sm border border-slate-100">Mulai</label>
-                            <input type="date" id="startDate" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-red-500/20 outline-none appearance-none">
+                            <input type="date" id="startDate" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:border-red-400 outline-none appearance-none">
                         </div>
                         <div class="relative">
                             <label class="absolute -top-2.5 left-4 bg-white px-2 text-[9px] font-black text-slate-400 uppercase tracking-widest rounded shadow-sm border border-slate-100">Sampai</label>
-                            <input type="date" id="endDate" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:ring-red-500/20 outline-none appearance-none">
+                            <input type="date" id="endDate" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-4 text-xs font-bold text-slate-600 focus:ring-2 focus:border-red-400 outline-none appearance-none">
                         </div>
                     </div>
 
                     <div class="relative pt-1">
-                        <i class="ph-fill ph-text-align-left absolute left-4 top-4 text-slate-400"></i>
-                        <textarea id="leaveReason" required placeholder="Alasan lengkap..." rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-10 pr-4 text-xs font-bold focus:ring-2 focus:ring-red-500/20 outline-none resize-none"></textarea>
+                        <i class="ph-bold ph-text-align-left absolute left-4 top-4 text-slate-400"></i>
+                        <textarea id="leaveReason" required placeholder="Alasan lengkap..." rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-11 pr-4 text-xs font-bold focus:ring-2 focus:border-red-400 outline-none resize-none"></textarea>
                     </div>
 
                     <div class="relative">
                         <input type="file" id="proofImage" accept="image/*" class="hidden" onchange="previewFile()">
-                        <label for="proofImage" class="flex flex-col items-center justify-center w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl py-6 cursor-pointer hover:bg-slate-100 hover:border-red-400 transition-all group">
-                            <i id="uploadIcon" class="ph-fill ph-image text-3xl text-slate-300 mb-2 group-hover:text-red-400 transition-colors"></i>
+                        <label for="proofImage" class="flex flex-col items-center justify-center w-full bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl py-6 cursor-pointer hover:bg-slate-100 hover:border-red-400 transition-all group">
+                            <i id="uploadIcon" class="ph-bold ph-image text-3xl text-slate-300 mb-2 group-hover:text-red-400 transition-colors"></i>
                             <span id="uploadText" class="text-[11px] font-bold text-slate-500 text-center px-4">Upload Bukti Foto / Surat Dokter</span>
-                            <span class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest">(Tersimpan ke Google Drive)</span>
+                            <span class="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest">(Tersimpan ke Cloudinary)</span>
                         </label>
                     </div>
 
-                    <button type="submit" id="submitBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-black uppercase tracking-widest text-[11px] py-4 rounded-2xl shadow-lg shadow-red-200 transition flex justify-center items-center gap-2 mt-4">
-                        <i class="ph-fill ph-paper-plane-right text-base"></i> KIRIM PENGAJUAN
+                    <button type="submit" id="submitBtn" class="w-full bg-red-500 hover:bg-red-600 active:scale-[0.98] text-white font-black uppercase tracking-widest text-[11px] py-4 rounded-xl shadow-md transition-all flex justify-center items-center gap-2 mt-4">
+                        <i class="ph-bold ph-paper-plane-right text-base"></i> KIRIM PENGAJUAN
                     </button>
                 </form>
             </section>
 
             <div class="lg:col-span-7 space-y-6 md:space-y-8 order-1 lg:order-2">
-                <section class="bg-white p-5 md:p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col">
+                <section class="bg-white p-5 md:p-8 rounded-[32px] border border-slate-200 shadow-sm flex flex-col">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-sm font-extrabold text-slate-900 uppercase tracking-widest flex items-center gap-2">
                             <i class="ph-fill ph-chart-bar text-blue-500 text-xl"></i> Statistik
@@ -113,14 +156,14 @@
                     <div class="flex-1 w-full relative min-h-[200px] md:min-h-[250px]"><canvas id="statsChart"></canvas></div>
                 </section>
                 
-                <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-6 md:p-8 rounded-[32px] text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-lg">
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-6 md:p-8 rounded-[32px] text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-lg border border-slate-700">
                     <div>
                         <h3 class="font-black text-sm mb-1 uppercase tracking-widest text-slate-200 flex items-center gap-2">
                             <i class="ph-fill ph-microsoft-excel-logo text-green-400 text-xl"></i> Rekap Data
                         </h3>
                         <p class="text-[10px] text-slate-400">Unduh riwayat pengajuan tim ke format Excel.</p>
                     </div>
-                    <button id="btnExport" onclick="downloadExcel()" class="w-full sm:w-auto bg-green-500 hover:bg-green-400 text-white px-6 py-3.5 rounded-xl text-[10px] font-black uppercase flex justify-center items-center gap-2 shadow-md transition">
+                    <button id="btnExport" onclick="downloadExcel()" class="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white px-6 py-3.5 rounded-xl text-[10px] font-black uppercase flex justify-center items-center gap-2 shadow-md transition-all active:scale-95">
                         Download .XLSX
                     </button>
                 </div>
@@ -129,7 +172,7 @@
 
         <section class="pt-4 md:pt-6 border-t border-slate-200 mt-8">
             <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2 ml-2">
-                <i class="ph-fill ph-clock-counter-clockwise text-lg"></i> Riwayat Pengajuan Seluruh Tim
+                <i class="ph-bold ph-clock-counter-clockwise text-lg"></i> Riwayat Pengajuan Seluruh Tim
             </h2>
             <div id="board-history" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"></div>
         </section>
@@ -141,8 +184,7 @@
         async function dbCall(payload) {
             try {
                 const res = await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    redirect: 'follow', 
+                    method: 'POST', redirect: 'follow', 
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload) 
                 });
@@ -168,8 +210,7 @@
         async function initApp() {
             if(!localStorage.getItem('moluscaUser')) window.location.href = 'index.html';
             
-            document.getElementById('headerName').textContent = userName;
-            if(userRole === 'admin') document.getElementById('navPiket').href = 'dashboard-piket.html';
+            document.getElementById('headerName').textContent = `IZIN | ${userName}`;
 
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('startDate').value = today;
@@ -219,12 +260,14 @@
             const file = document.getElementById('proofImage').files[0];
             if (file) {
                 document.getElementById('uploadText').innerText = file.name;
-                document.getElementById('uploadText').className = "text-xs font-bold text-blue-600 text-center px-4";
+                document.getElementById('uploadText').className = "text-xs font-bold text-blue-600 text-center px-4 truncate max-w-full";
                 document.getElementById('uploadIcon').className = "ph-fill ph-check-circle text-4xl text-blue-500 mb-2";
             }
         }
 
-        // ENGINE KOMPRESOR FOTO 
+        // ==========================================
+        // KOMPRESI & UPLOAD CLOUDINARY
+        // ==========================================
         function compressImage(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -233,7 +276,7 @@
                     const img = new Image();
                     img.src = event.target.result;
                     img.onload = () => {
-                        const maxWidth = 800; 
+                        const maxWidth = 1000; // Resolusi maksimal
                         let width = img.width;
                         let height = img.height;
 
@@ -248,8 +291,8 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5).split(',')[1];
-                        resolve(compressedBase64);
+                        // Output full Data URI
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                     img.onerror = error => reject(error);
                 };
@@ -257,67 +300,84 @@
             });
         }
 
+        async function uploadToCloudinary(dataUri) {
+            const cloudName = 'sp3gkuvt';
+            const uploadPreset = 'mlsdata';
+            const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+
+            const formData = new FormData();
+            formData.append('file', dataUri);
+            formData.append('upload_preset', uploadPreset);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Gagal upload gambar ke Cloudinary');
+            }
+
+            const data = await response.json();
+            return data.secure_url;
+        }
+
         async function submitLeave(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             const file = document.getElementById('proofImage').files[0];
-            
-            const reqData = {
-                id: Date.now().toString(),
-                name: document.getElementById('employeeName').value,
-                type: document.getElementById('leaveType').value,
-                startDate: document.getElementById('startDate').value,
-                endDate: document.getElementById('endDate').value,
-                reason: document.getElementById('leaveReason').value,
-                proofUrl: "", 
-                timestamp: new Date().toISOString()
-            };
+            let proofUrl = "";
 
             btn.disabled = true;
 
             try {
-                let fileObj = null;
+                // 1. Upload ke Cloudinary dulu jika ada file
                 if (file) {
-                    btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> MENGKOMPRES FOTO...`;
-                    
-                    const base64Data = await compressImage(file);
-                    
-                    fileObj = {
-                        base64: base64Data,
-                        filename: reqData.name.replace(/\s+/g, '_') + '_' + Date.now() + '.jpg',
-                        mimeType: 'image/jpeg'
-                    };
+                    btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i> UPLOAD KE CLOUDINARY...`;
+                    const base64DataURI = await compressImage(file);
+                    proofUrl = await uploadToCloudinary(base64DataURI);
                 }
 
-                btn.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> UPLOAD KE SERVER...`;
+                btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin text-lg"></i> SIMPAN DATABASE...`;
                 
+                // 2. Simpan Data Teks & URL Gambar ke Google Sheets
+                const reqData = {
+                    id: Date.now().toString(),
+                    name: document.getElementById('employeeName').value,
+                    type: document.getElementById('leaveType').value,
+                    startDate: document.getElementById('startDate').value,
+                    endDate: document.getElementById('endDate').value,
+                    reason: document.getElementById('leaveReason').value,
+                    proofUrl: proofUrl, 
+                    timestamp: new Date().toISOString()
+                };
+
                 const payload = {
                     action: 'insert',
                     sheetName: 'izin',
-                    data: reqData,
-                    fileData: fileObj 
+                    data: reqData
                 };
 
                 const resInsert = await dbCall(payload);
-                // PERBAIKAN: Menampilkan pesan error asli dari Google Script
+                
                 if (resInsert.status !== 'success') {
                     throw new Error(resInsert.message || "Gagal menyimpan ke Server");
                 }
 
+                // Reset Form
                 document.getElementById('leaveForm').reset();
                 if(userRole !== 'admin') document.getElementById('employeeName').value = userName;
                 
                 document.getElementById('uploadText').innerText = "Upload Bukti Foto / Surat Dokter";
                 document.getElementById('uploadText').className = "text-[11px] font-bold text-slate-500 text-center px-4";
-                document.getElementById('uploadIcon').className = "ph-fill ph-image text-3xl text-slate-300 mb-2 group-hover:text-red-400 transition-colors";
+                document.getElementById('uploadIcon').className = "ph-bold ph-image text-3xl text-slate-300 mb-2 group-hover:text-red-400 transition-colors";
 
-                alert("Pengajuan berhasil disimpan!");
                 await loadData(); 
             } catch (error) {
                 alert("GAGAL: " + error.message);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<i class="ph-fill ph-paper-plane-right text-base"></i> KIRIM PENGAJUAN`;
+                btn.innerHTML = `<i class="ph-bold ph-paper-plane-right text-base"></i> KIRIM PENGAJUAN`;
             }
         }
 
@@ -385,37 +445,37 @@
             board.innerHTML = '';
             
             if(requests.length === 0) {
-                board.innerHTML = `<div class="col-span-full text-center text-xs font-bold text-slate-400 py-10 border-2 border-dashed border-slate-200 rounded-[32px] bg-slate-50/50">Belum ada data pengajuan.</div>`;
+                board.innerHTML = `<div class="col-span-full text-center text-xs font-bold text-slate-400 py-10 border border-slate-200 rounded-[24px] bg-white shadow-sm">Belum ada data pengajuan.</div>`;
                 return;
             }
 
             requests.sort((a, b) => b.id - a.id).forEach(req => {
                 let badgeColor = req.type.includes('Sakit') ? 'bg-red-50 text-red-600 border-red-200' : req.type.includes('Cuti') ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-amber-50 text-amber-600 border-amber-200';
-                let delBtn = userRole === 'admin' ? `<button onclick="deleteIzin('${req.id}')" class="text-slate-300 hover:text-red-500 transition bg-white shadow-sm border border-slate-100 p-1.5 rounded-lg"><i class="ph-fill ph-trash text-lg"></i></button>` : '';
+                let delBtn = userRole === 'admin' ? `<button onclick="deleteIzin('${req.id}')" class="text-slate-300 hover:text-red-500 hover:bg-red-50 transition bg-white shadow-sm border border-slate-100 p-2 rounded-xl"><i class="ph-bold ph-trash text-lg"></i></button>` : '';
 
                 let proofBtn = req.proofUrl ? 
-                    `<button onclick="window.open('${req.proofUrl}', '_blank')" class="mt-4 w-full bg-slate-50 hover:bg-slate-100 text-blue-600 text-[10px] font-extrabold p-3.5 rounded-xl uppercase tracking-widest flex justify-center items-center gap-2 transition-colors border border-slate-200 shadow-sm"><i class="ph-bold ph-link text-base"></i> Buka Bukti di Drive</button>` : '';
+                    `<button onclick="window.open('${req.proofUrl}', '_blank')" class="mt-4 w-full bg-slate-50 hover:bg-blue-600 text-slate-600 hover:text-white text-[10px] font-extrabold p-3.5 rounded-xl uppercase tracking-widest flex justify-center items-center gap-2 transition-colors border border-slate-200 shadow-sm"><i class="ph-bold ph-link text-base"></i> Cek Bukti Foto</button>` : '';
 
                 board.innerHTML += `
-                    <div class="bg-white p-5 rounded-[24px] border border-slate-100 shadow-sm relative hover:shadow-md transition flex flex-col justify-between">
+                    <div class="bg-white p-5 rounded-[24px] border border-slate-200 shadow-sm relative card-hover flex flex-col justify-between">
                         <div>
                             <div class="flex justify-between items-start mb-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 font-black text-sm uppercase shadow-sm">${req.name.charAt(0)}</div>
+                                    <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 font-black text-sm uppercase shadow-sm">${req.name.charAt(0)}</div>
                                     <div>
-                                        <h3 class="font-black text-slate-800 text-sm leading-tight">${req.name}</h3>
+                                        <h3 class="font-extrabold text-slate-800 text-[14px] md:text-[15px] leading-tight">${req.name}</h3>
                                         <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest"><i class="ph-fill ph-clock"></i> ${new Date(parseInt(req.id)).toLocaleDateString('id-ID', {day:'numeric', month:'short'})}</span>
                                     </div>
                                 </div>
                                 ${delBtn}
                             </div>
                             <div class="mb-4 flex flex-wrap items-center gap-2">
-                                <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-md border ${badgeColor}">${req.type}</span>
-                                <span class="text-[9px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
-                                    <i class="ph-fill ph-calendar-blank"></i> ${new Date(req.startDate).toLocaleDateString('id-ID', {day:'2-digit', month:'short'})}
+                                <span class="text-[9px] font-black uppercase px-2.5 py-1 rounded-md border shadow-sm ${badgeColor}">${req.type}</span>
+                                <span class="text-[9px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200 shadow-sm">
+                                    <i class="ph-bold ph-calendar-blank"></i> ${new Date(req.startDate).toLocaleDateString('id-ID', {day:'2-digit', month:'short'})}
                                 </span>
                             </div>
-                            <p class="text-xs font-medium text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100 leading-relaxed min-h-[60px]">${req.reason}</p>
+                            <p class="text-xs font-medium text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-200 leading-relaxed min-h-[60px] italic">"${req.reason}"</p>
                         </div>
                         ${proofBtn}
                     </div>
