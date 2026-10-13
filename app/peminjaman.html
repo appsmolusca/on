@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Inventory Aset - Molusca</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- Font Plus Jakarta Sans -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script>
@@ -16,85 +13,97 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
-                    colors: {
-                        bgApp: '#F8FAFC',    
-                        surface: '#FFFFFF',  
-                        borderLight: '#E2E8F0', 
-                        textMain: '#0F172A', 
-                        textMuted: '#64748B' 
-                    }
+                    colors: { bgApp: '#F8FAFC', surface: '#FFFFFF', borderLight: '#E2E8F0', textMain: '#0F172A', textMuted: '#64748B' },
+                    animation: { 'soft-pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
                 }
             }
         }
     </script>
-    <style> 
+    <style>
         body { 
+            background-color: #F8FAFC; color: #0F172A; 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             -webkit-user-select: none; user-select: none; 
             -webkit-font-smoothing: antialiased;
-            background-color: #F8FAFC;
-        } 
-        
-        /* Shimmer Skeleton Loading */
-        .skeleton {
-            background: linear-gradient(110deg, #f1f5f9 8%, #e2e8f0 18%, #f1f5f9 33%);
-            border-radius: 8px;
-            background-size: 200% 100%;
-            animation: 1.5s shine linear infinite;
         }
-        @keyframes shine { to { background-position-x: -200%; } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
 
-        /* Custom Scrollbar Minimalis */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
 
+        .skeleton {
+            background: linear-gradient(110deg, #f1f5f9 8%, #e2e8f0 18%, #f1f5f9 33%);
+            border-radius: 8px; background-size: 200% 100%;
+            animation: 1.5s shine linear infinite;
+        }
+        @keyframes shine { to { background-position-x: -200%; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
+        .card-hover { transition: all 0.2s ease-in-out; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05); }
         .btn-loading { opacity: 0.7; pointer-events: none; }
     </style>
 </head>
 <body class="pb-24 text-slate-800" onload="initApp()" oncontextmenu="return false;">
 
     <!-- ============================================== -->
-    <!-- HEADER -->
+    <!-- HEADER & NAVIGATION (Disamakan dgn Konten) -->
     <!-- ============================================== -->
-    <header class="bg-white/80 backdrop-blur-xl sticky top-0 z-50 py-3 px-4 md:px-6 border-b border-slate-200 flex justify-between items-center shadow-sm">
-        <div class="max-w-[1000px] mx-auto w-full flex justify-between items-center gap-2">
-            <div class="flex items-center gap-3">
-                <div class="bg-indigo-50 text-indigo-600 w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center border border-indigo-100 shadow-sm shrink-0">
-                    <i class="ph-fill ph-package text-xl md:text-2xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-[14px] md:text-[16px] font-extrabold tracking-tight text-slate-900 leading-none flex items-center gap-2">
-                        INVENTARIS
-                        <span id="syncIndicator" class="text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded flex items-center gap-1"><i class="ph-bold ph-arrows-clockwise animate-spin text-indigo-500"></i> Sync...</span>
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 md:px-6 py-3 md:py-4">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-[12px] md:text-sm font-extrabold text-slate-900 uppercase tracking-widest flex items-center gap-1.5">
+                        <i class="ph-fill ph-hexagon text-indigo-600 text-xl"></i> 
+                        MOLUSCA <span class="text-slate-300 mx-1">|</span> <span id="headerName" class="text-indigo-600 truncate max-w-[150px]">USER</span>
                     </h1>
-                    <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1 block">Manajemen Aset Studio</span>
                 </div>
+
+                <nav class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 md:pb-0">
+                    <a href="library.html" class="shrink-0 text-[11px] md:text-xs font-bold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-colors shadow-sm">
+                        <i class="ph-bold ph-folder-open text-[15px]"></i> Library
+                    </a>
+                    <a href="izin.html" class="shrink-0 text-[11px] md:text-xs font-bold text-rose-600 bg-rose-50 border border-rose-100 px-3.5 py-2 rounded-xl flex items-center gap-1.5 hover:bg-rose-100 transition-colors shadow-sm">
+                        <i class="ph-bold ph-first-aid text-[15px]"></i> Izin
+                    </a>
+                    <a href="piket.html" class="shrink-0 text-[11px] md:text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 px-3.5 py-2 rounded-xl flex items-center gap-1.5 hover:bg-amber-100 transition-colors shadow-sm">
+                        <i class="ph-bold ph-broom text-[15px]"></i> Piket
+                    </a>
+                    <button class="shrink-0 text-[11px] md:text-xs font-bold text-indigo-700 bg-indigo-100 border border-indigo-200 px-3.5 py-2 rounded-xl flex items-center gap-1.5 cursor-default shadow-sm ring-2 ring-indigo-50">
+                        <i class="ph-fill ph-package text-[15px]"></i> Inventaris
+                    </button>
+                    <a href="konten.html" class="shrink-0 text-[11px] md:text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 px-3.5 py-2 rounded-xl flex items-center gap-1.5 hover:bg-blue-100 transition-colors shadow-sm">
+                        <i class="ph-bold ph-video-camera text-[15px]"></i> Konten
+                    </a>
+                    <button onclick="logout()" class="shrink-0 text-[11px] md:text-xs font-bold text-rose-500 bg-white border border-rose-100 px-3.5 py-2 rounded-xl hover:bg-rose-50 transition-colors flex items-center gap-1.5 shadow-sm">
+                        <i class="ph-bold ph-sign-out text-[15px]"></i> Keluar
+                    </button>
+                </nav>
             </div>
-            <button onclick="goBack()" class="text-[10px] md:text-[11px] font-extrabold text-slate-500 bg-white border border-slate-200 px-3 md:px-4 py-2.5 rounded-xl uppercase flex items-center gap-1.5 hover:bg-slate-50 hover:text-slate-800 transition tracking-widest shadow-sm shrink-0">
-                <i class="ph-bold ph-arrow-left text-[14px]"></i> <span class="hidden sm:inline">KEMBALI</span>
-            </button>
         </div>
     </header>
 
-    <main class="p-4 md:p-8 max-w-[1000px] mx-auto space-y-6 md:space-y-8 mt-2">
+    <main class="p-4 md:p-6 max-w-5xl mx-auto mt-2 md:mt-4 space-y-6">
         
         <!-- ============================================== -->
         <!-- SECTION HERO (STATUS ASET) -->
         <!-- ============================================== -->
-        <section class="bg-gradient-to-br from-indigo-500 to-blue-700 p-6 md:p-8 rounded-[32px] shadow-xl shadow-indigo-500/20 text-white relative overflow-hidden animate-fade">
+        <section class="bg-gradient-to-br from-indigo-500 to-blue-700 p-6 md:p-8 rounded-[24px] shadow-sm text-white relative overflow-hidden animate-fade">
             <i class="ph-fill ph-boxes absolute -right-6 -bottom-6 text-9xl md:text-[160px] opacity-10 pointer-events-none"></i>
             <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>
-                    <h3 class="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-indigo-200 mb-2 drop-shadow-sm">Status Keamanan Aset Studio</h3>
+                    <h3 class="text-[11px] font-black uppercase tracking-[0.2em] text-indigo-200 mb-2 drop-shadow-sm flex items-center gap-2">
+                        <i class="ph-fill ph-shield-check text-lg text-emerald-400"></i> Status Keamanan Aset Studio
+                    </h3>
                     <div class="flex items-end gap-3 mt-1">
                         <span id="countAktif" class="text-5xl md:text-6xl font-black tracking-tighter drop-shadow-md leading-none">0</span>
                         <span class="text-xs md:text-sm text-indigo-100 font-bold tracking-wide mb-1.5 max-w-[120px] leading-tight">Barang Belum Kembali</span>
                     </div>
                 </div>
-                <div id="realtimeClock" class="text-[10px] font-bold text-indigo-100 text-right bg-black/20 px-3.5 py-2 rounded-xl border border-white/10 shadow-inner flex items-center gap-1.5">
+                <div id="realtimeClock" class="text-[11px] font-bold text-indigo-100 text-right bg-black/20 px-4 py-2.5 rounded-xl border border-white/10 shadow-inner flex items-center gap-2">
                     <i class="ph-bold ph-clock text-sm"></i> Memuat waktu...
                 </div>
             </div>
@@ -103,77 +112,89 @@
         <!-- ============================================== -->
         <!-- GRID WORKSPACE -->
         <!-- ============================================== -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
             
             <!-- KOLOM KIRI: FORM PINJAM -->
-            <section class="lg:col-span-5 bg-white p-5 md:p-7 rounded-[32px] border border-slate-200 shadow-sm h-fit sticky top-24 animate-fade" style="animation-delay: 0.1s;">
-                <h2 class="text-[13px] font-extrabold text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2">
-                    <i class="ph-fill ph-plus-circle text-indigo-600 text-xl"></i> Catat Peminjaman
-                </h2>
-                <datalist id="userList"></datalist>
-                
-                <form id="formPeminjaman" onsubmit="pinjamBarang(event)" class="space-y-4">
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Nama Barang</label>
-                        <div class="relative">
-                            <i class="ph-bold ph-camera absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-                            <input type="text" id="inputBarang" required placeholder="Cth: Sony A7III + Lensa" autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-[13px] font-bold outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all text-slate-800">
-                        </div>
+            <div class="md:col-span-5 space-y-6">
+                <section class="bg-white p-5 md:p-6 rounded-[24px] border border-slate-200 shadow-sm animate-fade h-fit md:sticky md:top-24">
+                    <div class="flex justify-between items-center mb-5">
+                        <h2 class="text-[12px] font-extrabold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                            <i class="ph-fill ph-plus-circle text-indigo-600 text-lg"></i> Catat Peminjaman
+                        </h2>
+                        <span id="syncIndicator" class="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                            <i class="ph-bold ph-arrows-clockwise animate-spin text-indigo-500"></i> Sync...
+                        </span>
                     </div>
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <datalist id="userList"></datalist>
+                    
+                    <form id="formPeminjaman" onsubmit="pinjamBarang(event)" class="space-y-4">
                         <div class="space-y-1.5">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Peminjam</label>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Nama Barang</label>
                             <div class="relative">
-                                <i class="ph-bold ph-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
-                                <input type="text" id="inputPeminjam" list="userList" required placeholder="Ketik / Pilih..." autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-3 text-[12px] font-bold outline-none focus:ring-2 focus:ring-indigo-500/20 text-slate-800">
+                                <i class="ph-bold ph-camera absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+                                <input type="text" id="inputBarang" required placeholder="Cth: Sony A7III + Lensa" autocomplete="off" 
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-[13px] font-bold outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all text-slate-800">
                             </div>
                         </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Atas Nama (PJ)</label>
-                            <div class="relative">
-                                <i class="ph-bold ph-shield-check absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
-                                <input type="text" id="inputPenanggungJawab" list="userList" required placeholder="Ketik / Pilih..." autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-3 text-[12px] font-bold outline-none focus:ring-2 focus:ring-indigo-500/20 text-slate-800">
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Peminjam</label>
+                                <div class="relative">
+                                    <i class="ph-bold ph-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+                                    <input type="text" id="inputPeminjam" list="userList" required placeholder="Pilih..." autocomplete="off" 
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-10 pr-3 text-[12px] font-bold outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all text-slate-800">
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Penanggung Jawab</label>
+                                <div class="relative">
+                                    <i class="ph-bold ph-shield-check absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+                                    <input type="text" id="inputPenanggungJawab" list="userList" required placeholder="Pilih (PJ)..." autocomplete="off" 
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-10 pr-3 text-[12px] font-bold outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all text-slate-800">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Diserahkan Oleh</label>
-                        <div class="relative">
-                            <i class="ph-bold ph-handshake absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-                            <input type="text" id="inputPemberi" list="userList" required placeholder="Ketik / Pilih..." autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-[13px] font-bold outline-none focus:ring-2 focus:ring-indigo-500/20 text-slate-800">
+                        
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Diserahkan Oleh</label>
+                            <div class="relative">
+                                <i class="ph-bold ph-handshake absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+                                <input type="text" id="inputPemberi" list="userList" required placeholder="Ketik / Pilih..." autocomplete="off" 
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-[13px] font-bold outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all text-slate-800">
+                            </div>
                         </div>
-                    </div>
-                    
-                    <button type="submit" id="btnSubmitForm" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white py-4 rounded-xl text-[11px] font-extrabold uppercase tracking-widest mt-2 shadow-md shadow-indigo-500/20 transition-all flex justify-center items-center gap-2">
-                        <i class="ph-bold ph-paper-plane-right text-[16px]"></i> Simpan Data Log
-                    </button>
-                </form>
-            </section>
+                        
+                        <button type="submit" id="btnSubmitForm" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white py-3.5 rounded-xl text-[12px] font-extrabold uppercase tracking-widest mt-2 shadow-md transition-all flex justify-center items-center gap-2">
+                            <i class="ph-bold ph-paper-plane-right text-[16px]"></i> Simpan Data Log
+                        </button>
+                    </form>
+                </section>
+            </div>
             
             <!-- KOLOM KANAN: LIST STATUS -->
-            <div class="lg:col-span-7 space-y-6 md:space-y-8">
+            <div class="md:col-span-7 space-y-8">
                 
                 <!-- Sedang Dipinjam -->
-                <section class="animate-fade" style="animation-delay: 0.2s;">
-                    <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ml-1">
+                <section class="animate-fade">
+                    <h2 class="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ml-2">
                         <i class="ph-fill ph-warning-circle text-orange-500 text-[18px]"></i> Sedang Dipinjam
                     </h2>
-                    <div id="listAktif" class="space-y-4">
+                    <div id="listAktif" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <!-- Skeleton -->
-                        <div class="bg-white p-5 rounded-[24px] border border-slate-200"><div class="skeleton h-6 w-3/4 mb-3"></div><div class="skeleton h-16 w-full rounded-xl mb-4"></div><div class="skeleton h-10 w-full rounded-xl"></div></div>
+                        <div class="bg-white p-5 rounded-[20px] border border-slate-200 shadow-sm"><div class="skeleton h-4 w-1/3 mb-3"></div><div class="skeleton h-5 w-3/4 mb-4"></div><div class="skeleton h-10 w-full rounded-xl"></div></div>
                     </div>
                 </section>
                 
                 <!-- Riwayat Pengembalian -->
-                <section class="pt-6 border-t border-slate-200 animate-fade" style="animation-delay: 0.3s;">
-                    <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ml-1">
-                        <i class="ph-fill ph-check-square-offset text-emerald-500 text-[18px]"></i> Riwayat Pengembalian
+                <section class="pt-6 border-t border-slate-200 opacity-70 hover:opacity-100 transition-opacity duration-300">
+                    <h2 class="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ml-2">
+                        <i class="ph-fill ph-check-circle text-[18px] text-emerald-500"></i> Riwayat Pengembalian
                     </h2>
                     <div id="listRiwayat" class="grid grid-cols-1 gap-3">
                         <!-- Skeleton -->
-                        <div class="bg-white p-4 rounded-2xl border border-slate-200"><div class="skeleton h-4 w-1/2 mb-2"></div><div class="skeleton h-3 w-1/3"></div></div>
+                        <div class="bg-white p-4 rounded-[20px] border border-slate-200 shadow-sm flex gap-3"><div class="skeleton h-10 w-10 rounded-xl shrink-0"></div><div class="w-full"><div class="skeleton h-4 w-1/3 mb-2"></div><div class="skeleton h-3 w-3/4"></div></div></div>
                     </div>
                 </section>
                 
@@ -182,11 +203,10 @@
     </main>
 
     <script>
-        // Mencegah Inspect
         document.addEventListener('keydown', function(e) { if (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) e.preventDefault(); });
 
         // ==========================================
-        // KONFIGURASI API
+        // KONFIGURASI API & USER
         // ==========================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxowuOA-SAq4m4a5sGRljiP8vp7yPkO5QunSGH8WBOJyKiQyGbp_FyY7A6pNGfY6y0rBg/exec";
         const SPREADSHEET_ID = '1d3njy330ifMnm-uBD8daaey5AqYO3rQxaI-tLZQdeyI';
@@ -194,13 +214,13 @@
         const userRole = localStorage.getItem('moluscaRole');
         const userName = localStorage.getItem('moluscaUser') || 'Tim Kreatif';
 
-        function goBack() { 
-            if(userRole === 'admin') window.location.href = 'dashboard.html';
-            else if(userRole === 'konten') window.location.href = 'konten.html';
-            else window.location.href = 'desainer.html'; 
+        function logout() {
+            if(confirm('Yakin ingin keluar dari workspace?')) {
+                localStorage.clear();
+                window.location.href = 'index.html';
+            }
         }
 
-        // FUNGSI TULIS DATA (BACKGROUND)
         async function dbCall(payload) {
             try {
                 const res = await fetch(SCRIPT_URL, { 
@@ -215,11 +235,11 @@
             }
         }
 
-        // FUNGSI BACA DATA CEPAT (GVIZ API)
+        // BACA DATA SUPER CEPAT VIA GVIZ
         async function fetchSheetFast(sheetName) {
-            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}&t=${Date.now()}`;
             try {
-                const response = await fetch(url);
+                const response = await fetch(url, { cache: "no-store" });
                 const text = await response.text();
                 const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
                 const data = JSON.parse(jsonStr);
@@ -230,10 +250,7 @@
                     r.c.forEach((c, i) => { if(cols[i]) row[cols[i]] = c ? (c.f !== undefined ? c.f : c.v) : ''; });
                     return row;
                 });
-            } catch(e) {
-                console.error(`Gagal muat sheet ${sheetName}:`, e);
-                return [];
-            }
+            } catch(e) { return []; }
         }
 
         function getWaktuSekarang() { 
@@ -244,9 +261,11 @@
         // INIT & LOAD DATA
         // ==========================================
         async function initApp() {
+            document.getElementById('headerName').textContent = userName;
+
             // Jam Realtime
             setInterval(() => { 
-                document.getElementById('realtimeClock').innerHTML = `<i class="ph-bold ph-clock"></i> ` + new Date().toLocaleString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' }); 
+                document.getElementById('realtimeClock').innerHTML = `<i class="ph-bold ph-clock text-lg"></i> ` + new Date().toLocaleString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' }); 
             }, 1000);
 
             document.getElementById('inputPemberi').value = userName;
@@ -259,7 +278,6 @@
             syncInd.innerHTML = '<i class="ph-bold ph-arrows-clockwise animate-spin text-indigo-500"></i> Sync...';
 
             try {
-                // Fetch Paralel
                 const [usersData, logData] = await Promise.all([
                     fetchSheetFast('users'),
                     fetchSheetFast('log_barang')
@@ -319,14 +337,14 @@
             btn.innerHTML = origHtml;
             btn.classList.remove('btn-loading');
             
-            // Refresh Cepat
             await loadAllDataFast();
         }
 
         async function kembalikanBarang(id, namaBarang, btnElement) {
-            if(confirm(`Konfirmasi: "${namaBarang}" sudah kembali ke studio dengan aman?`)) {
-                btnElement.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-[16px]"></i> Mengupdate...';
-                btnElement.classList.add('btn-loading');
+            if(confirm(`Tandai "${namaBarang}" sudah kembali ke studio?`)) {
+                const origHtml = btnElement.innerHTML;
+                btnElement.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-[16px]"></i> Tunggu...';
+                btnElement.classList.add('btn-loading', 'opacity-50');
                 
                 await dbCall({ 
                     action: 'update', sheetName: 'log_barang', 
@@ -339,7 +357,7 @@
         }
 
         async function hapusRiwayat(id, btnElement) {
-            if(confirm("Hapus data riwayat ini secara permanen?")) {
+            if(confirm("Hapus data riwayat ini permanen?")) {
                 btnElement.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>';
                 btnElement.classList.add('btn-loading');
                 
@@ -349,7 +367,7 @@
         }
 
         // ==========================================
-        // RENDER UI
+        // RENDER UI 
         // ==========================================
         function renderLogBarang(data) {
             let aktifHTML = ''; 
@@ -357,73 +375,74 @@
             let jumlahAktif = 0;
 
             if (data.length === 0) {
-                document.getElementById('listAktif').innerHTML = `<div class="text-center py-8 text-slate-400 font-bold text-[12px] border-2 border-dashed border-slate-200 rounded-[24px] bg-white"><i class="ph-fill ph-check-circle text-3xl mb-2 opacity-50 block"></i> Semua aset aman di studio!</div>`;
-                document.getElementById('listRiwayat').innerHTML = `<div class="text-center p-6 text-slate-400 font-bold text-[12px] border border-slate-200 rounded-2xl bg-white shadow-sm">Belum ada riwayat.</div>`;
+                document.getElementById('listAktif').innerHTML = `<div class="md:col-span-2 text-center py-10 text-slate-400 font-bold text-[12px] border-2 border-dashed border-slate-200 rounded-[24px] bg-white"><i class="ph-fill ph-check-circle text-4xl mb-3 opacity-40 block text-emerald-400"></i> Semua aset aman di studio!</div>`;
+                document.getElementById('listRiwayat').innerHTML = `<div class="text-center p-6 text-slate-400 font-bold text-[12px] border-2 border-dashed border-slate-200 rounded-[24px] bg-white/50">Belum ada riwayat.</div>`;
                 document.getElementById('countAktif').innerText = 0;
                 return;
             }
 
-            // Reverse agar terbaru di atas
             [...data].reverse().forEach(item => {
                 if (!item.id || !item.barang) return; 
 
-                let delBtn = userRole === 'admin' ? `<button onclick="hapusRiwayat('${item.id}', this)" class="text-slate-400 hover:text-rose-500 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 p-1.5 rounded-lg transition-colors flex items-center justify-center shrink-0 shadow-sm" title="Hapus Permanen"><i class="ph-bold ph-trash text-base"></i></button>` : '';
-                
                 if ((item.status || '').toLowerCase() === 'dipinjam') {
                     jumlahAktif++;
+                    
+                    let delBtn = userRole === 'admin' ? `<button onclick="hapusRiwayat('${item.id}', this)" class="w-7 h-7 rounded-full text-red-500 bg-red-50 hover:bg-red-500 hover:text-white border border-red-100 transition-colors flex items-center justify-center shrink-0"><i class="ph-bold ph-trash"></i></button>` : '';
+
                     aktifHTML += `
-                    <div class="bg-white p-5 md:p-6 rounded-[24px] border border-slate-200 shadow-sm relative overflow-hidden transition-all hover:border-indigo-300">
-                        <div class="absolute top-0 right-0 bg-orange-50 border-b border-l border-orange-100 text-orange-600 px-3.5 py-1.5 rounded-bl-[16px] text-[9px] font-extrabold uppercase tracking-widest flex items-center gap-1.5 shadow-sm">
-                            <i class="ph-bold ph-clock-countdown text-[12px]"></i> Belum Kembali
-                        </div>
-                        <div class="mt-2 mb-4 flex justify-between items-start pr-24">
-                            <div>
-                                <h3 class="text-[16px] md:text-[18px] font-extrabold text-slate-900 leading-snug">${item.barang}</h3>
-                                <div class="text-[10px] font-bold text-slate-500 mt-1.5 flex items-center gap-1.5 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md inline-flex">
-                                    <i class="ph-bold ph-calendar-check text-indigo-500"></i> Keluar: ${item.waktuPinjam}
+                    <div class="bg-white p-4 md:p-5 rounded-[20px] border border-orange-200 shadow-sm relative transition-all card-hover flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-[9px] font-extrabold text-orange-600 bg-orange-50 border border-orange-100 px-2.5 py-1 rounded-md uppercase tracking-widest flex items-center gap-1.5">
+                                    <i class="ph-bold ph-clock-countdown text-[12px]"></i> Belum Kembali
+                                </span>
+                                ${delBtn}
+                            </div>
+                            
+                            <h3 class="font-bold text-slate-800 text-[14px] leading-snug mb-3">${item.barang}</h3>
+                            
+                            <div class="flex flex-col gap-2 mb-4 bg-slate-50/80 p-3 rounded-xl border border-slate-100 text-[11px] font-medium text-slate-600">
+                                <div class="flex items-center gap-2">
+                                    <i class="ph-fill ph-user-circle text-indigo-400 text-sm shrink-0"></i> 
+                                    <span class="truncate"><span class="font-bold text-slate-700">Peminjam:</span> ${item.peminjam}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="ph-fill ph-handshake text-slate-400 text-sm shrink-0"></i> 
+                                    <span class="truncate"><span class="font-bold text-slate-700">Diserahkan:</span> ${item.pemberi}</span>
+                                </div>
+                                <div class="flex items-center gap-2 pt-2 border-t border-slate-200 mt-1">
+                                    <i class="ph-fill ph-shield-check text-emerald-500 text-sm shrink-0"></i> 
+                                    <span class="truncate"><span class="font-bold text-slate-700">PJ:</span> ${item.penanggungJawab}</span>
                                 </div>
                             </div>
-                            ${delBtn}
                         </div>
-                        <div class="grid grid-cols-2 gap-3 mb-4 bg-slate-50/80 p-4 rounded-xl border border-slate-100 text-[12px]">
-                            <div>
-                                <span class="block text-[9px] text-slate-400 font-extrabold uppercase tracking-widest mb-1">Peminjam</span>
-                                <span class="font-bold text-slate-800 flex items-center gap-1.5"><i class="ph-fill ph-user-circle text-indigo-500 text-lg"></i> <span class="truncate">${item.peminjam}</span></span>
-                            </div>
-                            <div>
-                                <span class="block text-[9px] text-slate-400 font-extrabold uppercase tracking-widest mb-1">Diserahkan Oleh</span>
-                                <span class="font-bold text-slate-800 flex items-center gap-1.5"><i class="ph-fill ph-handshake text-slate-400 text-lg"></i> <span class="truncate">${item.pemberi}</span></span>
-                            </div>
-                            <div class="col-span-2 pt-3 border-t border-slate-200 mt-1">
-                                <span class="block text-[9px] text-slate-400 font-extrabold uppercase tracking-widest mb-1">Tanggung Jawab (PJ)</span>
-                                <span class="font-bold text-slate-800 flex items-center gap-1.5"><i class="ph-fill ph-shield-check text-emerald-500 text-lg"></i> <span class="truncate">${item.penanggungJawab}</span></span>
-                            </div>
-                        </div>
-                        <button onclick="kembalikanBarang('${item.id}', '${item.barang.replace(/'/g, "\\'")}', this)" class="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all text-white py-3.5 rounded-xl text-[11px] font-extrabold uppercase tracking-widest flex justify-center items-center gap-2 shadow-md">
-                            <i class="ph-bold ph-check-circle text-[16px] text-emerald-400"></i> Tandai Sudah Kembali
+
+                        <button onclick="kembalikanBarang('${item.id}', '${item.barang.replace(/'/g, "\\'")}', this)" class="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.98] transition-all text-white py-3 rounded-xl text-[11px] font-extrabold uppercase tracking-widest flex justify-center items-center gap-2 shadow-md">
+                            <i class="ph-bold ph-check-circle text-[16px] text-emerald-400"></i> Tandai Kembali
                         </button>
                     </div>`;
                 } else {
-                    let delBtnHistory = userRole === 'admin' ? `<button onclick="hapusRiwayat('${item.id}', this)" class="text-slate-300 hover:text-rose-500 transition-colors p-1" title="Hapus Riwayat"><i class="ph-bold ph-trash text-lg"></i></button>` : '';
+                    let delBtnHistory = userRole === 'admin' ? `<button onclick="hapusRiwayat('${item.id}', this)" class="w-8 h-8 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors shrink-0"><i class="ph-bold ph-trash text-lg"></i></button>` : '';
+                    
                     riwayatHTML += `
-                    <div class="bg-white p-4 md:p-5 rounded-[20px] border border-slate-200 shadow-sm transition-all hover:border-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="bg-white/80 p-4 rounded-[20px] border border-slate-200 flex justify-between items-center gap-4 transition-all card-hover hover:border-slate-300">
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-[13px] font-extrabold text-slate-500 line-through decoration-slate-300 decoration-2 mb-2 truncate">${item.barang}</h3>
-                            <div class="text-[10px] font-bold text-slate-500 flex flex-wrap items-center gap-2">
-                                <span class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md flex items-center gap-1"><i class="ph-bold ph-user"></i> ${item.peminjam}</span>
-                                <span class="flex items-center gap-1 text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md"><i class="ph-bold ph-info text-sm"></i> ${item.waktuKembali}</span>
+                            <h4 class="font-bold text-slate-500 text-[13px] truncate line-through mb-1">${item.barang}</h4>
+                            <div class="flex gap-2 items-center">
+                                <div class="text-[9px] font-extrabold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1"><i class="ph-bold ph-user"></i> ${item.peminjam}</div>
+                                <div class="text-[9px] font-extrabold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1"><i class="ph-bold ph-calendar-check"></i> ${item.waktuKembali}</div>
                             </div>
                         </div>
-                        <div class="flex items-center sm:flex-col sm:items-end gap-2 shrink-0 self-end sm:self-auto w-full sm:w-auto justify-between mt-1 sm:mt-0 pt-3 border-t border-slate-100 sm:border-0 sm:pt-0">
-                            <span class="bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-widest flex items-center gap-1 border border-emerald-200"><i class="ph-bold ph-check-circle text-sm"></i> Aman</span>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-widest flex items-center gap-1 border border-emerald-200 hidden sm:flex"><i class="ph-bold ph-check-circle text-sm"></i> Aman</span>
                             ${delBtnHistory}
                         </div>
                     </div>`;
                 }
             });
 
-            document.getElementById('listAktif').innerHTML = aktifHTML || `<div class="text-center py-8 text-slate-400 font-bold text-[12px] border-2 border-dashed border-slate-200 rounded-[24px] bg-white"><i class="ph-fill ph-check-circle text-3xl mb-2 opacity-50 block text-emerald-400"></i> Semua aset aman di studio!</div>`;
-            document.getElementById('listRiwayat').innerHTML = riwayatHTML || `<div class="text-center p-6 text-slate-400 font-bold text-[12px] border border-slate-200 rounded-2xl bg-white shadow-sm">Belum ada riwayat.</div>`;
+            document.getElementById('listAktif').innerHTML = aktifHTML || `<div class="md:col-span-2 text-center py-10 text-slate-400 font-bold text-[12px] border-2 border-dashed border-slate-200 rounded-[24px] bg-white"><i class="ph-fill ph-check-circle text-4xl mb-3 opacity-40 block text-emerald-400"></i> Semua aset aman di studio!</div>`;
+            document.getElementById('listRiwayat').innerHTML = riwayatHTML || `<div class="text-center p-6 text-slate-400 font-bold text-[12px] border-2 border-dashed border-slate-200 rounded-[24px] bg-white/50">Belum ada riwayat.</div>`;
             document.getElementById('countAktif').innerText = jumlahAktif;
         }
     </script>
