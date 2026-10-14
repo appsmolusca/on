@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard Admin 3D Office - Molusca</title>
+    <title>Dashboard Admin - Molusca</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Phosphor Icons -->
@@ -32,41 +32,45 @@
             font-family: 'Plus Jakarta Sans', sans-serif; 
             -webkit-user-select: none; 
             user-select: none; 
-            background-color: #F1F5F9; 
+            background-color: #F4F7FB; 
             color: #1e293b; 
             -webkit-font-smoothing: antialiased; 
         } 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease-out forwards; }
         
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
         .card-hover { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -5px rgb(15 23 42 / 0.06), 0 4px 6px -4px rgb(15 23 42 / 0.04); }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -6px rgb(15 23 42 / 0.06); }
 
-        /* 3D Room Architectural Styling */
-        .room-card {
-            position: relative;
-            background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
-            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 0 0 #E2E8F0;
-            transition: all 0.25s ease;
-        }
-        .desk-station {
-            position: relative;
-            background: #FFFFFF;
-            box-shadow: 0 4px 0 0 #E2E8F0;
-            transition: all 0.3s ease;
-        }
         .desk-highlight {
-            ring: 3px solid #3B82F6;
-            transform: scale(1.02);
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.25);
+            outline: 3px solid #3B82F6;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Fullscreen Mode untuk 3D Section */
+        .office-fullscreen {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999 !important;
+            border-radius: 0 !important;
+            border: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        .office-fullscreen #office3DWrapper {
+            flex: 1 !important;
+            height: 100% !important;
         }
 
         /* Animasi Mesin 3D Printer */
@@ -105,7 +109,7 @@
             z-index: 10;
         }
         .label-3d:hover {
-            transform: translate(-50%, -110%) scale(1.08);
+            transform: translate(-50%, -108%) scale(1.06);
             z-index: 20;
         }
     </style>
@@ -113,34 +117,34 @@
 <body class="pb-24" onload="checkLogin()" oncontextmenu="return false;">
 
     <!-- LOADING OVERLAY -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex justify-center items-center hidden">
-        <div class="bg-white p-8 rounded-[32px] shadow-2xl flex flex-col items-center gap-4 border border-slate-100">
-            <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center">
-                <i class="ph-bold ph-spinner animate-spin text-4xl text-blue-600"></i>
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex justify-center items-center hidden">
+        <div class="bg-white p-7 rounded-[28px] shadow-2xl flex flex-col items-center gap-3.5 border border-slate-100">
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+                <i class="ph-bold ph-spinner animate-spin text-3xl text-blue-600"></i>
             </div>
             <div class="text-center">
-                <span class="text-xs font-black text-slate-800 uppercase tracking-[0.2em] block mb-1">Memuat Virtual Office...</span>
-                <span class="text-[10px] font-bold text-slate-400">Sinkronisasi Data Tim & Mesin</span>
+                <span class="text-xs font-black text-slate-800 uppercase tracking-[0.18em] block mb-0.5">Memuat Data...</span>
+                <span class="text-[10px] font-bold text-slate-400">Sinkronisasi Live Office</span>
             </div>
         </div>
     </div>
 
     <!-- HEADER NAVIGATION -->
     <header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200/80 shadow-sm">
-        <div class="max-w-[1440px] mx-auto px-4 md:px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
+        <div class="max-w-[1480px] mx-auto px-4 md:px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
             <div class="flex items-center justify-between w-full md:w-auto">
                 <div class="flex items-center gap-2.5">
-                    <div class="bg-gradient-to-br from-blue-600 to-indigo-600 p-2.5 rounded-2xl text-white shadow-md shadow-blue-600/20">
-                        <i class="ph-bold ph-buildings text-2xl"></i>
+                    <div class="bg-blue-600 p-2.5 rounded-2xl text-white shadow-md shadow-blue-600/20">
+                        <i class="ph-bold ph-hexagon text-2xl"></i>
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 class="text-lg md:text-xl font-black tracking-tight text-slate-900 leading-none">Molusca<span class="text-blue-600">.</span></h1>
                             <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Live HQ
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Live
                             </span>
                         </div>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mt-0.5">Command Center & 3D Office</span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mt-0.5">Admin Command Center</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 md:hidden">
@@ -154,352 +158,339 @@
             </div>
             
             <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar w-full md:w-auto pb-1 md:pb-0">
-                <a href="izin.html" class="shrink-0 text-[10px] md:text-[11px] font-extrabold text-slate-600 bg-white border border-slate-200 px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all shadow-sm uppercase tracking-wider"><i class="ph-fill ph-first-aid text-sm md:text-base text-rose-500"></i> Izin</a>
-                <a href="library.html" class="shrink-0 text-[10px] md:text-[11px] font-extrabold text-slate-600 bg-white border border-slate-200 px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm uppercase tracking-wider"><i class="ph-fill ph-folder-open text-sm md:text-base text-blue-500"></i> Library</a>
-                <a href="piket.html" class="shrink-0 text-[10px] md:text-[11px] font-extrabold text-slate-600 bg-white border border-slate-200 px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all shadow-sm uppercase tracking-wider"><i class="ph-fill ph-broom text-sm md:text-base text-amber-500"></i> Piket</a>
-                <a href="peminjaman.html" class="shrink-0 text-[10px] md:text-[11px] font-extrabold text-slate-600 bg-white border border-slate-200 px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm uppercase tracking-wider"><i class="ph-fill ph-package text-sm md:text-base text-indigo-500"></i> Inventaris</a>
-                <a href="konten.html" class="shrink-0 text-[10px] md:text-[11px] font-extrabold text-slate-600 bg-white border border-slate-200 px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200 transition-all shadow-sm uppercase tracking-wider"><i class="ph-fill ph-video-camera text-sm md:text-base text-pink-500"></i> Konten</a>
-                <a href="user.html" class="shrink-0 text-[10px] md:text-[11px] font-extrabold text-slate-600 bg-white border border-slate-200 px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 hover:bg-teal-50 hover:text-teal-600 hover:border-teal-200 transition-all shadow-sm uppercase tracking-wider"><i class="ph-fill ph-users text-sm md:text-base text-teal-500"></i> Tim</a>
-                <button type="button" onclick="loadAllData()" class="hidden md:flex shrink-0 text-[11px] font-extrabold text-slate-600 bg-slate-100 border border-slate-200 px-3.5 py-2.5 rounded-xl items-center gap-1.5 hover:bg-blue-50 hover:text-blue-600 transition-all uppercase tracking-wider cursor-pointer"><i class="ph-bold ph-arrows-clockwise text-sm"></i> Refresh</button>
-                <button type="button" onclick="logout()" class="hidden md:flex shrink-0 text-[11px] font-extrabold text-rose-600 bg-rose-50 border border-rose-100 px-3.5 py-2.5 rounded-xl items-center gap-1.5 hover:bg-rose-100 transition-all uppercase tracking-wider cursor-pointer"><i class="ph-bold ph-sign-out text-sm"></i> Keluar</button>
+                <a href="izin.html" class="shrink-0 text-[10px] md:text-[11px] font-extrabold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl flex items-center gap-1.5 hover:bg-rose-50 hover:text-rose-600 transition-all shadow-sm uppercase tracking-wider"><i class="ph-fill ph-first-aid text-sm text-rose-500"></i> Izin</a>
+                <a href="library.html" class="shrink-0 text-[10px] md:text-[11px] font-extrabold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl flex items-center gap-1.5 hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm uppercase tracking-wider"><i class="ph-fill ph-folder-open text-sm text-blue-500"></i> Library</a>
+                <a href="piket.html" class="shrink-0 text-[10px] md:text-[11px] font-extrabold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl flex items-center gap-1.5 hover:bg-amber-50 hover:text-amber-600 transition-all shadow-sm uppercase tracking-wider"><i class="ph-fill ph-broom text-sm text-amber-500"></i> Piket</a>
+                <a href="peminjaman.html" class="shrink-0 text-[10px] md:text-[11px] font-extrabold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl flex items-center gap-1.5 hover:bg-indigo-50 hover:text-indigo-600 transition-all shadow-sm uppercase tracking-wider"><i class="ph-fill ph-package text-sm text-indigo-500"></i> Inventaris</a>
+                <a href="konten.html" class="shrink-0 text-[10px] md:text-[11px] font-extrabold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl flex items-center gap-1.5 hover:bg-pink-50 hover:text-pink-600 transition-all shadow-sm uppercase tracking-wider"><i class="ph-fill ph-video-camera text-sm text-pink-500"></i> Konten</a>
+                <a href="user.html" class="shrink-0 text-[10px] md:text-[11px] font-extrabold text-slate-600 bg-white border border-slate-200 px-3.5 py-2 rounded-xl flex items-center gap-1.5 hover:bg-teal-50 hover:text-teal-600 transition-all shadow-sm uppercase tracking-wider"><i class="ph-fill ph-users text-sm text-teal-500"></i> Tim</a>
+                <button type="button" onclick="loadAllData()" class="hidden md:flex shrink-0 text-[11px] font-extrabold text-slate-600 bg-slate-100 border border-slate-200 px-3.5 py-2 rounded-xl items-center gap-1.5 hover:bg-blue-50 hover:text-blue-600 transition-all uppercase tracking-wider cursor-pointer"><i class="ph-bold ph-arrows-clockwise text-sm"></i> Sync</button>
+                <button type="button" onclick="logout()" class="hidden md:flex shrink-0 text-[11px] font-extrabold text-rose-600 bg-rose-50 border border-rose-100 px-3.5 py-2 rounded-xl items-center gap-1.5 hover:bg-rose-100 transition-all uppercase tracking-wider cursor-pointer"><i class="ph-bold ph-sign-out text-sm"></i> Keluar</button>
             </div>
         </div>
     </header>
 
     <!-- MAIN CONTENT -->
-    <main class="p-3 sm:p-4 md:p-6 max-w-[1440px] mx-auto space-y-6 mt-1">
+    <main class="p-3 sm:p-4 md:p-6 max-w-[1480px] mx-auto space-y-6 mt-1">
         
         <!-- NAVIGATION TABS -->
-        <div class="flex bg-white p-1.5 rounded-2xl md:rounded-[20px] max-w-2xl mx-auto shadow-sm overflow-x-auto hide-scrollbar border border-slate-200/80">
-            <button type="button" onclick="switchTab('overview')" id="btn-overview" class="flex-1 py-3 px-3 md:py-3.5 md:px-6 rounded-xl md:rounded-2xl font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all flex justify-center items-center gap-2 whitespace-nowrap bg-slate-900 text-white shadow-md cursor-pointer">
-                <i class="ph-fill ph-cube-transparent text-base md:text-lg text-blue-400"></i> 
-                <span>Overview Kantor 3D</span>
+        <div class="flex bg-white p-1.5 rounded-2xl max-w-xl mx-auto shadow-sm overflow-x-auto hide-scrollbar border border-slate-200/80">
+            <button type="button" onclick="switchTab('overview')" id="btn-overview" class="flex-1 py-2.5 px-4 rounded-xl font-black text-[11px] md:text-xs uppercase tracking-widest transition-all flex justify-center items-center gap-2 whitespace-nowrap bg-slate-900 text-white shadow-sm cursor-pointer">
+                <i class="ph-fill ph-buildings text-base text-amber-400"></i> 
+                <span>Overview Live</span>
             </button>
-            <button type="button" onclick="switchTab('desain')" id="btn-desain" class="flex-1 py-3 px-3 md:py-3.5 md:px-6 rounded-xl md:rounded-2xl font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all flex justify-center items-center gap-2 whitespace-nowrap bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800 cursor-pointer">
-                <i class="ph-fill ph-paint-brush text-base md:text-lg"></i> 
+            <button type="button" onclick="switchTab('desain')" id="btn-desain" class="flex-1 py-2.5 px-4 rounded-xl font-black text-[11px] md:text-xs uppercase tracking-widest transition-all flex justify-center items-center gap-2 whitespace-nowrap bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800 cursor-pointer">
+                <i class="ph-fill ph-paint-brush text-base"></i> 
                 <span>Task Desain</span>
             </button>
-            <button type="button" onclick="switchTab('desain3d')" id="btn-desain3d" class="flex-1 py-3 px-3 md:py-3.5 md:px-6 rounded-xl md:rounded-2xl font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all flex justify-center items-center gap-2 whitespace-nowrap bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800 cursor-pointer">
-                <i class="ph-fill ph-printer text-base md:text-lg"></i> 
+            <button type="button" onclick="switchTab('desain3d')" id="btn-desain3d" class="flex-1 py-2.5 px-4 rounded-xl font-black text-[11px] md:text-xs uppercase tracking-widest transition-all flex justify-center items-center gap-2 whitespace-nowrap bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800 cursor-pointer">
+                <i class="ph-fill ph-cube text-base"></i> 
                 <span>Task 3D</span>
             </button>
         </div>
 
         <!-- ================================================================= -->
-        <!-- TAB 1: OVERVIEW LIVE (3D VIRTUAL OFFICE & 3 RUANGAN KANTOR)       -->
+        <!-- TAB 1: OVERVIEW LIVE                                              -->
         <!-- ================================================================= -->
-        <div id="tab-overview" class="tab-content active space-y-6">
+        <div id="tab-overview" class="tab-content active space-y-7">
             
-            <!-- TOP COMMAND BAR: JAM, TANGGAL, PIKET, SAKIT, TOTAL KARYAWAN -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <!-- BARIS 1: JAM & TANGGAL, PIKET, SAKIT, TOTAL KARYAWAN -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
-                <!-- WAKTU & TANGGAL SERVER -->
-                <div class="lg:col-span-5 bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0F172A] rounded-[28px] p-5 md:p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between border border-slate-700/60">
-                    <i class="ph-fill ph-planet absolute -right-8 -bottom-8 text-[140px] text-white/5 pointer-events-none"></i>
-                    <div class="flex items-center justify-between gap-2 relative z-10">
-                        <span class="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em] text-blue-400 bg-blue-500/10 border border-blue-400/20 px-3 py-1 rounded-full">
-                            <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span> Waktu Server Molusca
+                <!-- 1. JAM & TANGGAL SERVER -->
+                <div class="bg-[#111827] rounded-[24px] p-5 text-white shadow-md relative overflow-hidden flex flex-col justify-between border border-slate-800">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-blue-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span> Waktu Server
                         </span>
-                        <span id="liveShiftStatus" class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">● Live</span>
+                        <span id="liveShiftStatus" class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">● Online</span>
                     </div>
-
-                    <div class="my-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3 relative z-10">
-                        <div>
-                            <div id="liveTime" class="text-4xl sm:text-5xl font-black tracking-tight text-white leading-none font-mono">--:--:--</div>
-                            <div id="liveDate" class="text-xs sm:text-sm font-bold text-slate-300 mt-2.5 flex items-center gap-1.5">
-                                <i class="ph-fill ph-calendar-blank text-blue-400"></i> Memuat Tanggal...
-                            </div>
-                        </div>
-                        <div class="bg-white/5 border border-white/10 rounded-2xl px-3.5 py-2.5 backdrop-blur-sm self-start sm:self-end">
-                            <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Bebas Antrean / Aktif</div>
-                            <div class="text-sm font-black text-white flex items-center gap-3 mt-1">
-                                <button type="button" onclick="scrollToRoom('section-room-konten')" class="cursor-pointer text-pink-400 hover:underline flex items-center gap-1"><i class="ph-fill ph-video-camera"></i> <b id="topCountKonten">0</b></button>
-                                <button type="button" onclick="scrollToRoom('section-room-desain')" class="cursor-pointer text-blue-400 hover:underline flex items-center gap-1"><i class="ph-fill ph-paint-brush"></i> <b id="topCountDesain">0</b></button>
-                                <button type="button" onclick="scrollToRoom('section-room-3d')" class="cursor-pointer text-emerald-400 hover:underline flex items-center gap-1"><i class="ph-fill ph-cube"></i> <b id="topCount3d">0</b></button>
-                            </div>
+                    <div class="my-3">
+                        <div id="liveTime" class="text-3xl xl:text-4xl font-black tracking-tight text-white font-mono leading-none">--:--:--</div>
+                        <div id="liveDate" class="text-[11px] font-bold text-slate-300 mt-2 truncate">--</div>
+                    </div>
+                    <div class="pt-2.5 border-t border-slate-800 flex items-center justify-between text-[10px] font-bold text-slate-400">
+                        <span> Beban Kerja Aktif:</span>
+                        <div class="flex items-center gap-2 text-white font-black">
+                            <span class="text-blue-400" title="Desain"><b id="topCountDesain">0</b> Dsn</span> •
+                            <span class="text-emerald-400" title="3D"><b id="topCount3d">0</b> 3D</span> •
+                            <span class="text-pink-400" title="Konten"><b id="topCountKonten">0</b> Ktn</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3 INFO CARDS: PIKET, SAKIT, TOTAL KARYAWAN -->
-                <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    
-                    <!-- CARD 1: JADWAL PIKET HARI INI -->
-                    <div class="bg-gradient-to-br from-amber-500 to-orange-500 rounded-[28px] p-5 text-white shadow-lg shadow-orange-500/15 relative overflow-hidden flex flex-col justify-between card-hover">
-                        <i class="ph-fill ph-broom absolute -right-4 -bottom-4 text-8xl text-white/15 transform -rotate-12 pointer-events-none"></i>
-                        <div class="relative z-10">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-amber-100">Piket Hari Ini</span>
-                                <span id="widgetPiketHari" class="text-[10px] font-black bg-white/20 px-2.5 py-0.5 rounded-full uppercase backdrop-blur-sm">-</span>
-                            </div>
-                            <div id="widgetPiketNama" class="flex flex-wrap gap-1.5 mt-3">
-                                <span class="text-xs font-bold text-amber-100">Memuat...</span>
-                            </div>
+                <!-- 2. SIAPA YANG PIKET HARI INI -->
+                <div class="bg-white rounded-[24px] p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between card-hover">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Piket Hari Ini</span>
+                            <span id="widgetPiketHari" class="text-[10px] font-black bg-amber-50 text-amber-600 border border-amber-200 px-2.5 py-0.5 rounded-lg uppercase">-</span>
                         </div>
-                        <a href="piket.html" class="relative z-10 mt-4 pt-2.5 border-t border-white/20 text-[10px] font-extrabold text-amber-50 hover:text-white flex items-center justify-between uppercase tracking-wider">
-                            <span>Buka Halaman Piket</span>
-                            <i class="ph-bold ph-arrow-right"></i>
-                        </a>
-                    </div>
-
-                    <!-- CARD 2: DATA TIM SAKIT / IZIN -->
-                    <div class="bg-white rounded-[28px] p-5 border border-slate-200/90 shadow-sm relative overflow-hidden flex flex-col justify-between card-hover">
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Data Sakit Bln Ini</span>
-                                <div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center border border-rose-100">
-                                    <i class="ph-fill ph-thermometer text-lg"></i>
-                                </div>
-                            </div>
-                            <div class="text-3xl font-black text-slate-800 tracking-tight" id="widgetSakit">0 <span class="text-sm text-slate-400 font-bold">Org</span></div>
-                            <div id="widgetSakitList" class="mt-2.5 flex flex-wrap gap-1 max-h-[54px] overflow-y-auto hide-scrollbar">
-                                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">Semua Sehat 💪</span>
-                            </div>
+                        <div id="widgetPiketNama" class="flex flex-wrap gap-1.5 mt-3">
+                            <span class="text-xs font-bold text-slate-400">Memuat...</span>
                         </div>
-                        <a href="izin.html" class="mt-3 pt-2.5 border-t border-slate-100 text-[10px] font-extrabold text-rose-500 hover:text-rose-600 flex items-center justify-between uppercase tracking-wider">
-                            <span>Cek Data Izin / Sakit</span>
-                            <i class="ph-bold ph-arrow-right"></i>
-                        </a>
                     </div>
-
-                    <!-- CARD 3: TOTAL KARYAWAN AKTIF -->
-                    <div class="bg-white rounded-[28px] p-5 border border-slate-200/90 shadow-sm relative overflow-hidden flex flex-col justify-between card-hover">
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Karyawan</span>
-                                <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
-                                    <i class="ph-fill ph-users-three text-lg"></i>
-                                </div>
-                            </div>
-                            <div class="text-3xl font-black text-slate-800 tracking-tight" id="widgetTotalTim">0 <span class="text-sm text-slate-400 font-bold">Orang</span></div>
-                            <div id="widgetRoleBreakdown" class="mt-2.5 flex flex-wrap gap-1 text-[9px] font-extrabold"></div>
-                        </div>
-                        <a href="user.html" class="mt-3 pt-2.5 border-t border-slate-100 text-[10px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center justify-between uppercase tracking-wider">
-                            <span>Kelola Anggota Tim</span>
-                            <i class="ph-bold ph-arrow-right"></i>
-                        </a>
-                    </div>
-
+                    <a href="piket.html" class="mt-4 pt-2.5 border-t border-slate-100 text-[10px] font-extrabold text-amber-600 hover:text-amber-700 flex items-center justify-between uppercase tracking-wider">
+                        <span>Detail Absen Piket</span>
+                        <i class="ph-bold ph-arrow-right"></i>
+                    </a>
                 </div>
+
+                <!-- 3. SIAPA YANG SAKIT BULAN INI -->
+                <div class="bg-white rounded-[24px] p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between card-hover">
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Tim Sakit (Bulan Ini)</span>
+                            <div class="w-7 h-7 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center border border-rose-100">
+                                <i class="ph-fill ph-thermometer text-base"></i>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-black text-slate-800 tracking-tight" id="widgetSakit">0 <span class="text-xs text-slate-400 font-bold">Data</span></div>
+                        <div id="widgetSakitList" class="mt-2 flex flex-wrap gap-1 max-h-[48px] overflow-y-auto hide-scrollbar">
+                            <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">Semua Sehat 💪</span>
+                        </div>
+                    </div>
+                    <a href="izin.html" class="mt-3 pt-2.5 border-t border-slate-100 text-[10px] font-extrabold text-rose-500 hover:text-rose-600 flex items-center justify-between uppercase tracking-wider">
+                        <span>Riwayat Izin & Sakit</span>
+                        <i class="ph-bold ph-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- 4. TOTAL KARYAWAN AKTIF -->
+                <div class="bg-white rounded-[24px] p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between card-hover">
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Karyawan Aktif</span>
+                            <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                                <i class="ph-fill ph-users-three text-base"></i>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-black text-slate-800 tracking-tight" id="widgetTotalTim">0 <span class="text-xs text-slate-400 font-bold">Orang</span></div>
+                        <div id="widgetRoleBreakdown" class="mt-2 flex flex-wrap gap-1.5 text-[9px] font-extrabold"></div>
+                    </div>
+                    <a href="user.html" class="mt-3 pt-2.5 border-t border-slate-100 text-[10px] font-extrabold text-blue-600 hover:text-blue-700 flex items-center justify-between uppercase tracking-wider">
+                        <span>Kelola Tim Molusca</span>
+                        <i class="ph-bold ph-arrow-right"></i>
+                    </a>
+                </div>
+
             </div>
 
             <!-- ================================================================= -->
-            <!-- 3D ISOMETRIC VIRTUAL OFFICE VISUALIZER (THREE.JS)                 -->
+            <!-- VIRTUAL OFFICE 3D (LEBIH BESAR, KARPET COKLAT, BISA FULLSCREEN)   -->
             <!-- ================================================================= -->
-            <section class="bg-[#0B1120] rounded-[32px] border border-slate-800 shadow-2xl overflow-hidden relative">
-                <!-- Top Control Bar 3D -->
-                <div class="p-4 sm:px-6 border-b border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/70 backdrop-blur-md relative z-20">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-400 flex items-center justify-center shrink-0">
-                            <i class="ph-fill ph-cube-focus text-xl"></i>
+            <section id="office3DSection" class="bg-[#0F172A] rounded-[28px] border border-slate-800 shadow-xl overflow-hidden relative transition-all">
+                <!-- Header Kontrol 3D -->
+                <div class="px-4 py-3 sm:px-6 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 backdrop-blur-md z-20">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-400/30 text-amber-400 flex items-center justify-center shrink-0">
+                            <i class="ph-fill ph-cube-focus text-lg"></i>
                         </div>
                         <div>
-                            <h2 class="text-xs sm:text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                                Denah Kantor 3D Live
-                                <span class="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-md font-bold">KLIK NAMA UNTUK DETAIL</span>
+                            <h2 class="text-xs sm:text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                                Virtual Office 3D Molusca
+                                <span class="hidden sm:inline-block text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md font-bold">INTERAKTIF</span>
                             </h2>
-                            <p class="text-[10px] text-slate-400 font-medium">Geser layar untuk memutar ruangan 3D • Klik label nama di 3D untuk lompat ke meja kerjanya</p>
+                            <p class="text-[10px] text-slate-400 font-medium hidden sm:block">Putar dengan mouse/jari • Klik nama di 3D untuk loncat ke kolom tugasnya</p>
                         </div>
                     </div>
 
-                    <!-- Camera Preset Buttons -->
-                    <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar pb-1 sm:pb-0">
-                        <button type="button" onclick="focus3DCamera('all')" id="cam-all" class="cam-btn shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider bg-indigo-600 text-white shadow-sm transition-all cursor-pointer">🏢 Semua Ruang</button>
-                        <button type="button" onclick="focus3DCamera('konten')" id="cam-konten" class="cam-btn shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider bg-slate-800 text-pink-400 hover:bg-slate-700 border border-slate-700 transition-all cursor-pointer">🎥 1. R. Konten</button>
-                        <button type="button" onclick="focus3DCamera('desain')" id="cam-desain" class="cam-btn shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider bg-slate-800 text-blue-400 hover:bg-slate-700 border border-slate-700 transition-all cursor-pointer">🎨 2. R. Desain</button>
-                        <button type="button" onclick="focus3DCamera('3d')" id="cam-3d" class="cam-btn shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider bg-slate-800 text-emerald-400 hover:bg-slate-700 border border-slate-700 transition-all cursor-pointer">🖨️ 3. R. 3D & Mesin</button>
-                        <button type="button" onclick="toggle3DCanvas()" id="btnToggle3D" class="shrink-0 px-2.5 py-1.5 rounded-xl text-[10px] font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 transition-all cursor-pointer" title="Sembunyikan/Tampilkan 3D">
-                            <i class="ph-bold ph-caret-up"></i>
+                    <!-- Tombol Kamera & Fullscreen -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto hide-scrollbar">
+                        <button type="button" onclick="focus3DCamera('all')" id="cam-all" class="cam-btn shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider bg-blue-600 text-white shadow-sm transition-all cursor-pointer">🏢 Semua</button>
+                        <button type="button" onclick="focus3DCamera('konten')" id="cam-konten" class="cam-btn shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider bg-slate-800 text-pink-400 hover:bg-slate-700 border border-slate-700 transition-all cursor-pointer">🎥 R. Konten</button>
+                        <button type="button" onclick="focus3DCamera('desain')" id="cam-desain" class="cam-btn shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider bg-slate-800 text-blue-400 hover:bg-slate-700 border border-slate-700 transition-all cursor-pointer">🎨 R. Desain</button>
+                        <button type="button" onclick="focus3DCamera('3d')" id="cam-3d" class="cam-btn shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider bg-slate-800 text-emerald-400 hover:bg-slate-700 border border-slate-700 transition-all cursor-pointer">🖨️ Lab 3D</button>
+                        
+                        <!-- Tombol Fullscreen 3D -->
+                        <button type="button" onclick="toggleFullscreen3D()" id="btnFullscreen3D" class="shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all flex items-center gap-1 cursor-pointer shadow-sm">
+                            <i class="ph-bold ph-corners-out text-xs" id="iconFullscreen3D"></i>
+                            <span id="textFullscreen3D">Fullscreen</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- 3D Canvas Container -->
-                <div id="office3DWrapper" class="relative w-full h-[260px] sm:h-[330px] md:h-[380px] select-none overflow-hidden bg-gradient-to-b from-[#0B1120] to-[#131C31]">
+                <!-- Area Kanvas 3D (Diperbesar) -->
+                <div id="office3DWrapper" class="relative w-full h-[380px] sm:h-[460px] lg:h-[520px] select-none overflow-hidden bg-gradient-to-b from-[#0F172A] to-[#1E293B]">
                     <canvas id="office3DCanvas" class="w-full h-full block cursor-grab active:cursor-grabbing"></canvas>
-                    <!-- Floating HTML Labels Layer synced with 3D Objects -->
+                    <!-- Floating HTML Labels -->
                     <div id="office3DLabels" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
                     
-                    <!-- Legend Bottom Overlay -->
+                    <!-- Legend Bawah -->
                     <div class="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
-                        <div class="flex flex-wrap items-center gap-2 bg-slate-900/85 backdrop-blur-md border border-slate-700/70 px-3 py-1.5 rounded-xl text-[9px] font-bold text-slate-300">
-                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-pink-500"></span> 1. Ruang Konten</span>
+                        <div class="flex flex-wrap items-center gap-2.5 bg-slate-900/85 backdrop-blur-md border border-slate-700/80 px-3.5 py-1.5 rounded-xl text-[10px] font-bold text-slate-200">
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span> 1. Ruang Konten</span>
                             <span class="text-slate-600">|</span>
-                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> 2. Ruang Desain</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> 2. Ruang Desain</span>
                             <span class="text-slate-600">|</span>
-                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> 3. Ruang 3D & Mesin</span>
+                            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 3. Ruang 3D & Mesin</span>
                         </div>
-                        <div class="hidden sm:flex items-center gap-2 bg-slate-900/85 backdrop-blur-md border border-slate-700/70 px-3 py-1.5 rounded-xl text-[9px] font-bold text-slate-400">
-                            <i class="ph-bold ph-hand-swipe-right text-indigo-400"></i> Geser untuk Putar 3D
+                        <div class="hidden sm:flex items-center gap-2 bg-slate-900/85 backdrop-blur-md border border-slate-700/80 px-3 py-1.5 rounded-xl text-[10px] font-bold text-slate-300">
+                            <i class="ph-bold ph-hand-grabbing text-amber-400"></i> Drag: Putar • Scroll: Zoom
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- ================================================================= -->
-            <!-- DENAH RUANGAN KANTOR (3 RUANGAN DETAIL - MOBILE & WEB)            -->
+            <!-- DIVISI 1: TIM DESAIN GRAFIS (BERJAJAR KE SAMPING SEPERTI GAMBAR)  -->
             <!-- ================================================================= -->
-            <div>
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 px-1">
-                    <div class="flex items-center gap-2">
-                        <i class="ph-fill ph-buildings text-blue-600 text-xl"></i>
-                        <h2 class="text-xs sm:text-sm font-black text-slate-800 uppercase tracking-widest">Detail Aktivitas Ruangan Kantor</h2>
+            <section id="section-room-desain" class="space-y-4 pt-2">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white px-5 py-4 rounded-[22px] border border-slate-200/90 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                            <i class="ph-fill ph-paint-brush-broad text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-sm sm:text-base font-black text-slate-800 uppercase tracking-wider">Ruang Tim Desain</h2>
+                                <span id="countDesainAktif" class="bg-blue-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">0 Aktif</span>
+                            </div>
+                            <p class="text-[11px] font-semibold text-slate-400">Kolom kerja per desainer • Status <b class="text-slate-600">Lagi Dikerjain & Nunggu Revisi</b> otomatis paling atas</p>
+                        </div>
                     </div>
-                    <div class="flex flex-wrap items-center gap-1.5">
-                        <button type="button" onclick="scrollToRoom('section-room-konten')" class="cursor-pointer text-[10px] font-extrabold bg-pink-50 text-pink-600 border border-pink-200 px-2.5 py-1 rounded-lg hover:bg-pink-100 transition-colors">1. Tim Konten</button>
-                        <button type="button" onclick="scrollToRoom('section-room-desain')" class="cursor-pointer text-[10px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-1 rounded-lg hover:bg-blue-100 transition-colors">2. Tim Desain</button>
-                        <button type="button" onclick="scrollToRoom('section-room-3d')" class="cursor-pointer text-[10px] font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1 rounded-lg hover:bg-emerald-100 transition-colors">3. Tim 3D & Mesin</button>
-                    </div>
+                    <button type="button" onclick="switchTab('desain')" class="self-start sm:self-center text-[10px] font-extrabold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3.5 py-2 rounded-xl uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5">
+                        <i class="ph-bold ph-plus"></i> Tambah Tugas Desain
+                    </button>
                 </div>
 
-                <!-- GRID 3 RUANGAN UTAMA -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <!-- KOLOM DESAINER KE SAMPING (DADAN | INDAH | NAYLA dst) -->
+                <div class="w-full overflow-x-auto pb-3 -mx-3 px-3 sm:mx-0 sm:px-0">
+                    <div id="liveDesainList" class="grid grid-flow-col auto-cols-[310px] sm:auto-cols-[340px] lg:grid-flow-row lg:grid-cols-3 xl:grid-cols-4 gap-5 items-start">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+            </section>
 
-                    <!-- ========================================================= -->
-                    <!-- RUANG 1: TIM KONTEN (NAMA, TASK, DEADLINE)                -->
-                    <!-- ========================================================= -->
-                    <div id="section-room-konten" class="lg:col-span-4 room-card rounded-[28px] border-2 border-pink-200/80 overflow-hidden flex flex-col">
-                        <div class="bg-gradient-to-r from-pink-600 to-rose-500 p-4 sm:p-5 text-white relative overflow-hidden">
-                            <i class="ph-fill ph-video-camera absolute -right-3 -bottom-4 text-7xl text-white/15 transform -rotate-12 pointer-events-none"></i>
-                            <div class="flex justify-between items-start relative z-10">
-                                <div>
-                                    <span class="text-[9px] font-black uppercase tracking-[0.2em] bg-black/20 px-2.5 py-0.5 rounded-full text-pink-100">Ruang 01 • Creative Studio</span>
-                                    <h3 class="text-base sm:text-lg font-black tracking-tight mt-1.5 flex items-center gap-2">
-                                        <i class="ph-fill ph-film-slate"></i> 1. Tim Konten
-                                    </h3>
-                                </div>
-                                <div class="bg-white text-pink-600 font-black text-xs px-3 py-1.5 rounded-xl shadow-sm text-center shrink-0">
-                                    <span id="countKontenAktif" class="text-base block leading-none">0</span>
-                                    <span class="text-[8px] uppercase tracking-wider block mt-0.5">Deadline</span>
-                                </div>
-                            </div>
-                            <div class="mt-2.5 pt-2 border-t border-white/15 flex items-center gap-1.5 text-[10px] font-bold text-pink-100 relative z-10">
-                                <i class="ph-fill ph-calendar-check text-amber-200"></i>
-                                <span>Nama Kreator • Task Konten • Target Deadline</span>
-                            </div>
+            <!-- ================================================================= -->
+            <!-- DIVISI 2: TIM KONTEN (KE SAMPING: DEADLINE TASKS & REPORTS)       -->
+            <!-- ================================================================= -->
+            <section id="section-room-konten" class="space-y-4 pt-2">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white px-5 py-4 rounded-[22px] border border-slate-200/90 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-pink-50 border border-pink-100 text-pink-600 flex items-center justify-center shrink-0">
+                            <i class="ph-fill ph-video-camera text-xl"></i>
                         </div>
-
-                        <div id="liveKontenList" class="p-4 space-y-4 bg-gradient-to-b from-pink-50/30 to-slate-50/50 max-h-[780px] overflow-y-auto hide-scrollbar">
-                            <div class="text-xs text-slate-400 text-center py-6 font-bold">Memuat meja kerja tim konten...</div>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h2 class="text-sm sm:text-base font-black text-slate-800 uppercase tracking-wider">Ruang Tim Konten</h2>
+                                <span id="countKontenAktif" class="bg-pink-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">0 Deadline</span>
+                                <span id="countReportKonten" class="bg-purple-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">0 Report</span>
+                            </div>
+                            <p class="text-[11px] font-semibold text-slate-400">Menampilkan <b class="text-pink-600">Deadline Konten (creator_tasks)</b> & <b class="text-purple-600">Task Dikerjain (creator_reports)</b> per kreator</p>
                         </div>
                     </div>
+                    <a href="konten.html" class="self-start sm:self-center text-[10px] font-extrabold text-pink-600 bg-pink-50 hover:bg-pink-100 border border-pink-200 px-3.5 py-2 rounded-xl uppercase tracking-wider transition-colors flex items-center gap-1.5">
+                        <span>Buka Panel Konten</span> <i class="ph-bold ph-arrow-right"></i>
+                    </a>
+                </div>
 
-                    <!-- ========================================================= -->
-                    <!-- RUANG 2: TIM DESAIN GRAFIS (DIKERJAIN/REVISI PALING ATAS) -->
-                    <!-- ========================================================= -->
-                    <div id="section-room-desain" class="lg:col-span-4 room-card rounded-[28px] border-2 border-blue-200/80 overflow-hidden flex flex-col">
-                        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 sm:p-5 text-white relative overflow-hidden">
-                            <i class="ph-fill ph-paint-brush-broad absolute -right-3 -bottom-4 text-7xl text-white/15 transform -rotate-12 pointer-events-none"></i>
-                            <div class="flex justify-between items-start relative z-10">
-                                <div>
-                                    <span class="text-[9px] font-black uppercase tracking-[0.2em] bg-black/20 px-2.5 py-0.5 rounded-full text-blue-100">Ruang 02 • Design Studio</span>
-                                    <h3 class="text-base sm:text-lg font-black tracking-tight mt-1.5 flex items-center gap-2">
-                                        <i class="ph-fill ph-pen-nib"></i> 2. Tim Desain
-                                    </h3>
-                                </div>
-                                <div class="bg-white text-blue-600 font-black text-xs px-3 py-1.5 rounded-xl shadow-sm text-center shrink-0">
-                                    <span id="countDesainAktif" class="text-base block leading-none">0</span>
-                                    <span class="text-[8px] uppercase tracking-wider block mt-0.5">Project</span>
-                                </div>
-                            </div>
-                            <div class="mt-2.5 pt-2 border-t border-white/15 flex items-center gap-1.5 text-[10px] font-bold text-blue-100 relative z-10">
-                                <i class="ph-fill ph-arrow-fat-lines-up text-amber-300"></i>
-                                <span>Prioritas: <b>Lagi Dikerjain & Revisi</b> otomatis paling atas</span>
-                            </div>
+                <!-- KOLOM KREATOR KE SAMPING -->
+                <div class="w-full overflow-x-auto pb-3 -mx-3 px-3 sm:mx-0 sm:px-0">
+                    <div id="liveKontenList" class="grid grid-flow-col auto-cols-[320px] sm:auto-cols-[360px] lg:grid-flow-row lg:grid-cols-3 gap-5 items-start">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================================================================= -->
+            <!-- DIVISI 3: TIM 3D & PRODUKSI (MESIN + GRAMASI + KOLOM KE SAMPING)  -->
+            <!-- ================================================================= -->
+            <section id="section-room-3d" class="space-y-4 pt-2">
+                <!-- Header Ruang 3D -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white px-5 py-4 rounded-[22px] border border-slate-200/90 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                            <i class="ph-fill ph-cube text-xl"></i>
                         </div>
-
-                        <div id="liveDesainList" class="p-4 space-y-4 bg-gradient-to-b from-blue-50/30 to-slate-50/50 max-h-[780px] overflow-y-auto hide-scrollbar">
-                            <div class="text-xs text-slate-400 text-center py-6 font-bold">Memuat meja kerja tim desain...</div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-sm sm:text-base font-black text-slate-800 uppercase tracking-wider">Ruang Tim 3D & Print Farm</h2>
+                                <span id="count3dAktif" class="bg-emerald-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full">0 Task 3D</span>
+                            </div>
+                            <p class="text-[11px] font-semibold text-slate-400">Monitor mesin 3D yang sedang jalan, konsumsi gramasi harian/tahunan, & tugas per anggota 3D</p>
                         </div>
                     </div>
+                    <button type="button" onclick="switchTab('desain3d')" class="self-start sm:self-center text-[10px] font-extrabold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3.5 py-2 rounded-xl uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1.5">
+                        <i class="ph-bold ph-plus"></i> Tambah Tugas 3D
+                    </button>
+                </div>
 
-                    <!-- ========================================================= -->
-                    <!-- RUANG 3: TIM 3D & WORKSHOP MESIN (3D PRINT FARM)          -->
-                    <!-- ========================================================= -->
-                    <div id="section-room-3d" class="lg:col-span-4 room-card rounded-[28px] border-2 border-emerald-200/80 overflow-hidden flex flex-col">
-                        <div class="bg-gradient-to-r from-emerald-600 to-teal-600 p-4 sm:p-5 text-white relative overflow-hidden">
-                            <i class="ph-fill ph-cube absolute -right-3 -bottom-4 text-7xl text-white/15 transform -rotate-12 pointer-events-none"></i>
-                            <div class="flex justify-between items-start relative z-10">
-                                <div>
-                                    <span class="text-[9px] font-black uppercase tracking-[0.2em] bg-black/20 px-2.5 py-0.5 rounded-full text-emerald-100">Ruang 03 • 3D Print Lab</span>
-                                    <h3 class="text-base sm:text-lg font-black tracking-tight mt-1.5 flex items-center gap-2">
-                                        <i class="ph-fill ph-printer"></i> 3. Tim 3D & Mesin
-                                    </h3>
-                                </div>
-                                <div class="bg-white text-emerald-600 font-black text-xs px-3 py-1.5 rounded-xl shadow-sm text-center shrink-0">
-                                    <span id="count3dAktif" class="text-base block leading-none">0</span>
-                                    <span class="text-[8px] uppercase tracking-wider block mt-0.5">Task 3D</span>
-                                </div>
-                            </div>
-                            <div class="mt-2.5 pt-2 border-t border-white/15 flex items-center gap-1.5 text-[10px] font-bold text-emerald-100 relative z-10">
-                                <i class="ph-fill ph-cpu text-amber-300"></i>
-                                <span>Monitor Mesin Jalan • Gramasi Harian & Tahunan</span>
-                            </div>
-                        </div>
-
-                        <!-- SUB-PANEL A: STATISTIK GRAMASI (PER HARI, BULANAN, TAHUNAN) -->
-                        <div class="p-4 bg-slate-900 text-white border-b border-slate-800">
-                            <div class="flex items-center justify-between mb-2.5">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
-                                    <i class="ph-fill ph-scales text-sm"></i> Pemakaian Gramasi Filamen
+                <!-- BARIS ATAS 3D: GRAMASI (HARIAN, BULANAN, TAHUNAN) & DASHBOARD VISUAL MESIN -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                    
+                    <!-- KIRI: KARTU GRAMASI TAHUNAN & HARIAN -->
+                    <div class="lg:col-span-5 bg-white rounded-[24px] p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                                    <i class="ph-fill ph-scales text-emerald-600 text-lg"></i> Data Pemakaian Gramasi
                                 </span>
-                                <span id="statTahunLabel" class="text-[9px] font-bold bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">Tahun Ini</span>
+                                <span id="statTahunLabel" class="text-[10px] font-extrabold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg border border-slate-200">Tahun 2026</span>
                             </div>
-                            <div class="grid grid-cols-3 gap-2">
+
+                            <div class="grid grid-cols-3 gap-3">
                                 <!-- Per Hari / Hari Ini -->
-                                <div class="bg-slate-800/90 border border-amber-500/30 rounded-2xl p-2.5 text-center">
-                                    <span class="text-[8px] font-extrabold uppercase tracking-wider text-amber-300 block">Hari Ini</span>
-                                    <span id="statGramasiHariIni" class="text-sm sm:text-base font-black text-amber-400 block mt-0.5">0 gr</span>
-                                    <span id="statGramasiAvgHari" class="text-[8px] font-bold text-slate-400 block mt-0.5">Avg: 0 gr/hr</span>
+                                <div class="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3.5">
+                                    <span class="text-[9px] font-extrabold uppercase tracking-wider text-amber-700 block">Hari Ini</span>
+                                    <span id="statGramasiHariIni" class="text-lg sm:text-xl font-black text-slate-800 block mt-1">0 gr</span>
+                                    <span id="statGramasiAvgHari" class="text-[9px] font-bold text-amber-700/80 block mt-1">Avg: 0 gr/hr</span>
                                 </div>
                                 <!-- Bulan Ini -->
-                                <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-2.5 text-center">
-                                    <span class="text-[8px] font-extrabold uppercase tracking-wider text-slate-400 block">Bulan Ini</span>
-                                    <span id="statGramasiBulan" class="text-sm sm:text-base font-black text-emerald-400 block mt-0.5">0 gr</span>
-                                    <span id="statGramasiBulanKg" class="text-[8px] font-bold text-slate-400 block mt-0.5">0.00 kg</span>
+                                <div class="bg-blue-50/60 border border-blue-200/80 rounded-2xl p-3.5">
+                                    <span class="text-[9px] font-extrabold uppercase tracking-wider text-blue-700 block">Bulan Ini</span>
+                                    <span id="statGramasiBulan" class="text-lg sm:text-xl font-black text-slate-800 block mt-1">0 gr</span>
+                                    <span id="statGramasiBulanKg" class="text-[9px] font-bold text-blue-600/80 block mt-1">0.00 kg</span>
                                 </div>
                                 <!-- Tahunan -->
-                                <div class="bg-emerald-950/90 border border-emerald-500/40 rounded-2xl p-2.5 text-center">
-                                    <span class="text-[8px] font-extrabold uppercase tracking-wider text-emerald-300 block">Tahunan</span>
-                                    <span id="statGramasiTahun" class="text-sm sm:text-base font-black text-white block mt-0.5">0 gr</span>
-                                    <span id="statGramasiTahunKg" class="text-[8px] font-bold text-emerald-300 block mt-0.5">0.00 kg</span>
+                                <div class="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3.5">
+                                    <span class="text-[9px] font-extrabold uppercase tracking-wider text-emerald-800 block">Tahunan</span>
+                                    <span id="statGramasiTahun" class="text-lg sm:text-xl font-black text-emerald-700 block mt-1">0 gr</span>
+                                    <span id="statGramasiTahunKg" class="text-[9px] font-bold text-emerald-600 block mt-1">0.00 kg</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- SUB-PANEL B: VISUALISASI DASHBOARD MESIN 3D -->
-                        <div class="p-4 bg-slate-100/90 border-b border-slate-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-700 flex items-center gap-1.5">
-                                    <i class="ph-fill ph-printer text-emerald-600 text-base"></i> Dashboard Mesin 3D
-                                </span>
-                                <span id="badgeMesinSummary" class="text-[9px] font-black bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full">Memuat...</span>
-                            </div>
-                            <div id="visualMesinGrid" class="grid grid-cols-2 gap-2.5">
-                                <!-- Visual 3D Printers Injected via JS -->
-                            </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold text-slate-400">
+                            <span> Kalkulasi otomatis dari seluruh project 3D</span>
+                            <span class="text-emerald-600 font-black">1 Kg = 1.000 gr</span>
                         </div>
+                    </div>
 
-                        <!-- SUB-PANEL C: MEJA KERJA ANGGOTA TIM 3D -->
-                        <div id="live3dList" class="p-4 space-y-4 bg-gradient-to-b from-emerald-50/30 to-slate-50/50 max-h-[520px] overflow-y-auto hide-scrollbar">
-                            <div class="text-xs text-slate-400 text-center py-6 font-bold">Memuat meja kerja tim 3D...</div>
+                    <!-- KANAN: DASHBOARD VISUAL MESIN 3D PRINTER -->
+                    <div class="lg:col-span-7 bg-white rounded-[24px] p-5 border border-slate-200/90 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                                <i class="ph-fill ph-printer text-emerald-600 text-lg"></i> Dashboard Mesin 3D Printer
+                            </span>
+                            <span id="badgeMesinSummary" class="text-[10px] font-black bg-slate-100 text-slate-600 px-3 py-1 rounded-full">Memuat...</span>
+                        </div>
+                        <div id="visualMesinGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <!-- Visual 3D Printers Injected via JS -->
                         </div>
                     </div>
 
                 </div>
-            </div>
+
+                <!-- BARIS BAWAH 3D: KOLOM ANGGOTA TIM 3D KE SAMPING -->
+                <div class="w-full overflow-x-auto pb-3 -mx-3 px-3 sm:mx-0 sm:px-0">
+                    <div id="live3dList" class="grid grid-flow-col auto-cols-[310px] sm:auto-cols-[340px] lg:grid-flow-row lg:grid-cols-3 xl:grid-cols-4 gap-5 items-start">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+            </section>
 
             <!-- ================================================================= -->
-            <!-- KURVA STATISTIK & DIREKTORI TIM                                   -->
+            <!-- GRAFIK PERFORMA & SUSUNAN TIM                                     -->
             <!-- ================================================================= -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
-                <div class="bg-white p-5 md:p-7 rounded-[28px] border border-slate-200 shadow-sm flex flex-col">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
+                <div class="bg-white p-5 md:p-6 rounded-[24px] border border-slate-200 shadow-sm flex flex-col">
                     <h3 class="text-[11px] font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <i class="ph-fill ph-trend-up text-blue-600 text-xl"></i> Kurva Desain Selesai
                     </h3>
                     <div class="flex-1 w-full relative min-h-[200px]"><canvas id="chartDesain"></canvas></div>
                 </div>
-                <div class="bg-white p-5 md:p-7 rounded-[28px] border border-slate-200 shadow-sm flex flex-col">
+                <div class="bg-white p-5 md:p-6 rounded-[24px] border border-slate-200 shadow-sm flex flex-col">
                     <h3 class="text-[11px] font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <i class="ph-fill ph-video-camera text-pink-500 text-xl"></i> Kurva Konten Selesai
                     </h3>
@@ -507,20 +498,13 @@
                 </div>
             </div>
 
-            <section class="pt-4 border-t border-slate-200">
-                <h2 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="ph-fill ph-address-book text-blue-600 text-xl"></i> Susunan Lengkap Tim Molusca
-                </h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5" id="teamListContainer"></div>
-            </section>
         </div>
 
         <!-- ================================================================= -->
-        <!-- TAB 2: TASK DESAIN (REGULER)                                      -->
+        <!-- TAB 2: TASK DESAIN (INPUT & KELOLA)                               -->
         <!-- ================================================================= -->
         <div id="tab-desain" class="tab-content">
-            <section class="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[32px] border border-slate-200 shadow-sm mb-8 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-[100px] -z-10"></div>
+            <section class="bg-white p-5 md:p-8 rounded-[24px] border border-slate-200 shadow-sm mb-8 relative overflow-hidden">
                 <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2">
                     <i class="ph-bold ph-plus-circle text-blue-600 text-xl"></i> Buat Tugas Desain Baru
                 </h2>
@@ -556,8 +540,8 @@
                 </form>
             </section>
 
-            <div class="w-full overflow-x-auto hide-scrollbar pb-6 -mx-3 px-3 md:mx-0 md:px-0">
-                <div id="dynamic-boards" class="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-5 w-max md:w-full snap-x"></div>
+            <div class="w-full overflow-x-auto pb-6 -mx-3 px-3 md:mx-0 md:px-0">
+                <div id="dynamic-boards" class="grid grid-flow-col auto-cols-[310px] sm:auto-cols-[340px] lg:grid-flow-row lg:grid-cols-3 xl:grid-cols-4 gap-5 items-start"></div>
             </div>
             
             <div class="mt-6 pt-6 border-t border-slate-200">
@@ -569,21 +553,19 @@
         </div>
 
         <!-- ================================================================= -->
-        <!-- TAB 3: TASK 3D DESIGN                                             -->
+        <!-- TAB 3: TASK 3D DESIGN (INPUT & KELOLA)                            -->
         <!-- ================================================================= -->
         <div id="tab-desain3d" class="tab-content">
-            <section class="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[32px] border border-slate-200 shadow-sm relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-[100px] -z-10"></div>
-                
-                <h3 class="text-[11px] md:text-xs font-black text-slate-700 uppercase tracking-widest mb-6 flex items-center gap-2">
-                    <i class="ph-bold ph-plus-circle text-emerald-600 text-lg"></i> Buat Tugas 3D Baru
+            <section class="bg-white p-5 md:p-8 rounded-[24px] border border-slate-200 shadow-sm relative overflow-hidden">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <i class="ph-bold ph-plus-circle text-emerald-600 text-xl"></i> Buat Tugas 3D Baru
                 </h3>
                 
                 <form id="form3dAdmin" onsubmit="sendTask3dAdmin(event)" class="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <div class="md:col-span-5 relative group">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Nama Project</label>
                         <div class="relative">
-                            <i class="ph-bold ph-folder absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors"></i>
+                            <i class="ph-bold ph-folder absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                             <input type="text" id="task3dProjectAdmin" placeholder="Contoh: Keychain Custom 3D" required autocomplete="off" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-xs font-bold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-2 outline-none transition-all">
                         </div>
                     </div>
@@ -591,7 +573,7 @@
                     <div class="md:col-span-4 relative group">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Tugaskan Ke</label>
                         <div class="relative">
-                            <i class="ph-bold ph-user-circle absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors"></i>
+                            <i class="ph-bold ph-user-circle absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                             <select id="task3dAssigneeAdmin" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-10 text-xs font-bold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-2 outline-none appearance-none cursor-pointer transition-all"></select>
                             <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                         </div>
@@ -600,7 +582,7 @@
                     <div class="md:col-span-3 relative group">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Prioritas</label>
                         <div class="relative">
-                            <i class="ph-bold ph-flag absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors"></i>
+                            <i class="ph-bold ph-flag absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                             <select id="task3dPriorityAdmin" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-10 text-xs font-bold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-2 outline-none appearance-none cursor-pointer transition-all">
                                 <option value="Normal">Normal</option>
                                 <option value="Urgent">🔴 Urgent</option>
@@ -612,7 +594,7 @@
                     <div class="md:col-span-12 relative group mt-1">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Catatan Admin (Opsional)</label>
                         <div class="relative">
-                            <i class="ph-bold ph-note-pencil absolute left-4 top-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors"></i>
+                            <i class="ph-bold ph-note-pencil absolute left-4 top-4 text-slate-400"></i>
                             <textarea id="task3dCatatanAdmin" placeholder="Instruksi tambahan..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-xs font-bold text-slate-800 focus:bg-white focus:border-emerald-400 focus:ring-2 outline-none min-h-[60px] resize-y transition-all"></textarea>
                         </div>
                     </div>
@@ -629,8 +611,8 @@
                 <h3 class="text-[11px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-5">
                     <i class="ph-fill ph-kanban text-emerald-500 text-lg"></i> Active Projects 3D
                 </h3>
-                <div class="w-full overflow-x-auto hide-scrollbar -mx-3 px-3 md:mx-0 md:px-0 pb-6">
-                    <div id="dynamic-boards-3d" class="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 w-max md:w-full snap-x"></div>
+                <div class="w-full overflow-x-auto -mx-3 px-3 md:mx-0 md:px-0 pb-6">
+                    <div id="dynamic-boards-3d" class="grid grid-flow-col auto-cols-[310px] sm:auto-cols-[340px] lg:grid-flow-row lg:grid-cols-3 xl:grid-cols-4 gap-5 items-start"></div>
                 </div>
             </div>
 
@@ -662,6 +644,15 @@
             0: [] 
         };
 
+        const avatarRingColors = [
+            'text-blue-500',
+            'text-emerald-500',
+            'text-violet-500',
+            'text-pink-500',
+            'text-amber-500',
+            'text-cyan-500'
+        ];
+
         function isSameName(a, b) {
             return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
         }
@@ -677,18 +668,16 @@
             return `${dd}-${mm}-${yyyy}`;
         }
 
-        function scrollToRoom(elementId) {
-            const el = document.getElementById(elementId);
-            if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
         function highlightUserDesk(userName) {
+            // Jika sedang fullscreen 3D, keluar dulu agar bisa lihat mejanya
+            const sec3D = document.getElementById('office3DSection');
+            if (sec3D && sec3D.classList.contains('office-fullscreen')) {
+                toggleFullscreen3D();
+            }
             const safeId = 'desk-user-' + makeSafeId(userName);
             const el = document.getElementById(safeId);
             if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
                 el.classList.add('desk-highlight');
                 setTimeout(() => el.classList.remove('desk-highlight'), 2200);
             }
@@ -720,7 +709,6 @@
                 let cols = data.table.cols.map(c => c && c.label ? String(c.label).trim() : '');
                 let rows = data.table.rows || [];
 
-                // Fallback jika gviz meletakkan nama kolom di baris pertama (sering terjadi pada sheet full teks)
                 if (cols.every(c => c === '') && rows.length > 0) {
                     cols = rows[0].c.map(cell => cell && cell.v !== null && cell.v !== undefined ? String(cell.v).trim() : '');
                     rows = rows.slice(1);
@@ -730,9 +718,8 @@
                     let row = {};
                     if (r && r.c) {
                         r.c.forEach((c, i) => { 
-                            if (cols[i]) {
-                                row[cols[i]] = c ? (c.f !== undefined && c.f !== null ? c.f : (c.v !== null && c.v !== undefined ? c.v : '')) : ''; 
-                            }
+                            let colKey = cols[i] || `col_${i}`;
+                            row[colKey] = c ? (c.f !== undefined && c.f !== null ? c.f : (c.v !== null && c.v !== undefined ? c.v : '')) : ''; 
                         });
                     }
                     row.id = row.id || (Date.now() + idx).toString(); 
@@ -742,6 +729,43 @@
                 console.warn("Gagal memuat sheet:", sheetName, e);
                 return []; 
             }
+        }
+
+        // Normalizer pintar untuk membaca baris dari sheet `creator_reports` apapun nama header kolomnya
+        function extractCreatorReportInfo(row) {
+            const keys = Object.keys(row);
+            const findVal = (candidates) => {
+                for (let cand of candidates) {
+                    let foundKey = keys.find(k => k.toLowerCase().includes(cand));
+                    if (foundKey && row[foundKey] !== '' && row[foundKey] !== undefined) return String(row[foundKey]);
+                }
+                return '';
+            };
+
+            let creator = findVal(['assignee', 'name', 'nama', 'user', 'creator', 'kreator', 'pembuat', 'pic', 'col_1']);
+            let title = findVal(['title', 'judul', 'task', 'konten', 'project', 'kegiatan', 'pekerjaan', 'topic', 'deskripsi', 'description', 'col_2']);
+            let dateStr = findVal(['date', 'tanggal', 'tgl', 'waktu', 'time', 'target', 'col_3']);
+            let statusOrPlatform = findVal(['status', 'platform', 'kategori', 'type', 'jenis', 'ket', 'note', 'catatan', 'col_4']);
+            let link = findVal(['link', 'url', 'file', 'bukti']);
+
+            // Fallback jika sheet tidak berlabel standar: ambil nilai teks yang ada
+            if (!title) {
+                const nonIdVals = keys.filter(k => k !== 'id').map(k => row[k]).filter(v => v && String(v).trim() !== '');
+                if (nonIdVals.length >= 2) {
+                    creator = creator || String(nonIdVals[0]);
+                    title = String(nonIdVals[1]);
+                    dateStr = dateStr || String(nonIdVals[2] || '');
+                }
+            }
+
+            return {
+                id: row.id,
+                creator: creator.trim(),
+                title: title.trim(),
+                dateStr: dateStr.trim() || '-',
+                extra: statusOrPlatform.trim() || 'Report Konten',
+                link: link.trim()
+            };
         }
 
         // ==========================================
@@ -758,16 +782,16 @@
                 const shiftEl = document.getElementById('liveShiftStatus');
                 
                 if (timeEl) timeEl.innerText = now.toLocaleTimeString('id-ID', timeOpts).replace(/\./g, ':');
-                if (dateEl) dateEl.innerHTML = `<i class="ph-fill ph-calendar-blank text-blue-400"></i> ${now.toLocaleDateString('id-ID', dateOpts)}`;
+                if (dateEl) dateEl.innerText = now.toLocaleDateString('id-ID', dateOpts);
                 
                 if (shiftEl) {
                     const hr = now.getHours();
                     if (now.getDay() === 0) {
-                        shiftEl.innerHTML = `<span class="text-amber-400">● Libur Akhir Pekan</span>`;
+                        shiftEl.innerHTML = `<span class="text-amber-400">● Libur</span>`;
                     } else if (hr >= 8 && hr < 17) {
-                        shiftEl.innerHTML = `<span class="text-emerald-400">● Jam Kerja Studio</span>`;
+                        shiftEl.innerHTML = `<span class="text-emerald-400">● Jam Kerja</span>`;
                     } else {
-                        shiftEl.innerHTML = `<span class="text-slate-400">● Di Luar Jam Kerja</span>`;
+                        shiftEl.innerHTML = `<span class="text-slate-400">● Luar Jam Kerja</span>`;
                     }
                 }
             }
@@ -796,9 +820,9 @@
                 const btn = document.getElementById('btn-' + id);
                 if (!btn) return;
                 if (id === tabId) {
-                    btn.className = "flex-1 py-3 px-3 md:py-3.5 md:px-6 rounded-xl md:rounded-2xl font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all flex justify-center items-center gap-2 whitespace-nowrap bg-slate-900 text-white shadow-md cursor-pointer";
+                    btn.className = "flex-1 py-2.5 px-4 rounded-xl font-black text-[11px] md:text-xs uppercase tracking-widest transition-all flex justify-center items-center gap-2 whitespace-nowrap bg-slate-900 text-white shadow-sm cursor-pointer";
                 } else {
-                    btn.className = "flex-1 py-3 px-3 md:py-3.5 md:px-6 rounded-xl md:rounded-2xl font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all flex justify-center items-center gap-2 whitespace-nowrap bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800 cursor-pointer";
+                    btn.className = "flex-1 py-2.5 px-4 rounded-xl font-black text-[11px] md:text-xs uppercase tracking-widest transition-all flex justify-center items-center gap-2 whitespace-nowrap bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800 cursor-pointer";
                 }
             });
 
@@ -848,18 +872,19 @@
         }
 
         // ==========================================
-        // LOAD ALL DATA
+        // LOAD ALL DATA (TERMASUK CREATOR_REPORTS)
         // ==========================================
         async function loadAllData() {
             const loader = document.getElementById('loadingOverlay');
             if (loader) loader.classList.remove('hidden');
 
             try {
-                const [resUsers, resTasks, resIzin, resCreator, resTasks3d, resPiket] = await Promise.all([
+                const [resUsers, resTasks, resIzin, resCreatorTasks, resCreatorReports, resTasks3d, resPiket] = await Promise.all([
                     fetchGviz('users'),
                     fetchGviz('tasks'),
                     fetchGviz('izin'),
                     fetchGviz('creator_tasks'),
+                    fetchGviz('creator_reports'),
                     fetchGviz('tasks_3d'),
                     fetchGviz('piket_log')
                 ]);
@@ -869,7 +894,6 @@
                     allUsers = resUsers.filter(u => u.name && String(u.role || '').toLowerCase() !== 'admin');
                 }
 
-                renderTeamList(allUsers);
                 renderUserBoards(allUsers); 
                 renderUserBoards3d(allUsers);
 
@@ -877,10 +901,22 @@
                 renderBoard3d(resTasks3d || []);
                 
                 processWidgetData(resIzin || [], resPiket || []);
-                renderCharts(resTasks || [], resCreator || []);
+                renderCharts(resTasks || [], resCreatorTasks || []);
 
-                renderLiveMonitor(resTasks || [], resTasks3d || [], resCreator || [], allUsers);
-                update3DOfficeData(allUsers, resTasks || [], resTasks3d || [], resCreator || []);
+                renderLiveMonitor(
+                    resTasks || [], 
+                    resTasks3d || [], 
+                    resCreatorTasks || [], 
+                    resCreatorReports || [], 
+                    allUsers
+                );
+                update3DOfficeData(
+                    allUsers, 
+                    resTasks || [], 
+                    resTasks3d || [], 
+                    resCreatorTasks || [], 
+                    resCreatorReports || []
+                );
 
             } catch (error) {
                 console.error("Error memuat data:", error);
@@ -890,107 +926,24 @@
         }
 
         // =========================================================================
-        // RENDER 3 RUANGAN KANTOR (KONTEN, DESAIN, 3D & MESIN)
+        // RENDER 3 RUANGAN KANTOR (KOLOM KE SAMPING SEPERTI SCREENSHOT)
         // =========================================================================
-        function renderLiveMonitor(tasks, tasks3d, creatorTasks, usersList) {
+        function renderLiveMonitor(tasks, tasks3d, creatorTasks, creatorReports, usersList) {
             const now = new Date();
             const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
             // -----------------------------------------------------------------
-            // 1. RUANG TIM KONTEN (NAMA, TASK, DEADLINE)
-            // -----------------------------------------------------------------
-            let activeKonten = creatorTasks.filter(t => t.title && String(t.isCompleted).toLowerCase() !== 'true');
-            document.getElementById('countKontenAktif').innerText = activeKonten.length;
-            document.getElementById('topCountKonten').innerText = activeKonten.length;
-            
-            let timKonten = usersList.filter(u => u.role && String(u.role).toLowerCase().includes('konten'));
-            let htmlKonten = '';
-
-            timKonten.forEach(u => {
-                let uTasks = activeKonten
-                    .filter(t => isSameName(t.assignee, u.name))
-                    .sort((a, b) => parseIndoDate(a.targetDate) - parseIndoDate(b.targetDate));
-                
-                let isBusy = uTasks.length > 0;
-                let statusDot = isBusy 
-                    ? `<span class="inline-flex items-center gap-1 text-[9px] font-black text-pink-600 bg-pink-50 border border-pink-200 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-pink-500 animate-ping"></span> ${uTasks.length} Konten</span>`
-                    : `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Standby</span>`;
-
-                let taskHtml = uTasks.map(t => {
-                    let tgtDate = parseIndoDate(t.targetDate);
-                    let diffDays = Math.ceil((tgtDate - todayMidnight) / (1000 * 60 * 60 * 24));
-                    
-                    let dateBadgeClass = 'text-slate-600 bg-slate-100 border-slate-200'; 
-                    let dateLabel = t.targetDate || '-';
-                    let cardBorder = 'border-slate-200';
-
-                    if (diffDays < 0) { 
-                        dateBadgeClass = 'text-white bg-rose-600 border-rose-700 shadow-sm animate-pulse'; 
-                        dateLabel = `Telat ${Math.abs(diffDays)} Hr!`; 
-                        cardBorder = 'border-rose-300 bg-rose-50/20';
-                    } else if (diffDays === 0) { 
-                        dateBadgeClass = 'text-rose-700 bg-rose-100 border-rose-300'; 
-                        dateLabel = 'Deadline Hari Ini!'; 
-                        cardBorder = 'border-rose-300';
-                    } else if (diffDays <= 2) { 
-                        dateBadgeClass = 'text-amber-700 bg-amber-100 border-amber-300'; 
-                        dateLabel = `H-${diffDays} Deadline`; 
-                        cardBorder = 'border-amber-200';
-                    } else if (diffDays < 365) {
-                        dateBadgeClass = 'text-pink-700 bg-pink-50 border-pink-200';
-                        dateLabel = `H-${diffDays}`;
-                    }
-
-                    return `
-                        <div class="bg-white border ${cardBorder} rounded-2xl p-3 shadow-sm transition-all hover:border-pink-300">
-                            <div class="flex justify-between items-start gap-2 mb-1.5">
-                                <h5 class="text-[11px] font-black text-slate-800 leading-snug">${t.title || 'Untitled Konten'}</h5>
-                                <span class="text-[8px] font-black uppercase px-2 py-1 rounded-lg border ${dateBadgeClass} shrink-0">${dateLabel}</span>
-                            </div>
-                            ${t.description && t.description !== '-' ? `<p class="text-[10px] font-medium text-slate-500 italic bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 mb-2">"${t.description}"</p>` : ''}
-                            <div class="flex items-center justify-between text-[9px] font-bold text-slate-400 pt-1.5 border-t border-slate-100">
-                                <span class="flex items-center gap-1 text-pink-600"><i class="ph-fill ph-video-camera"></i> Task Konten</span>
-                                <span class="flex items-center gap-1"><i class="ph-bold ph-calendar-check text-slate-400"></i> Deadline: <b class="text-slate-700">${t.targetDate || '-'}</b></span>
-                            </div>
-                        </div>`;
-                }).join('');
-
-                if (!taskHtml) {
-                    taskHtml = `<div class="text-[10px] text-slate-400 font-bold italic py-3 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50/50">Meja kosong • Belum ada jadwal konten 🎥</div>`;
-                }
-
-                htmlKonten += `
-                <div id="desk-user-${makeSafeId(u.name)}" class="desk-station border border-slate-200/90 rounded-[22px] p-3.5">
-                    <div class="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-slate-100">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-9 h-9 bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-xl flex items-center justify-center font-black text-xs shadow-sm">
-                                ${u.name.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider leading-none">${u.name}</h4>
-                                <span class="text-[9px] font-bold text-slate-400 flex items-center gap-1 mt-1"><i class="ph-fill ph-desktop text-pink-400"></i> Meja Kreator</span>
-                            </div>
-                        </div>
-                        ${statusDot}
-                    </div>
-                    <div class="space-y-2">${taskHtml}</div>
-                </div>`;
-            });
-            document.getElementById('liveKontenList').innerHTML = htmlKonten || '<p class="text-xs text-slate-400 text-center py-6 font-bold">Belum ada anggota tim konten</p>';
-
-
-            // -----------------------------------------------------------------
-            // 2. RUANG TIM DESAIN (LAGI DIKERJAIN & REVISI WAJIB PALING ATAS)
+            // 1. RUANG TIM DESAIN (KOLOM KE SAMPING: DADAN | INDAH | NAYLA)
             // -----------------------------------------------------------------
             const getDesainSortScore = (task) => {
                 let s = String(task.status || '').toLowerCase();
                 let isUrg = String(task.priority || '').toLowerCase() === 'urgent';
                 let baseScore = 50;
 
-                if (s.includes('revisi')) baseScore = 10;
-                else if (s.includes('dikerjain') || s.includes('proses') || s.includes('garap')) baseScore = 20;
+                // Lagi Dikerjain & Nunggu Revisi wajib paling atas
+                if (s.includes('dikerjain') || s.includes('revisi')) baseScore = 10;
                 else if (s.includes('layout')) baseScore = 30;
-                else if (s.includes('menunggu') || s.includes('antre')) baseScore = 40;
+                else baseScore = 40;
 
                 if (isUrg) baseScore -= 5;
                 return baseScore;
@@ -1000,104 +953,202 @@
                 let s = String(t.status || '').toLowerCase();
                 return t.title && s && s !== 'final' && s !== 'selesai';
             });
-            document.getElementById('countDesainAktif').innerText = activeDesain.length;
+            document.getElementById('countDesainAktif').innerText = `${activeDesain.length} Aktif`;
             document.getElementById('topCountDesain').innerText = activeDesain.length;
 
             let desainerUsers = usersList.filter(u => u.role && String(u.role).toLowerCase() === 'desainer');
             let htmlDesain = '';
 
-            desainerUsers.forEach(u => {
+            desainerUsers.forEach((u, idx) => {
                 let uTasks = activeDesain
                     .filter(t => isSameName(t.assignee, u.name))
                     .sort((a, b) => getDesainSortScore(a) - getDesainSortScore(b));
                 
-                let workingCount = uTasks.filter(t => {
-                    let s = String(t.status || '').toLowerCase();
-                    return s.includes('dikerjain') || s.includes('revisi');
-                }).length;
+                let ringColor = avatarRingColors[idx % avatarRingColors.length];
 
-                let statusHeaderBadge = uTasks.length > 0
-                    ? `<span class="inline-flex items-center gap-1 text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping"></span> ${uTasks.length} Task</span>`
-                    : `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Standby ☕</span>`;
-
-                let taskHtml = uTasks.map(t => {
-                    let sLower = String(t.status || '').toLowerCase();
+                let taskCards = uTasks.map(t => {
+                    let sUpper = String(t.status || 'AKTIF').toUpperCase();
+                    let sLower = sUpper.toLowerCase();
                     let isUrg = String(t.priority || '').toLowerCase() === 'urgent';
-                    let isRevisi = sLower.includes('revisi');
-                    let isDikerjain = sLower.includes('dikerjain');
-                    let isTopFocus = isRevisi || isDikerjain;
-
-                    let badgeStyle = 'bg-slate-100 text-slate-600 border-slate-200';
-                    let cardStyle = 'border-slate-200 bg-white';
-                    let leftRibbon = '';
-
-                    if (isRevisi) {
-                        badgeStyle = 'bg-rose-600 text-white border-rose-700 shadow-sm';
-                        cardStyle = 'border-rose-300 bg-rose-50/30 ring-1 ring-rose-200';
-                        leftRibbon = '<div class="absolute top-0 left-0 w-1.5 h-full bg-rose-500"></div>';
-                    } else if (isDikerjain) {
-                        badgeStyle = 'bg-blue-600 text-white border-blue-700 shadow-sm';
-                        cardStyle = 'border-blue-300 bg-blue-50/20 ring-1 ring-blue-100';
-                        leftRibbon = '<div class="absolute top-0 left-0 w-1.5 h-full bg-blue-600"></div>';
-                    } else if (sLower.includes('layout')) {
-                        badgeStyle = 'bg-amber-100 text-amber-800 border-amber-300';
-                        leftRibbon = '<div class="absolute top-0 left-0 w-1.5 h-full bg-amber-400"></div>';
+                    
+                    // Styling status pill persis referensi namun diberi aksen halus untuk membedakan status
+                    let statusPillStyle = 'bg-white text-slate-600 border-slate-200';
+                    if (sLower.includes('revisi')) {
+                        statusPillStyle = 'bg-rose-50 text-rose-600 border-rose-200';
+                    } else if (sLower.includes('dikerjain')) {
+                        statusPillStyle = 'bg-blue-50 text-blue-600 border-blue-200';
                     }
 
                     return `
-                        <div class="border ${cardStyle} rounded-2xl p-3 shadow-sm relative overflow-hidden transition-all">
-                            ${leftRibbon}
-                            <div class="pl-2">
-                                <div class="flex items-center justify-between gap-1.5 mb-1.5">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <span class="text-[8px] font-black uppercase px-2 py-0.5 rounded-md border ${badgeStyle} flex items-center gap-1">
-                                            ${isTopFocus ? '<span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>' : ''}
-                                            ${t.status}
-                                        </span>
-                                        ${isUrg ? '<span class="text-[8px] font-black bg-red-100 text-red-700 px-2 py-0.5 rounded-md border border-red-200 uppercase">🔴 URGENT</span>' : ''}
-                                    </div>
-                                    <span class="text-[8px] font-extrabold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded uppercase">#${t.joCode || '-'}</span>
-                                </div>
-                                <h5 class="text-[11px] font-black text-slate-800 leading-snug mb-1.5">${t.title || '-'}</h5>
-                                <div class="flex items-center justify-between text-[9px] font-bold text-slate-400 pt-1.5 border-t border-slate-100/80">
-                                    <span class="flex items-center gap-1 truncate"><i class="ph-fill ph-paper-plane-tilt text-blue-500"></i> Dari: <b class="text-slate-600">${t.sender || '-'}</b></span>
-                                    <span class="shrink-0">${t.dateStr || ''}</span>
-                                </div>
-                            </div>
-                        </div>`;
+                    <div class="bg-white p-4 rounded-[20px] border ${isUrg ? 'border-rose-300 ring-2 ring-rose-50' : 'border-slate-200/90'} shadow-sm card-hover">
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/80 uppercase tracking-wider inline-flex items-center gap-1.5">
+                                <i class="ph-bold ph-calendar-blank text-slate-400"></i> ${t.dateStr || '-'}
+                            </span>
+                            ${isUrg ? '<span class="text-[9px] font-black bg-rose-500 text-white px-2 py-0.5 rounded-md uppercase tracking-wider">URGENT</span>' : ''}
+                        </div>
+                        <div class="mb-3.5 leading-snug">
+                            <span class="inline-block bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider border border-slate-200/80 mr-1.5 mb-1">#${t.joCode || '-'}</span>
+                            <span class="font-extrabold text-slate-800 text-[13px] sm:text-sm">${t.title || '-'}</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 truncate pr-2">
+                                <i class="ph-fill ph-paper-plane-tilt text-slate-400"></i> ${t.sender || '-'}
+                            </span>
+                            <span class="text-[9px] font-black px-2.5 py-1 rounded-lg border ${statusPillStyle} uppercase tracking-wider shrink-0 shadow-sm">
+                                ${sUpper}
+                            </span>
+                        </div>
+                    </div>`;
                 }).join('');
 
-                if (!taskHtml) {
-                    taskHtml = `<div class="text-[10px] text-slate-400 font-bold italic py-3 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50/50">Meja kosong • Tidak ada antrean desain ☕</div>`;
+                if (!taskCards) {
+                    taskCards = `
+                    <div class="bg-slate-50/70 border border-dashed border-slate-200 rounded-[20px] p-8 text-center">
+                        <i class="ph-fill ph-coffee text-2xl text-slate-300 mb-1"></i>
+                        <p class="text-[11px] font-bold text-slate-400">Belum ada antrean desain</p>
+                    </div>`;
                 }
 
                 htmlDesain += `
-                <div id="desk-user-${makeSafeId(u.name)}" class="desk-station border border-slate-200/90 rounded-[22px] p-3.5">
-                    <div class="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-slate-100">
+                <div id="desk-user-${makeSafeId(u.name)}" class="bg-white p-5 rounded-[26px] border border-slate-200/90 shadow-sm flex flex-col">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
                         <div class="flex items-center gap-2.5">
-                            <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-xl flex items-center justify-center font-black text-xs shadow-sm">
-                                ${u.name.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider leading-none">${u.name}</h4>
-                                <span class="text-[9px] font-bold text-slate-400 flex items-center gap-1 mt-1">
-                                    <i class="ph-fill ph-monitor text-blue-500"></i> ${workingCount > 0 ? `<b class="text-blue-600">${workingCount} Fokus Dikerjain/Revisi</b>` : 'Meja Desainer'}
-                                </span>
-                            </div>
+                            <i class="ph-fill ph-user-circle ${ringColor} text-2xl"></i>
+                            <h3 class="text-xs font-black text-slate-700 uppercase tracking-[0.2em]">${u.name}</h3>
                         </div>
-                        ${statusHeaderBadge}
+                        <span class="text-[10px] font-extrabold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">${uTasks.length} Task</span>
                     </div>
-                    <div class="space-y-2">${taskHtml}</div>
+                    <div class="space-y-3.5 max-h-[620px] overflow-y-auto hide-scrollbar pr-0.5">
+                        ${taskCards}
+                    </div>
                 </div>`;
             });
-            document.getElementById('liveDesainList').innerHTML = htmlDesain || '<p class="text-xs text-slate-400 text-center py-6 font-bold">Belum ada anggota tim desain</p>';
+
+            document.getElementById('liveDesainList').innerHTML = htmlDesain || '<div class="col-span-full text-xs text-slate-400 text-center py-6 font-bold bg-white rounded-2xl border border-slate-200">Belum ada anggota tim desain</div>';
 
 
             // -----------------------------------------------------------------
-            // 3. RUANG TIM 3D, KALKULASI GRAMASI (TAHUNAN & PER HARI), & MESIN
+            // 2. RUANG TIM KONTEN (KE SAMPING: DEADLINE TASKS & CREATOR REPORTS)
+            // -----------------------------------------------------------------
+            let activeKonten = creatorTasks.filter(t => t.title && String(t.isCompleted).toLowerCase() !== 'true');
+            let parsedReports = (creatorReports || []).map(extractCreatorReportInfo).filter(r => r.title);
+
+            document.getElementById('countKontenAktif').innerText = `${activeKonten.length} Deadline`;
+            document.getElementById('countReportKonten').innerText = `${parsedReports.length} Report`;
+            document.getElementById('topCountKonten').innerText = activeKonten.length + parsedReports.length;
+            
+            let timKonten = usersList.filter(u => u.role && String(u.role).toLowerCase().includes('konten'));
+            let htmlKonten = '';
+
+            timKonten.forEach((u, idx) => {
+                // Bagian 1: Deadline dari `creator_tasks`
+                let uDeadlines = activeKonten
+                    .filter(t => isSameName(t.assignee, u.name))
+                    .sort((a, b) => parseIndoDate(a.targetDate) - parseIndoDate(b.targetDate));
+
+                // Bagian 2: Task / Report yang dikerjakan dari `creator_reports`
+                let uReports = parsedReports
+                    .filter(r => isSameName(r.creator, u.name))
+                    .reverse();
+
+                let deadlineCards = uDeadlines.map(t => {
+                    let tgtDate = parseIndoDate(t.targetDate);
+                    let diffDays = Math.ceil((tgtDate - todayMidnight) / (1000 * 60 * 60 * 24));
+                    
+                    let badgeStyle = 'bg-slate-100 text-slate-600 border-slate-200'; 
+                    let badgeText = t.targetDate || '-';
+
+                    if (diffDays < 0) { 
+                        badgeStyle = 'bg-rose-600 text-white border-rose-600'; 
+                        badgeText = `TELAT ${Math.abs(diffDays)} HR`; 
+                    } else if (diffDays === 0) { 
+                        badgeStyle = 'bg-rose-50 text-rose-600 border-rose-200'; 
+                        badgeText = 'HARI INI!'; 
+                    } else if (diffDays <= 2) { 
+                        badgeStyle = 'bg-amber-50 text-amber-700 border-amber-200'; 
+                        badgeText = `H-${diffDays}`; 
+                    } else if (diffDays < 365) {
+                        badgeStyle = 'bg-pink-50 text-pink-600 border-pink-200';
+                        badgeText = `H-${diffDays}`;
+                    }
+
+                    return `
+                    <div class="bg-white p-4 rounded-[20px] border border-slate-200/90 shadow-sm card-hover">
+                        <div class="flex items-center justify-between gap-2 mb-2.5">
+                            <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/80 uppercase tracking-wider inline-flex items-center gap-1.5">
+                                <i class="ph-bold ph-calendar-check text-pink-500"></i> ${t.targetDate || '-'}
+                            </span>
+                            <span class="text-[9px] font-black px-2.5 py-1 rounded-lg border ${badgeStyle} uppercase tracking-wider">${badgeText}</span>
+                        </div>
+                        <h4 class="font-extrabold text-slate-800 text-[13px] sm:text-sm leading-snug mb-1.5">${t.title || '-'}</h4>
+                        ${t.description && t.description !== '-' ? `<p class="text-[11px] font-medium text-slate-500 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100 italic">"${t.description}"</p>` : ''}
+                    </div>`;
+                }).join('');
+
+                if (!deadlineCards) {
+                    deadlineCards = `<div class="bg-slate-50/70 border border-dashed border-slate-200 rounded-2xl p-4 text-center text-[11px] font-bold text-slate-400">Tidak ada deadline dekat</div>`;
+                }
+
+                let reportCards = uReports.slice(0, 8).map(r => `
+                    <div class="bg-white p-4 rounded-[20px] border border-slate-200/90 shadow-sm card-hover">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/80 uppercase tracking-wider inline-flex items-center gap-1.5">
+                                <i class="ph-bold ph-clock text-purple-500"></i> ${r.dateStr}
+                            </span>
+                            <span class="text-[9px] font-black px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700 border border-purple-200 uppercase tracking-wider truncate max-w-[130px]">${r.extra}</span>
+                        </div>
+                        <h4 class="font-extrabold text-slate-800 text-[13px] sm:text-sm leading-snug">${r.title}</h4>
+                        ${r.link ? `<a href="${r.link}" target="_blank" class="mt-2 inline-flex items-center gap-1 text-[10px] font-extrabold text-blue-600 hover:underline"><i class="ph-bold ph-link"></i> Lihat Link Konten</a>` : ''}
+                    </div>
+                `).join('');
+
+                if (!reportCards) {
+                    reportCards = `<div class="bg-slate-50/70 border border-dashed border-slate-200 rounded-2xl p-4 text-center text-[11px] font-bold text-slate-400">Belum ada report task yang dikerjakan</div>`;
+                }
+
+                htmlKonten += `
+                <div id="desk-user-${makeSafeId(u.name)}" class="bg-white p-5 rounded-[26px] border border-slate-200/90 shadow-sm flex flex-col">
+                    <!-- Header Nama Kreator -->
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <i class="ph-fill ph-user-circle text-pink-500 text-2xl"></i>
+                            <h3 class="text-xs font-black text-slate-700 uppercase tracking-[0.2em]">${u.name}</h3>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[9px] font-extrabold text-pink-600 bg-pink-50 border border-pink-200 px-2 py-0.5 rounded-full">${uDeadlines.length} Deadline</span>
+                            <span class="text-[9px] font-extrabold text-purple-600 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">${uReports.length} Report</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-5 max-h-[620px] overflow-y-auto hide-scrollbar pr-0.5">
+                        <!-- Sub-Bagian 1: Deadline Konten (creator_tasks) -->
+                        <div>
+                            <div class="text-[10px] font-black text-pink-600 uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+                                <i class="ph-fill ph-calendar-Blank text-sm"></i> Deadline Konten (creator_tasks)
+                            </div>
+                            <div class="space-y-3">${deadlineCards}</div>
+                        </div>
+
+                        <!-- Sub-Bagian 2: Task / Report Dikerjain (creator_reports) -->
+                        <div class="pt-3 border-t border-slate-100">
+                            <div class="text-[10px] font-black text-purple-600 uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+                                <i class="ph-fill ph-check-square-offset text-sm"></i> Task / Report Dikerjain (creator_reports)
+                            </div>
+                            <div class="space-y-3">${reportCards}</div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            document.getElementById('liveKontenList').innerHTML = htmlKonten || '<div class="col-span-full text-xs text-slate-400 text-center py-6 font-bold bg-white rounded-2xl border border-slate-200">Belum ada anggota tim konten</div>';
+
+
+            // -----------------------------------------------------------------
+            // 3. RUANG TIM 3D (GRAMASI + MESIN + KOLOM TIM 3D KE SAMPING)
             // -----------------------------------------------------------------
             let active3d = tasks3d.filter(t => t.projectName && String(t.status || '').toLowerCase() !== 'selesai');
-            document.getElementById('count3dAktif').innerText = active3d.length;
+            document.getElementById('count3dAktif').innerText = `${active3d.length} Task 3D`;
             document.getElementById('topCount3d').innerText = active3d.length;
 
             // --- A. KALKULASI GRAMASI PER HARI, BULAN INI, DAN TAHUNAN ---
@@ -1123,12 +1174,10 @@
                         }
                     }
                 } else {
-                    // Jika format ID bukan timestamp tapi memiliki angka gramasi, tetap masukkan ke akumulasi tahunan
                     gramasiTahunIni += g;
                 }
             });
 
-            // Jika hari ini ada mesin yang sedang jalan mencetak, hitung juga gramasinya
             if (gramasiHariIni === 0) {
                 active3d.forEach(t => {
                     let s = String(t.status || '').toLowerCase();
@@ -1152,7 +1201,7 @@
             // --- B. VISUALISASI DASHBOARD MESIN 3D PRINTER ---
             render3DPrinterFarm(tasks3d, active3d);
 
-            // --- C. MEJA KERJA ANGGOTA TIM 3D ---
+            // --- C. KOLOM ANGGOTA TIM 3D KE SAMPING ---
             let tim3d = usersList.filter(u => u.role && String(u.role).toLowerCase() === '3ddesign');
             let html3d = '';
 
@@ -1160,76 +1209,77 @@
                 let s = String(task.status || '').toLowerCase();
                 let isUrg = String(task.priority || '').toLowerCase() === 'urgent';
                 let base = 50;
-                if (s.includes('mesin') || s.includes('produksi')) base = 10;
-                else if (s.includes('revisi')) base = 20;
-                else if (s.includes('dikerjain')) base = 30;
+                if (s.includes('mesin') || s.includes('produksi') || s.includes('dikerjain') || s.includes('revisi')) base = 10;
                 if (isUrg) base -= 5;
                 return base;
             };
 
-            tim3d.forEach(u => {
+            tim3d.forEach((u, idx) => {
                 let uTasks = active3d
                     .filter(t => isSameName(t.assignee, u.name))
                     .sort((a, b) => get3dSortScore(a) - get3dSortScore(b));
-                
-                let statusBadge = uTasks.length > 0
-                    ? `<span class="inline-flex items-center gap-1 text-[9px] font-black text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> ${uTasks.length} Task</span>`
-                    : `<span class="inline-flex items-center gap-1 text-[9px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Standby 🚀</span>`;
 
-                let taskHtml = uTasks.map(t => {
+                let taskCards = uTasks.map(t => {
                     let isUrg = String(t.priority || '').toLowerCase() === 'urgent';
-                    let sLower = String(t.status || '').toLowerCase();
-                    let badgeColor = 'bg-purple-100 text-purple-700 border-purple-200';
+                    let sUpper = String(t.status || 'AKTIF').toUpperCase();
+                    let sLower = sUpper.toLowerCase();
                     
-                    if (sLower.includes('revisi')) badgeColor = 'bg-rose-600 text-white border-rose-700';
-                    else if (sLower.includes('menunggu')) badgeColor = 'bg-slate-100 text-slate-600 border-slate-200';
-                    else if (sLower.includes('produksi')) badgeColor = 'bg-amber-500 text-white border-amber-600';
-                    else if (sLower.includes('mesin')) badgeColor = 'bg-emerald-600 text-white border-emerald-700';
+                    let pillColor = 'bg-white text-slate-600 border-slate-200';
+                    if (sLower.includes('revisi')) pillColor = 'bg-rose-50 text-rose-600 border-rose-200';
+                    else if (sLower.includes('produksi') || sLower.includes('mesin')) pillColor = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                    else if (sLower.includes('dikerjain')) pillColor = 'bg-purple-50 text-purple-600 border-purple-200';
 
-                    let mesinChip = (t.mesin && t.mesin !== '-') 
-                        ? `<span class="text-[8px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 inline-flex items-center gap-1"><i class="ph-fill ph-printer"></i> ${t.mesin}</span>` 
-                        : '';
-                    let gramChip = (t.gramasi && t.gramasi !== '-')
-                        ? `<span class="text-[8px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200"><i class="ph-fill ph-scales"></i> ${t.gramasi} gr</span>`
-                        : '';
+                    let cStart = cleanTimeStr(t.startTime);
+                    let cEnd = cleanTimeStr(t.endTime);
 
                     return `
-                        <div class="bg-white border ${isUrg ? 'border-rose-300 ring-1 ring-rose-100' : 'border-slate-200'} rounded-2xl p-3 shadow-sm relative overflow-hidden">
-                            <div class="flex justify-between items-start gap-2 mb-1.5">
-                                <span class="text-[8px] font-black uppercase px-2 py-0.5 rounded-md border ${badgeColor}">${t.status}</span>
-                                ${isUrg ? '<span class="text-[8px] font-black bg-red-50 text-red-600 px-2 py-0.5 rounded border border-red-200">🔴 URGENT</span>' : ''}
-                            </div>
-                            <h5 class="text-[11px] font-black text-slate-800 leading-snug mb-2">${t.projectName || '-'}</h5>
-                            <div class="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-slate-100">
-                                ${mesinChip}
-                                ${gramChip}
-                                ${t.jumlah && t.jumlah !== '-' ? `<span class="text-[8px] font-bold text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">Qty: ${t.jumlah}</span>` : ''}
-                            </div>
-                        </div>`;
+                    <div class="bg-white p-4 rounded-[20px] border ${isUrg ? 'border-rose-300 ring-2 ring-rose-50' : 'border-slate-200/90'} shadow-sm card-hover">
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/80 uppercase tracking-wider inline-flex items-center gap-1.5">
+                                <i class="ph-bold ph-clock text-emerald-500"></i> ${cStart !== '-' ? `${cStart} - ${cEnd}` : 'Project 3D'}
+                            </span>
+                            ${isUrg ? '<span class="text-[9px] font-black bg-rose-500 text-white px-2 py-0.5 rounded-md uppercase">URGENT</span>' : ''}
+                        </div>
+                        <div class="mb-3 leading-snug">
+                            ${t.mesin && t.mesin !== '-' ? `<span class="inline-block bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider border border-emerald-200 mr-1.5 mb-1"><i class="ph-fill ph-printer"></i> ${t.mesin}</span>` : ''}
+                            <span class="font-extrabold text-slate-800 text-[13px] sm:text-sm">${t.projectName || '-'}</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                                <span><i class="ph-fill ph-scales"></i> ${t.gramasi && t.gramasi !== '-' ? t.gramasi + ' gr' : '-'}</span>
+                                ${t.jumlah && t.jumlah !== '-' ? `<span>• Qty: ${t.jumlah}</span>` : ''}
+                            </span>
+                            <span class="text-[9px] font-black px-2.5 py-1 rounded-lg border ${pillColor} uppercase tracking-wider shrink-0 shadow-sm">
+                                ${sUpper}
+                            </span>
+                        </div>
+                    </div>`;
                 }).join('');
 
-                if (!taskHtml) {
-                    taskHtml = `<div class="text-[10px] text-slate-400 font-bold italic py-3 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50/50">Meja kosong • Tidak ada antrean 3D 🚀</div>`;
+                if (!taskCards) {
+                    taskCards = `
+                    <div class="bg-slate-50/70 border border-dashed border-slate-200 rounded-[20px] p-8 text-center">
+                        <i class="ph-fill ph-cube text-2xl text-slate-300 mb-1"></i>
+                        <p class="text-[11px] font-bold text-slate-400">Belum ada antrean 3D</p>
+                    </div>`;
                 }
 
                 html3d += `
-                <div id="desk-user-${makeSafeId(u.name)}" class="desk-station border border-slate-200/90 rounded-[22px] p-3.5">
-                    <div class="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-slate-100">
+                <div id="desk-user-${makeSafeId(u.name)}" class="bg-white p-5 rounded-[26px] border border-slate-200/90 shadow-sm flex flex-col">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
                         <div class="flex items-center gap-2.5">
-                            <div class="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-xl flex items-center justify-center font-black text-xs shadow-sm">
-                                ${u.name.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider leading-none">${u.name}</h4>
-                                <span class="text-[9px] font-bold text-slate-400 flex items-center gap-1 mt-1"><i class="ph-fill ph-cube text-emerald-500"></i> Specialist 3D</span>
-                            </div>
+                            <i class="ph-fill ph-user-circle text-emerald-500 text-2xl"></i>
+                            <h3 class="text-xs font-black text-slate-700 uppercase tracking-[0.2em]">${u.name}</h3>
                         </div>
-                        ${statusBadge}
+                        <span class="text-[10px] font-extrabold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">${uTasks.length} Task</span>
                     </div>
-                    <div class="space-y-2">${taskHtml}</div>
+                    <div class="space-y-3.5 max-h-[620px] overflow-y-auto hide-scrollbar pr-0.5">
+                        ${taskCards}
+                    </div>
                 </div>`;
             });
-            document.getElementById('live3dList').innerHTML = html3d || '<p class="text-xs text-slate-400 text-center py-6 font-bold">Belum ada anggota tim 3D</p>';
+
+            document.getElementById('live3dList').innerHTML = html3d || '<div class="col-span-full text-xs text-slate-400 text-center py-6 font-bold bg-white rounded-2xl border border-slate-200">Belum ada anggota tim 3D</div>';
         }
 
         // =========================================================================
@@ -1287,15 +1337,15 @@
             const runningCount = Object.keys(runningMachinesMap).length;
             summaryBadge.innerText = runningCount > 0 ? `🟢 ${runningCount} Mesin Jalan` : `⚪ Semua Standby`;
             summaryBadge.className = runningCount > 0 
-                ? "text-[9px] font-black bg-emerald-500 text-white px-2.5 py-0.5 rounded-full shadow-sm animate-pulse"
-                : "text-[9px] font-black bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full";
+                ? "text-[10px] font-black bg-emerald-500 text-white px-3 py-1 rounded-full shadow-sm animate-pulse"
+                : "text-[10px] font-black bg-slate-100 text-slate-500 px-3 py-1 rounded-full";
 
             container.innerHTML = knownMachines.map(mName => {
                 const runInfo = runningMachinesMap[mName.toUpperCase()];
                 const isRunning = !!runInfo;
 
                 const printerSVG = `
-                <svg viewBox="0 0 120 110" class="w-16 h-16 mx-auto ${isRunning ? 'printer-active' : ''}">
+                <svg viewBox="0 0 120 110" class="w-14 h-14 mx-auto ${isRunning ? 'printer-active' : ''}">
                     <circle cx="60" cy="14" r="10" fill="${isRunning ? '#10B981' : '#94A3B8'}" opacity="0.25"/>
                     <g class="filament-spool">
                         <circle cx="60" cy="14" r="8" fill="none" stroke="${isRunning ? '#10B981' : '#64748B'}" stroke-width="3" stroke-dasharray="6 3"/>
@@ -1318,35 +1368,31 @@
 
                 if (isRunning) {
                     return `
-                    <div class="bg-white border-2 border-emerald-400 rounded-2xl p-2.5 shadow-md relative overflow-hidden flex flex-col justify-between">
+                    <div class="bg-emerald-50/40 border-2 border-emerald-400 rounded-2xl p-2.5 shadow-sm flex flex-col justify-between">
                         <div class="flex items-center justify-between gap-1 mb-1">
                             <span class="text-[9px] font-black text-slate-800 uppercase truncate">${mName}</span>
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0"></span>
                         </div>
                         ${printerSVG}
-                        <div class="mt-1.5 bg-emerald-50 border border-emerald-200 rounded-xl p-2 text-left">
-                            <div class="text-[8px] font-black text-emerald-700 uppercase tracking-wider flex items-center justify-between">
-                                <span>SEDANG CETAK</span>
+                        <div class="mt-1.5 bg-white border border-emerald-200 rounded-xl p-2 text-left">
+                            <div class="text-[8px] font-black text-emerald-700 uppercase flex items-center justify-between">
+                                <span>JALAN</span>
                                 <span>${runInfo.gramasi !== '-' ? runInfo.gramasi + 'g' : ''}</span>
                             </div>
                             <div class="text-[10px] font-extrabold text-slate-800 truncate mt-0.5" title="${runInfo.project}">${runInfo.project}</div>
-                            <div class="text-[8px] font-bold text-slate-500 flex items-center justify-between mt-1 pt-1 border-t border-emerald-200/60">
-                                <span class="truncate"><i class="ph-fill ph-user"></i> ${runInfo.operator}</span>
-                                ${runInfo.waktu !== '-' ? `<span class="text-rose-600 font-black">${runInfo.waktu}</span>` : ''}
-                            </div>
+                            <div class="text-[8px] font-bold text-slate-400 truncate mt-0.5">${runInfo.operator}</div>
                         </div>
                     </div>`;
                 } else {
                     return `
-                    <div class="bg-white/80 border border-slate-200 rounded-2xl p-2.5 flex flex-col justify-between opacity-80 hover:opacity-100 transition-opacity">
+                    <div class="bg-slate-50/70 border border-slate-200 rounded-2xl p-2.5 flex flex-col justify-between opacity-80">
                         <div class="flex items-center justify-between gap-1 mb-1">
-                            <span class="text-[9px] font-extrabold text-slate-600 uppercase truncate">${mName}</span>
+                            <span class="text-[9px] font-extrabold text-slate-500 uppercase truncate">${mName}</span>
                             <span class="w-2 h-2 rounded-full bg-slate-300 shrink-0"></span>
                         </div>
                         ${printerSVG}
-                        <div class="mt-1.5 bg-slate-50 border border-slate-200/80 rounded-xl p-2 text-center">
-                            <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block">Standby / Idle</span>
-                            <span class="text-[8px] font-semibold text-slate-400 block mt-0.5">Siap Digunakan</span>
+                        <div class="mt-1.5 bg-white border border-slate-200/80 rounded-xl p-2 text-center">
+                            <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block">Standby</span>
                         </div>
                     </div>`;
                 }
@@ -1373,13 +1419,12 @@
                     let log = todayPiketLogs.find(d => isSameName(d.name, nama) || isSameName(d.id, `${todayStr}_${nama}`));
                     let sudahAbsen = log && String(log.status || '').toLowerCase() === 'sudah';
                     return `
-                    <span class="bg-white text-orange-600 px-2.5 py-1.5 rounded-xl text-[11px] font-black inline-flex items-center gap-1.5 shadow-sm uppercase tracking-wider">
-                        <i class="ph-fill ${sudahAbsen ? 'ph-check-circle text-emerald-500' : 'ph-user text-orange-500'} text-sm"></i> 
+                    <span class="bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded-xl text-xs font-extrabold inline-flex items-center gap-1.5 uppercase tracking-wider">
+                        <i class="ph-fill ${sudahAbsen ? 'ph-check-circle text-emerald-500' : 'ph-broom text-amber-500'} text-sm"></i> 
                         ${nama}
-                        ${sudahAbsen ? '<span class="text-[8px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-md">Selesai</span>' : ''}
                     </span>`;
                 }).join(' ')
-                : `<span class="text-xs font-bold text-orange-100 border border-dashed border-orange-300/60 px-3 py-1.5 rounded-xl">Libur Piket Studio ☕</span>`;
+                : `<span class="text-xs font-bold text-slate-400 bg-slate-50 border border-dashed border-slate-200 px-3 py-1.5 rounded-xl">Libur Piket Studio ☕</span>`;
             
             document.getElementById('widgetPiketHari').innerText = todayName;
             document.getElementById('widgetPiketNama').innerHTML = piketHTML;
@@ -1398,30 +1443,30 @@
                 }
             });
 
-            document.getElementById('widgetSakit').innerHTML = `${sakitListNames.length} <span class="text-sm text-slate-400 font-bold">Org</span>`;
+            document.getElementById('widgetSakit').innerHTML = `${sakitListNames.length} <span class="text-xs text-slate-400 font-bold">Org</span>`;
             const sakitListEl = document.getElementById('widgetSakitList');
             if (sakitListNames.length > 0) {
                 sakitListEl.innerHTML = sakitListNames.map(s => 
-                    `<span class="text-[9px] font-extrabold bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-md inline-flex items-center gap-1"><i class="ph-fill ph-first-aid"></i> ${s.name} (${s.date})</span>`
+                    `<span class="text-[9px] font-extrabold bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-md inline-flex items-center gap-1">${s.name} (${s.date})</span>`
                 ).join('');
             } else {
                 sakitListEl.innerHTML = `<span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-100">Semua Tim Sehat 💪</span>`;
             }
 
-            document.getElementById('widgetTotalTim').innerHTML = `${allUsers.length} <span class="text-sm text-slate-400 font-bold">Orang</span>`;
+            document.getElementById('widgetTotalTim').innerHTML = `${allUsers.length} <span class="text-xs text-slate-400 font-bold">Orang</span>`;
             const cDesain = allUsers.filter(u => String(u.role || '').toLowerCase() === 'desainer').length;
             const c3d = allUsers.filter(u => String(u.role || '').toLowerCase() === '3ddesign').length;
             const cKonten = allUsers.filter(u => String(u.role || '').toLowerCase().includes('konten')).length;
 
             document.getElementById('widgetRoleBreakdown').innerHTML = `
-                <span class="bg-pink-50 text-pink-600 border border-pink-200 px-2 py-0.5 rounded-md">${cKonten} Konten</span>
                 <span class="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-md">${cDesain} Desain</span>
+                <span class="bg-pink-50 text-pink-600 border border-pink-200 px-2 py-0.5 rounded-md">${cKonten} Konten</span>
                 <span class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded-md">${c3d} Tim 3D</span>
             `;
         }
 
         // =========================================================================
-        // THREE.JS INTERACTIVE 3D VIRTUAL OFFICE
+        // THREE.JS INTERACTIVE 3D VIRTUAL OFFICE (KARPET COKLAT + FULLSCREEN)
         // =========================================================================
         let scene3D, camera3D, renderer3D;
         let officeGroup3D;
@@ -1429,7 +1474,7 @@
         let labelTrackedItems = [];
         let printerHeads3D = [];
         let avatarMeshes3D = [];
-        let camTargetPos = { x: 0, y: 21, z: 23 };
+        let camTargetPos = { x: 0, y: 20, z: 22 };
         let camLookAt = { x: 0, y: 0, z: 0 };
         let isDragging3D = false;
         let prevPointerX = 0;
@@ -1440,21 +1485,21 @@
             if (!canvas || !wrapper || typeof THREE === 'undefined') return;
 
             scene3D = new THREE.Scene();
-            scene3D.background = new THREE.Color(0x0B1120);
+            scene3D.background = new THREE.Color(0x0F172A);
 
-            camera3D = new THREE.PerspectiveCamera(38, wrapper.clientWidth / wrapper.clientHeight, 0.1, 200);
-            camera3D.position.set(0, 21, 23);
+            camera3D = new THREE.PerspectiveCamera(36, wrapper.clientWidth / wrapper.clientHeight, 0.1, 200);
+            camera3D.position.set(0, 20, 22);
             camera3D.lookAt(0, 0, 0);
 
             renderer3D = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
             renderer3D.setSize(wrapper.clientWidth, wrapper.clientHeight);
             renderer3D.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
             scene3D.add(ambientLight);
 
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.65);
-            dirLight.position.set(15, 30, 20);
+            const dirLight = new THREE.DirectionalLight(0xFFFBEB, 0.75);
+            dirLight.position.set(16, 32, 22);
             scene3D.add(dirLight);
 
             officeGroup3D = new THREE.Group();
@@ -1465,6 +1510,7 @@
 
             buildStaticOfficeArchitecture();
 
+            // Drag / Putar
             canvas.addEventListener('pointerdown', (e) => {
                 isDragging3D = true;
                 prevPointerX = e.clientX;
@@ -1477,59 +1523,76 @@
             });
             window.addEventListener('pointerup', () => { isDragging3D = false; });
 
+            // Zoom dengan Scroll Mouse
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                camTargetPos.y = Math.max(9, Math.min(30, camTargetPos.y + e.deltaY * 0.01));
+                camTargetPos.z = Math.max(10, Math.min(32, camTargetPos.z + e.deltaY * 0.01));
+            }, { passive: false });
+
             window.addEventListener('resize', resize3DOffice);
+            document.addEventListener('fullscreenchange', () => {
+                setTimeout(resize3DOffice, 100);
+            });
             animate3DOffice();
         }
 
         function buildStaticOfficeArchitecture() {
-            const baseGeo = new THREE.BoxGeometry(26, 0.6, 12);
-            const baseMat = new THREE.MeshStandardMaterial({ color: 0x1E293B, roughness: 0.8 });
+            // Base Pondasi Kantor
+            const baseGeo = new THREE.BoxGeometry(26.5, 0.7, 12.5);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0x3E2723, roughness: 0.85 });
             const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-            baseMesh.position.y = -0.3;
+            baseMesh.position.y = -0.35;
             officeGroup3D.add(baseMesh);
 
+            // KARPET COKLAT HANGAT AGAR MEJA PUTIH & AVATAR TIDAK NYARU
             const rooms = [
-                { name: 'RUANG KONTEN', x: -8.2, color: 0xFDF2F8, border: 0xEC4899 },
-                { name: 'RUANG DESAIN', x: 0,    color: 0xEFF6FF, border: 0x3B82F6 },
-                { name: 'LAB 3D & MESIN', x: 8.2, color: 0xECFDF5, border: 0x10B981 }
+                { name: 'RUANG KONTEN', x: -8.2, carpetColor: 0x7C5332, border: 0xEC4899 },
+                { name: 'RUANG DESAIN', x: 0,    carpetColor: 0x6E4726, border: 0x3B82F6 },
+                { name: 'LAB 3D & MESIN', x: 8.2, carpetColor: 0x7C5332, border: 0x10B981 }
             ];
 
             rooms.forEach(r => {
-                const floorGeo = new THREE.BoxGeometry(7.6, 0.12, 10.6);
-                const floorMat = new THREE.MeshStandardMaterial({ color: r.color, roughness: 0.9 });
+                // Karpet Coklat Kayu
+                const floorGeo = new THREE.BoxGeometry(7.7, 0.14, 10.8);
+                const floorMat = new THREE.MeshStandardMaterial({ color: r.carpetColor, roughness: 0.88 });
                 const floorMesh = new THREE.Mesh(floorGeo, floorMat);
-                floorMesh.position.set(r.x, 0.06, 0);
+                floorMesh.position.set(r.x, 0.07, 0);
                 officeGroup3D.add(floorMesh);
 
-                const stripGeo = new THREE.BoxGeometry(7.6, 0.16, 0.25);
-                const stripMat = new THREE.MeshStandardMaterial({ color: r.border, emissive: r.border, emissiveIntensity: 0.3 });
+                // Lis Depan Ruangan
+                const stripGeo = new THREE.BoxGeometry(7.7, 0.2, 0.25);
+                const stripMat = new THREE.MeshStandardMaterial({ color: r.border, emissive: r.border, emissiveIntensity: 0.35 });
                 const stripMesh = new THREE.Mesh(stripGeo, stripMat);
-                stripMesh.position.set(r.x, 0.08, 5.3);
+                stripMesh.position.set(r.x, 0.1, 5.4);
                 officeGroup3D.add(stripMesh);
 
-                const backWallGeo = new THREE.BoxGeometry(7.6, 2.6, 0.25);
-                const backWallMat = new THREE.MeshStandardMaterial({ color: 0xF8FAFC });
+                // Dinding Belakang Cream Hangat
+                const backWallGeo = new THREE.BoxGeometry(7.7, 2.7, 0.28);
+                const backWallMat = new THREE.MeshStandardMaterial({ color: 0xEFEBE9 });
                 const backWall = new THREE.Mesh(backWallGeo, backWallMat);
-                backWall.position.set(r.x, 1.3, -5.2);
+                backWall.position.set(r.x, 1.35, -5.3);
                 officeGroup3D.add(backWall);
 
-                const topBarGeo = new THREE.BoxGeometry(7.6, 0.35, 0.3);
+                // Lis Header Dinding
+                const topBarGeo = new THREE.BoxGeometry(7.7, 0.38, 0.32);
                 const topBarMat = new THREE.MeshStandardMaterial({ color: r.border });
                 const topBar = new THREE.Mesh(topBarGeo, topBarMat);
-                topBar.position.set(r.x, 2.5, -5.2);
+                topBar.position.set(r.x, 2.55, -5.3);
                 officeGroup3D.add(topBar);
             });
 
+            // Sekat Pembatas Ruangan Coklat Tua
             [-4.1, 4.1].forEach(px => {
-                const glassGeo = new THREE.BoxGeometry(0.15, 2.2, 10.4);
-                const glassMat = new THREE.MeshStandardMaterial({ color: 0x94A3B8, transparent: true, opacity: 0.35 });
-                const glass = new THREE.Mesh(glassGeo, glassMat);
-                glass.position.set(px, 1.1, 0);
-                officeGroup3D.add(glass);
+                const dividerGeo = new THREE.BoxGeometry(0.2, 1.8, 10.6);
+                const dividerMat = new THREE.MeshStandardMaterial({ color: 0x4E342E, roughness: 0.7 });
+                const divider = new THREE.Mesh(dividerGeo, dividerMat);
+                divider.position.set(px, 0.9, 0);
+                officeGroup3D.add(divider);
             });
         }
 
-        function update3DOfficeData(users, tasks, tasks3d, creatorTasks) {
+        function update3DOfficeData(users, tasks, tasks3d, creatorTasks, creatorReports) {
             if (!dynamicActorsGroup3D) return;
 
             while (dynamicActorsGroup3D.children.length > 0) {
@@ -1543,6 +1606,7 @@
             if (labelsContainer) labelsContainer.innerHTML = '';
 
             const activeKonten = (creatorTasks || []).filter(t => t.title && String(t.isCompleted).toLowerCase() !== 'true');
+            const parsedReports = (creatorReports || []).map(extractCreatorReportInfo).filter(r => r.title);
             const activeDesain = (tasks || []).filter(t => t.title && t.status && !['final', 'selesai'].includes(String(t.status).toLowerCase()));
             const active3d = (tasks3d || []).filter(t => t.projectName && t.status && String(t.status).toLowerCase() !== 'selesai');
 
@@ -1552,42 +1616,45 @@
 
             function spawnWorkstation(user, x, z, accentColorHex, taskCount, badgeBgClass) {
                 const group = new THREE.Group();
-                group.position.set(x, 0.12, z);
+                group.position.set(x, 0.14, z);
 
-                const deskMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF });
-                const deskTop = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.12, 1.2), deskMat);
-                deskTop.position.y = 0.75;
+                // Meja Kerja Putih Cerah (Kontras di atas Karpet Coklat)
+                const deskMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.3 });
+                const deskTop = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.14, 1.25), deskMat);
+                deskTop.position.y = 0.78;
                 group.add(deskTop);
 
-                const legMat = new THREE.MeshStandardMaterial({ color: 0x64748B });
-                const legL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.75, 1.0), legMat);
-                legL.position.set(-0.9, 0.375, 0);
+                const legMat = new THREE.MeshStandardMaterial({ color: 0x1E293B });
+                const legL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.78, 1.05), legMat);
+                legL.position.set(-0.95, 0.39, 0);
                 const legR = legL.clone();
-                legR.position.set(0.9, 0.375, 0);
+                legR.position.set(0.95, 0.39, 0);
                 group.add(legL, legR);
 
+                // Monitor
                 const monMat = new THREE.MeshStandardMaterial({ color: 0x0F172A });
-                const mon = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.55, 0.08), monMat);
-                mon.position.set(0, 1.15, -0.25);
+                const mon = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.58, 0.08), monMat);
+                mon.position.set(0, 1.18, -0.25);
                 group.add(mon);
 
-                const screenColor = taskCount > 0 ? accentColorHex : 0x334155;
-                const screenMat = new THREE.MeshStandardMaterial({ color: screenColor, emissive: screenColor, emissiveIntensity: taskCount > 0 ? 0.5 : 0.1 });
-                const screen = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.45, 0.09), screenMat);
-                screen.position.set(0, 1.15, -0.24);
+                const screenColor = taskCount > 0 ? accentColorHex : 0x475569;
+                const screenMat = new THREE.MeshStandardMaterial({ color: screenColor, emissive: screenColor, emissiveIntensity: taskCount > 0 ? 0.55 : 0.1 });
+                const screen = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.48, 0.09), screenMat);
+                screen.position.set(0, 1.18, -0.24);
                 group.add(screen);
 
+                // Kursi & Avatar
                 const avatarGroup = new THREE.Group();
                 avatarGroup.position.set(0, 0, 0.75);
 
                 const bodyMat = new THREE.MeshStandardMaterial({ color: accentColorHex });
-                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.38, 0.85, 16), bodyMat);
-                body.position.y = 0.45;
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.4, 0.88, 16), bodyMat);
+                body.position.y = 0.46;
                 avatarGroup.add(body);
 
                 const headMat = new THREE.MeshStandardMaterial({ color: 0xFDE68A });
-                const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 16), headMat);
-                head.position.y = 1.1;
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 16), headMat);
+                head.position.y = 1.12;
                 avatarGroup.add(head);
 
                 group.add(avatarGroup);
@@ -1598,10 +1665,10 @@
                 const safeName = String(user.name).replace(/'/g, "\\'");
                 createFloating3DLabel(
                     group, 
-                    0, 1.95, 0,
-                    `<button type="button" onclick="highlightUserDesk('${safeName}')" class="px-2.5 py-1 rounded-lg shadow-lg border ${badgeBgClass} text-[9px] font-black whitespace-nowrap flex items-center gap-1 cursor-pointer">
+                    0, 2.0, 0,
+                    `<button type="button" onclick="highlightUserDesk('${safeName}')" class="px-2.5 py-1 rounded-lg shadow-lg border ${badgeBgClass} text-[10px] font-black whitespace-nowrap flex items-center gap-1.5 cursor-pointer">
                         <span>${user.name}</span>
-                        <span class="bg-black/25 px-1.5 py-0.2 rounded text-[8px]">${taskCount}</span>
+                        <span class="bg-black/25 px-1.5 py-0.2 rounded text-[9px]">${taskCount}</span>
                     </button>`
                 );
             }
@@ -1611,7 +1678,7 @@
                 const row = Math.floor(idx / 2);
                 const x = -9.8 + col * 3.2;
                 const z = -2.2 + row * 3.2;
-                const c = activeKonten.filter(t => isSameName(t.assignee, u.name)).length;
+                const c = activeKonten.filter(t => isSameName(t.assignee, u.name)).length + parsedReports.filter(r => isSameName(r.creator, u.name)).length;
                 spawnWorkstation(u, x, z, 0xEC4899, c, 'bg-pink-600 text-white border-pink-300');
             });
 
@@ -1621,7 +1688,7 @@
                 const x = -1.6 + col * 3.2;
                 const z = -2.2 + row * 3.2;
                 const c = activeDesain.filter(t => isSameName(t.assignee, u.name)).length;
-                spawnWorkstation(u, x, z, 0x3B82F6, c, 'bg-blue-600 text-white border-blue-300');
+                spawnWorkstation(u, x, z, 0x2563EB, c, 'bg-blue-600 text-white border-blue-300');
             });
 
             tim3d.forEach((u, idx) => {
@@ -1630,7 +1697,7 @@
                 const x = 6.6 + col * 3.2;
                 const z = 0.8 + row * 2.8;
                 const c = active3d.filter(t => isSameName(t.assignee, u.name)).length;
-                spawnWorkstation(u, x, z, 0x10B981, c, 'bg-emerald-600 text-white border-emerald-300');
+                spawnWorkstation(u, x, z, 0x059669, c, 'bg-emerald-600 text-white border-emerald-300');
             });
 
             const activePrintersCount = active3d.filter(t => {
@@ -1644,26 +1711,26 @@
                 const isRunning = i < activePrintersCount;
 
                 const pGroup = new THREE.Group();
-                pGroup.position.set(px, 0.12, pz);
+                pGroup.position.set(px, 0.14, pz);
 
                 const stand = new THREE.Mesh(
                     new THREE.BoxGeometry(1.4, 0.8, 1.3),
-                    new THREE.MeshStandardMaterial({ color: 0x334155 })
+                    new THREE.MeshStandardMaterial({ color: 0xFFFFFF })
                 );
                 stand.position.y = 0.4;
                 pGroup.add(stand);
 
                 const enclosure = new THREE.Mesh(
                     new THREE.BoxGeometry(1.1, 1.15, 1.0),
-                    new THREE.MeshStandardMaterial({ color: 0x0F172A })
+                    new THREE.MeshStandardMaterial({ color: 0x1E293B })
                 );
                 enclosure.position.y = 1.35;
                 pGroup.add(enclosure);
 
-                const glowColor = isRunning ? 0x10B981 : 0x475569;
+                const glowColor = isRunning ? 0x10B981 : 0x64748B;
                 const core = new THREE.Mesh(
                     new THREE.BoxGeometry(0.8, 0.7, 0.8),
-                    new THREE.MeshStandardMaterial({ color: glowColor, emissive: glowColor, emissiveIntensity: isRunning ? 0.7 : 0.1 })
+                    new THREE.MeshStandardMaterial({ color: glowColor, emissive: glowColor, emissiveIntensity: isRunning ? 0.75 : 0.1 })
                 );
                 core.position.set(0, 1.35, 0.12);
                 pGroup.add(core);
@@ -1677,10 +1744,10 @@
                 if (i === 1) {
                     createFloating3DLabel(
                         pGroup,
-                        0.9, 2.3, 0,
-                        `<button type="button" onclick="scrollToRoom('section-room-3d')" class="px-2.5 py-1 rounded-lg shadow-lg border ${activePrintersCount > 0 ? 'bg-amber-500 text-slate-950 border-amber-300' : 'bg-slate-800 text-slate-300 border-slate-600'} text-[8px] font-black uppercase whitespace-nowrap cursor-pointer">
-                            🖨️ Print Farm: ${activePrintersCount} Mesin Jalan
-                        </button>`
+                        0.9, 2.35, 0,
+                        `<div class="px-2.5 py-1 rounded-lg shadow-lg border ${activePrintersCount > 0 ? 'bg-amber-400 text-slate-950 border-amber-200' : 'bg-slate-800 text-slate-200 border-slate-600'} text-[9px] font-black uppercase whitespace-nowrap">
+                            🖨️ ${activePrintersCount} Mesin Jalan
+                        </div>`
                     );
                 }
             }
@@ -1699,41 +1766,53 @@
         function focus3DCamera(zone) {
             if (officeGroup3D) officeGroup3D.rotation.y = 0;
             document.querySelectorAll('.cam-btn').forEach(b => {
-                b.classList.remove('bg-indigo-600', 'text-white');
+                b.classList.remove('bg-blue-600', 'text-white');
                 b.classList.add('bg-slate-800');
             });
             const activeBtn = document.getElementById('cam-' + zone);
             if (activeBtn) {
                 activeBtn.classList.remove('bg-slate-800');
-                activeBtn.classList.add('bg-indigo-600', 'text-white');
+                activeBtn.classList.add('bg-blue-600', 'text-white');
             }
 
             if (zone === 'konten') {
-                camTargetPos = { x: -8.2, y: 12, z: 13 };
+                camTargetPos = { x: -8.2, y: 11.5, z: 12.5 };
                 camLookAt = { x: -8.2, y: 0, z: 0 };
             } else if (zone === 'desain') {
-                camTargetPos = { x: 0, y: 12, z: 13 };
+                camTargetPos = { x: 0, y: 11.5, z: 12.5 };
                 camLookAt = { x: 0, y: 0, z: 0 };
             } else if (zone === '3d') {
-                camTargetPos = { x: 8.2, y: 12, z: 13 };
+                camTargetPos = { x: 8.2, y: 11.5, z: 12.5 };
                 camLookAt = { x: 8.2, y: 0, z: -1 };
             } else {
-                camTargetPos = { x: 0, y: 21, z: 23 };
+                camTargetPos = { x: 0, y: 20, z: 22 };
                 camLookAt = { x: 0, y: 0, z: 0 };
             }
         }
 
-        function toggle3DCanvas() {
-            const wrap = document.getElementById('office3DWrapper');
-            const btn = document.getElementById('btnToggle3D');
-            if (wrap.classList.contains('hidden')) {
-                wrap.classList.remove('hidden');
-                btn.innerHTML = '<i class="ph-bold ph-caret-up"></i>';
-                setTimeout(resize3DOffice, 50);
+        function toggleFullscreen3D() {
+            const sec = document.getElementById('office3DSection');
+            const icon = document.getElementById('iconFullscreen3D');
+            const txt = document.getElementById('textFullscreen3D');
+            if (!sec) return;
+
+            const isFull = sec.classList.contains('office-fullscreen');
+            if (!isFull) {
+                sec.classList.add('office-fullscreen');
+                if (sec.requestFullscreen) {
+                    sec.requestFullscreen().catch(() => {});
+                }
+                if (icon) icon.className = 'ph-bold ph-corners-in text-xs';
+                if (txt) txt.innerText = 'Exit Fullscreen';
             } else {
-                wrap.classList.add('hidden');
-                btn.innerHTML = '<i class="ph-bold ph-caret-down"></i>';
+                sec.classList.remove('office-fullscreen');
+                if (document.fullscreenElement && document.exitFullscreen) {
+                    document.exitFullscreen().catch(() => {});
+                }
+                if (icon) icon.className = 'ph-bold ph-corners-out text-xs';
+                if (txt) txt.innerText = 'Fullscreen';
             }
+            setTimeout(resize3DOffice, 80);
         }
 
         function resize3DOffice() {
@@ -1773,7 +1852,7 @@
             renderer3D.render(scene3D, camera3D);
 
             const wrapper = document.getElementById('office3DWrapper');
-            if (wrapper && !wrapper.classList.contains('hidden')) {
+            if (wrapper) {
                 const widthHalf = wrapper.clientWidth / 2;
                 const heightHalf = wrapper.clientHeight / 2;
 
@@ -1797,35 +1876,8 @@
         }
 
         // =========================================================================
-        // SUSUNAN TIM & CHARTS
+        // CHARTS
         // =========================================================================
-        function renderTeamList(users) {
-            const container = document.getElementById('teamListContainer');
-            if (!container) return;
-            container.innerHTML = '';
-            users.forEach(u => {
-                let r = u.role ? String(u.role).toLowerCase() : '';
-                let isKreator = r.includes('konten');
-                let is3D = r.includes('3d'); 
-                
-                let icon = isKreator ? '<i class="ph-fill ph-video-camera text-pink-500 text-2xl"></i>' : 
-                           is3D ? '<i class="ph-fill ph-cube text-emerald-500 text-2xl"></i>' : 
-                           '<i class="ph-fill ph-paint-brush-broad text-blue-500 text-2xl"></i>';
-                let roleColor = isKreator ? 'bg-pink-50 text-pink-600 border-pink-100' : 
-                                is3D ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-blue-50 text-blue-600 border-blue-100';
-                let safeName = String(u.name).replace(/'/g, "\\'");
-                
-                container.innerHTML += `
-                    <div onclick="highlightUserDesk('${safeName}')" class="cursor-pointer flex items-center gap-3.5 p-4 bg-white rounded-[20px] shadow-sm border border-slate-200 card-hover">
-                        <div class="bg-slate-50 w-11 h-11 flex items-center justify-center rounded-xl border border-slate-100 shrink-0">${icon}</div>
-                        <div class="truncate">
-                            <h4 class="font-extrabold text-slate-800 text-xs sm:text-sm mb-1 uppercase tracking-wider truncate">${u.name}</h4>
-                            <span class="text-[9px] ${roleColor} border px-2 py-0.5 rounded-md uppercase tracking-widest font-black inline-block">${u.role}</span>
-                        </div>
-                    </div>`;
-            });
-        }
-
         let chartDesainInstance = null; 
         let chartKontenInstance = null;
         function renderCharts(tasks, creatorTasks) {
@@ -1878,7 +1930,6 @@
             select.innerHTML = ''; 
             boardContainer.innerHTML = '';
             
-            const colors = ['text-blue-500', 'text-teal-500', 'text-indigo-500', 'text-purple-500'];
             const desainerOnly = usersList.filter(u => u.role && String(u.role).toLowerCase() === 'desainer');
 
             if (desainerOnly.length === 0) {
@@ -1888,9 +1939,9 @@
             desainerOnly.forEach((u, index) => {
                 select.innerHTML += `<option value="${u.name}">${u.name}</option>`;
                 boardContainer.innerHTML += `
-                    <div class="min-w-[290px] md:min-w-0 snap-center bg-white p-4 md:p-5 rounded-[24px] border border-slate-200 flex flex-col shadow-sm">
-                        <h3 class="text-[11px] font-black text-slate-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 border-b border-slate-100 pb-3">
-                            <i class="ph-fill ph-user-circle ${colors[index % colors.length]} text-xl"></i> ${u.name}
+                    <div class="bg-white p-5 rounded-[26px] border border-slate-200/90 flex flex-col shadow-sm">
+                        <h3 class="text-xs font-black text-slate-700 uppercase tracking-[0.2em] mb-4 flex items-center gap-2 border-b border-slate-100 pb-3.5">
+                            <i class="ph-fill ph-user-circle ${avatarRingColors[index % avatarRingColors.length]} text-2xl"></i> ${u.name}
                         </h3>
                         <div id="board-${u.name}" class="space-y-3.5 flex-1"></div>
                     </div>`;
@@ -1949,7 +2000,7 @@
             tasks.sort((a,b) => a.id - b.id).reverse().forEach(task => {
                 if (!task.title) return;
                 const card = document.createElement('div');
-                let jo = `<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[9px] font-black mr-1.5 tracking-widest uppercase border border-slate-200">#${task.joCode}</span>`;
+                let jo = `<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[10px] font-extrabold mr-1.5 tracking-wider uppercase border border-slate-200/80">#${task.joCode}</span>`;
                 let delBtn = `<button type="button" onclick="deleteTask('${task.id}')" class="text-slate-300 hover:text-red-500 bg-white hover:bg-red-50 p-1.5 rounded-lg transition-colors border border-slate-100 shadow-sm absolute top-3 right-3 opacity-0 group-hover:opacity-100 cursor-pointer"><i class="ph-fill ph-trash text-sm"></i></button>`;
 
                 if (task.status === 'Final' || task.status === 'Selesai') {
@@ -1962,17 +2013,17 @@
                         ? `<div class="mt-3"><button type="button" onclick="approveTask('${task.id}')" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-extrabold py-2.5 rounded-xl uppercase tracking-widest flex justify-center items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"><i class="ph-fill ph-check-circle text-sm"></i> Setujui Printilan</button></div>` 
                         : '';
                     
-                    card.className = `p-4 rounded-[20px] border shadow-sm transition-all relative group bg-slate-50/60 card-hover ${isUrgent ? 'border-red-300 ring-2 ring-red-50' : 'border-slate-200'}`;
+                    card.className = `p-4 rounded-[20px] border shadow-sm transition-all relative group bg-white card-hover ${isUrgent ? 'border-red-300 ring-2 ring-red-50' : 'border-slate-200/90'}`;
                     card.innerHTML = `
                         ${delBtn}
-                        <div class="flex items-center gap-2 mb-2.5">
-                            <span class="text-[9px] font-bold text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200 uppercase tracking-widest"><i class="ph-bold ph-calendar-blank"></i> ${task.dateStr}</span>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/80 uppercase tracking-wider"><i class="ph-bold ph-calendar-blank"></i> ${task.dateStr}</span>
                             ${isUrgent ? '<span class="text-[9px] font-black bg-red-50 text-red-600 border border-red-200 px-2 py-0.5 rounded uppercase">Urgent</span>' : ''}
                         </div>
-                        <h4 class="font-extrabold text-slate-800 text-xs sm:text-sm leading-tight mb-3 pr-6">${jo} ${task.title}</h4>
-                        <div class="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-200/70">
-                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1"><i class="ph-fill ph-paper-plane-tilt"></i> ${task.sender}</div>
-                            <span class="text-[9px] font-black bg-white text-slate-600 border border-slate-200 px-2 py-1 rounded uppercase shadow-sm">${task.status}</span>
+                        <div class="mb-3.5 leading-snug pr-6">${jo} <span class="font-extrabold text-slate-800 text-[13px] sm:text-sm">${task.title}</span></div>
+                        <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><i class="ph-fill ph-paper-plane-tilt"></i> ${task.sender}</div>
+                            <span class="text-[9px] font-black bg-white text-slate-600 border border-slate-200 px-2.5 py-1 rounded-lg uppercase shadow-sm">${task.status}</span>
                         </div>
                         ${approval}`;
                     
@@ -1999,13 +2050,10 @@
             design3dOnly.forEach((u) => {
                 select.innerHTML += `<option value="${u.name}">${u.name}</option>`;
                 boardContainer.innerHTML += `
-                    <div class="min-w-[290px] md:min-w-0 snap-center bg-white p-4 md:p-5 rounded-[24px] border border-slate-200 flex flex-col shadow-sm">
-                        <div class="flex items-center gap-3 mb-4 border-b border-slate-100 pb-3.5">
-                            <div class="w-9 h-9 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 text-lg shadow-sm border border-emerald-200"><i class="ph-bold ph-user"></i></div>
-                            <div>
-                                <h3 class="text-xs font-extrabold text-slate-800 tracking-wider uppercase">${u.name}</h3>
-                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Tim 3D & Produksi</span>
-                            </div>
+                    <div class="bg-white p-5 rounded-[26px] border border-slate-200/90 flex flex-col shadow-sm">
+                        <div class="flex items-center gap-2.5 mb-4 border-b border-slate-100 pb-3.5">
+                            <i class="ph-fill ph-user-circle text-emerald-500 text-2xl"></i>
+                            <h3 class="text-xs font-black text-slate-700 tracking-[0.2em] uppercase">${u.name}</h3>
                         </div>
                         <div id="board-3d-${u.name}" class="space-y-3.5 flex-1"></div>
                     </div>`;
@@ -2075,56 +2123,18 @@
                         </div>`;
                     if (finalBoard) finalBoard.appendChild(card);
                 } else {
-                    let statusUI = '';
-                    let borderClass = 'border-slate-200';
-                    let detailsHTML = '';
-
-                    if (task.status === 'Menunggu Respon') {
-                        statusUI = `<span class="text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded uppercase tracking-widest flex items-center gap-1"><i class="ph-fill ph-clock-countdown"></i> Menunggu Respon</span>`;
-                    } else if (task.status === 'Lagi Dikerjain' || task.status === 'Nunggu Revisi') {
-                        borderClass = 'border-purple-200 ring-2 ring-purple-50';
-                        let icon = task.status === 'Lagi Dikerjain' ? 'ph-pen-nib' : 'ph-arrows-clockwise';
-                        statusUI = `<span class="text-[9px] font-black text-purple-700 bg-purple-100 border border-purple-200 px-2 py-0.5 rounded uppercase tracking-widest flex items-center gap-1"><i class="ph-fill ${icon}"></i> ${task.status}</span>`;
-                        
-                        if ((cStart && cStart !== '-') || (task.catatanTim && task.catatanTim !== '-')) {
-                            detailsHTML = `<div class="bg-white rounded-xl p-3 border border-slate-200/80 mt-3 space-y-1.5 text-[10px] font-medium text-slate-600">`;
-                            if (cStart && cStart !== '-') detailsHTML += `<div class="flex"><span class="font-bold text-slate-400 w-14">Waktu</span> <span class="mr-2">:</span> ${cStart} - ${cEnd}</div>`;
-                            if (task.catatanTim && task.catatanTim !== '-') detailsHTML += `<div class="pt-2 mt-2 border-t border-slate-100"><span class="font-bold text-slate-400 block mb-0.5">Catatan Tim:</span> "${task.catatanTim}"</div>`;
-                            detailsHTML += `</div>`;
-                        }
-                    } else if (task.status === 'Lagi Produksi' || task.status === 'Mesin Jalan Project') {
-                        if (task.status === 'Lagi Produksi') {
-                            borderClass = 'border-amber-200 ring-2 ring-amber-50';
-                            statusUI = `<span class="text-[9px] font-black text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded uppercase tracking-widest flex items-center gap-1"><i class="ph-fill ph-gear-six"></i> Lagi Produksi</span>`;
-                        } else {
-                            borderClass = 'border-emerald-300 ring-2 ring-emerald-50';
-                            statusUI = `<span class="text-[9px] font-black text-emerald-700 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded uppercase tracking-widest flex items-center gap-1"><i class="ph-bold ph-printer"></i> Mesin Jalan</span>`;
-                        }
-                        
-                        detailsHTML = `
-                        <div class="bg-white rounded-xl p-3 border border-slate-200/80 mt-3 space-y-1.5 text-[10px] font-medium text-slate-600">
-                            <div class="flex"><span class="font-bold text-slate-400 w-14">Waktu</span> <span class="mr-2">:</span> ${cStart} - ${cEnd}</div>
-                            <div class="flex"><span class="font-bold text-slate-400 w-14">Gramasi</span> <span class="mr-2">:</span> ${task.gramasi || '-'} gr</div>
-                            <div class="flex"><span class="font-bold text-slate-400 w-14">Jumlah</span> <span class="mr-2">:</span> ${task.jumlah || '-'}</div>
-                            <div class="flex"><span class="font-bold text-slate-400 w-14">Mesin</span> <span class="mr-2">:</span> <span class="font-bold text-emerald-600">${task.mesin || '-'}</span></div>
-                            ${task.waktuMesinJalan && task.waktuMesinJalan !== '-' ? `<div class="flex items-center gap-1.5 text-rose-600 font-bold mt-2 pt-2 border-t border-slate-100"><i class="ph-fill ph-timer text-sm"></i> Mulai: \${task.waktuMesinJalan}</div>` : ''}
-                            ${task.catatanTim && task.catatanTim !== '-' ? `<div class="pt-2 mt-2 border-t border-slate-100"><span class="font-bold text-slate-400 block mb-0.5">Catatan Tim:</span> "\${task.catatanTim}"</div>` : ''}
-                        </div>`;
-                    }
-
-                    let catatanAdminHTML = (task.catatanAdmin && task.catatanAdmin !== '-') 
-                        ? `<p class="text-[10px] text-slate-500 mb-2 line-clamp-2 pr-6 border-l-2 border-emerald-400 pl-2 ml-1 italic">"${task.catatanAdmin}"</p>` : '';
-
-                    card.className = `bg-slate-50/70 p-4 rounded-[20px] shadow-sm border relative group transition-colors card-hover ${borderClass}`;
+                    card.className = `bg-white p-4 rounded-[20px] shadow-sm border border-slate-200/90 relative group transition-colors card-hover`;
                     card.innerHTML = `
                         ${delBtn}
-                        <div class="flex flex-wrap gap-2 items-start mb-2.5 pr-8">
-                            ${statusUI}
+                        <div class="flex flex-wrap gap-2 items-center mb-3 pr-8">
+                            <span class="text-[9px] font-black text-slate-600 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg uppercase tracking-wider">${task.status}</span>
                             ${urgentBadge}
                         </div>
-                        <h4 class="font-extrabold text-slate-800 text-xs sm:text-sm leading-tight mb-2 pr-6">${task.projectName}</h4>
-                        ${catatanAdminHTML}
-                        ${detailsHTML}
+                        <h4 class="font-extrabold text-slate-800 text-[13px] sm:text-sm leading-tight mb-2 pr-6">${task.projectName}</h4>
+                        <div class="flex items-center justify-between pt-3 mt-3 border-t border-slate-100 text-[10px] font-bold text-slate-400">
+                            <span>Gramasi: ${task.gramasi || '-'} gr</span>
+                            <span class="text-emerald-600">${task.mesin || '-'}</span>
+                        </div>
                     `;
                     
                     let targetCol = document.getElementById('board-3d-' + task.assignee);
